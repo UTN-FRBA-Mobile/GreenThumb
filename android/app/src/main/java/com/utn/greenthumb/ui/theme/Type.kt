@@ -1,4 +1,4 @@
-package com.example.greenthumb.ui.theme
+package com.utn.greenthumb.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
