@@ -8,29 +8,36 @@ import androidx.navigation.compose.rememberNavController
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
+import com.utn.greenthumb.ui.navigation.NavRoutes
 
 @Composable
-fun AppNavHost(
-    authViewModel: AuthViewModel,
-    navController: NavHostController = rememberNavController()
-) {
+fun AppNavHost(authViewModel: AuthViewModel) {
+    val navController = rememberNavController()
+
     NavHost(
         navController = navController,
-        startDestination = if (authViewModel.isUserLoggedIn()) "home" else "login"
+        startDestination = if (authViewModel.isUserLoggedIn()) {
+            NavRoutes.Home.route
+        } else {
+            NavRoutes.Login.route
+        }
     ) {
-        composable("login") {
+        composable(NavRoutes.Login.route) {
             LoginScreen(
                 authViewModel = authViewModel,
-                onLoginSuccess = { navController.navigate("home") }
+                onLoginSuccess = {
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.Login.route) { inclusive = true }
+                    }
+                }
             )
         }
-        composable("home") {
+        composable(NavRoutes.Home.route) {
             HomeScreen(
                 authViewModel = authViewModel,
                 onLogout = {
-                    authViewModel.logout()
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
+                    navController.navigate(NavRoutes.Login.route) {
+                        popUpTo(NavRoutes.Home.route) { inclusive = true }
                     }
                 }
             )

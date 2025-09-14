@@ -27,7 +27,7 @@ fun HomeScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "¡Hola, ${authViewModel.getUserName() ?: "Usuario"}!",
+                    "¡Bienvenido, ${authViewModel.getUserName() ?: "Usuario"}!",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(20.dp))

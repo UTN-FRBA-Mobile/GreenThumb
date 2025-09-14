@@ -28,12 +28,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             GreenThumbTheme {
                 AppNavHost(authViewModel = authViewModel)
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "GreenThumb",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
             }
         }
     }
