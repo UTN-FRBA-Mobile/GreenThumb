@@ -1,14 +1,12 @@
-package com.utn.greenthumb.navigation
+package com.utn.greenthumb.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
-import com.utn.greenthumb.ui.navigation.NavRoutes
 
 @Composable
 fun AppNavHost(authViewModel: AuthViewModel) {
@@ -36,8 +34,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             HomeScreen(
                 authViewModel = authViewModel,
                 onLogout = {
-                    navController.navigate(NavRoutes.Login.route) {
-                        popUpTo(NavRoutes.Home.route) { inclusive = true }
+                    authViewModel.logout {
+                        navController.navigate(NavRoutes.Login.route) {
+                            popUpTo(NavRoutes.Home.route) { inclusive = true }
+                        }
                     }
                 }
             )

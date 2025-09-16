@@ -14,9 +14,8 @@ fun HomeScreen(
     authViewModel: AuthViewModel,
     onLogout: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("GreenThumb 🌿") })
+    Scaffold (topBar = {
+        TopAppBar(title = { Text("GreenThumb 🌿") })
         }
     ) { padding ->
         Box(
@@ -27,12 +26,15 @@ fun HomeScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "¡Bienvenido, ${authViewModel.getUserName() ?: "Usuario"}!",
+                    text = "Bienvenido, ${authViewModel.getUserName() ?: "Usuario"}",
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(Modifier.height(20.dp))
-
-                Button(onClick = { onLogout() }) {
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
+                Button(onClick = {
+                    authViewModel.logout(onLogout)
+                }) {
                     Text("Cerrar sesión")
                 }
             }
