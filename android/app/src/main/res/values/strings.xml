@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">GreenThumb</string>
     <string name="default_web_client_id">970520996669-mc4pabdbnm6ds2n0lrr6icdnfb8db62j.apps.googleusercontent.com</string>
+    <string name="login_title">Bienvenido a GreenThumb 🌱</string>
+    <string name="login_body">Con GreenThumb podrás obtener información sobre tus plantas y sus cuidados, solo con una foto. Además podrás generar recordatorios de riego y darles un cuidado ideal</string>
+    <string name="login_google">Iniciar sesión con Google</string>
+    <string name="scan_now">Escanear ahora</string>
 </resources>
