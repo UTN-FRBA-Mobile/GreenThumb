@@ -1,15 +1,22 @@
 package com.utn.greenthumb.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
+import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
+import com.utn.greenthumb.viewmodel.PlantViewModel
 
 @Composable
-fun AppNavHost(authViewModel: AuthViewModel) {
+fun AppNavHost(
+    authViewModel: AuthViewModel,
+    plantViewModel: PlantViewModel) {
     val navController = rememberNavController()
 
     NavHost(
@@ -20,9 +27,12 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             NavRoutes.Login.route
         }
     ) {
+
         composable(NavRoutes.Login.route) {
             LoginScreen(
                 authViewModel = authViewModel,
+                navController = navController,
+                plantViewModel = plantViewModel,
                 onLoginSuccess = {
                     navController.navigate(NavRoutes.Home.route) {
                         popUpTo(NavRoutes.Login.route) { inclusive = true }
@@ -30,6 +40,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 }
             )
         }
+
         composable(NavRoutes.Home.route) {
             HomeScreen(
                 authViewModel = authViewModel,
@@ -40,6 +51,17 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         }
                     }
                 }
+            )
+        }
+
+        composable(NavRoutes.Result.route,) {
+            backStackEntry ->
+            val imageUriString: String? = backStackEntry.savedStateHandle.get<String>("imageUri")
+            ResultScreen(
+                imageUri = imageUriString,
+                navController = navController,
+                plantViewModel = plantViewModel
+
             )
         }
     }

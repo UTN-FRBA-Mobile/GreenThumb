@@ -1,10 +1,8 @@
 package com.utn.greenthumb.ui.main.login
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,21 +21,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.R
-import com.utn.greenthumb.ui.util.rememberTakePictureLauncher
+import com.utn.greenthumb.data.model.plantid.IdentificationRequest
+import com.utn.greenthumb.ui.navigation.NavRoutes
+import com.utn.greenthumb.utils.ImageUtils
+import com.utn.greenthumb.utils.rememberTakePictureLauncher
+import com.utn.greenthumb.viewmodel.PlantViewModel
 
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
+    plantViewModel: PlantViewModel,
+    navController: NavHostController,
     onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
     val googleSignInClient = authViewModel.getGoogleSignInClient()
 
+    // Google Sign-In Launcher
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -57,28 +64,44 @@ fun LoginScreen(
         }
     }
 
+    // Camera Launcher
     val takePhoto = rememberTakePictureLauncher(
         onSuccess = {  imageUri ->
-            // TODO Replace with API call
-            val viewIntent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(imageUri, "image/jpeg")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-
             try {
-                context.startActivity(viewIntent)
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "No se encontró una aplicación para abrir la imagen.", Toast.LENGTH_SHORT).show()
+                val base64Image = ImageUtils.uriToBase64(context, imageUri)
+                if (base64Image != null) {
+                    val request = IdentificationRequest(
+                        images = listOf(base64Image),
+                        // TODO: Utilizar API de Geolocalización
+                        longitude = 0.0,
+                        latitude = 0.0,
+                        similarImages = true
+                    )
+                    android.util.Log.d("LoginScreen", "Enviando imagen al ViewModel")
+                    plantViewModel.identifyPlant(request)
+                    android.util.Log.d("LoginScreen", "Imagen enviada al ViewModel")
+
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("imageUri", imageUri.toString())
+
+                    navController.navigate(NavRoutes.Result.route)
+
+                } else {
+                    Toast.makeText(context, "Error: Imagen inválida", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("LoginScreen", "Error al procesar imagen", e)
+                Toast.makeText(context, "Error procesando imagen: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         },
         onError = {
+            Toast.makeText(context, "Error al capturar foto", Toast.LENGTH_SHORT).show()
         },
         onPermissionRejected = {
-
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
         }
     )
-
-
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -120,6 +143,7 @@ fun LoginScreen(
                 }) {
                     Text(stringResource(R.string.login_google))
                 }
+
                 OutlinedButton(onClick = {
                     takePhoto()
                 }) {
