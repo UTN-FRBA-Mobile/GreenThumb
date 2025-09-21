@@ -2,7 +2,7 @@ package com.utn.greenthumb.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utn.greenthumb.data.AuthRepository
+import com.utn.greenthumb.data.repository.AuthRepository
 import com.utn.greenthumb.manager.AuthManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

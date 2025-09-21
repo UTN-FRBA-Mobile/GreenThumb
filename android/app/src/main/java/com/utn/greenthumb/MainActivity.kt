@@ -11,12 +11,14 @@ import androidx.compose.ui.Modifier
 import com.utn.greenthumb.ui.navigation.AppNavHost
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import com.utn.greenthumb.viewmodel.AuthViewModel
+import com.utn.greenthumb.viewmodel.PlantViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
+    private val plantViewModel: PlantViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    AppNavHost(authViewModel = authViewModel)
+                    AppNavHost(authViewModel = authViewModel, plantViewModel = plantViewModel)
                 }
             }
         }

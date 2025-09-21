@@ -1,4 +1,4 @@
-package com.utn.greenthumb.data
+package com.utn.greenthumb.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider

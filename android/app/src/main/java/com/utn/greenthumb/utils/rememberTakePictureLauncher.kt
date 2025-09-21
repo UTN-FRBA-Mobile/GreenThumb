@@ -1,7 +1,8 @@
-package com.utn.greenthumb.ui.util
+package com.utn.greenthumb.utils
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -56,12 +57,12 @@ fun rememberTakePictureLauncher(
     }
 
     return {
-        when (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)) {
-            android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+        when (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)) {
+            PackageManager.PERMISSION_GRANTED -> {
                 cameraLauncher.launch(imageUri)
             }
             else -> {
-                permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                permissionLauncher.launch(Manifest.permission.CAMERA)
             }
         }
     }
