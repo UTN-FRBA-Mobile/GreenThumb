@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "970520996669",
+    "project_id": "greenthumb-79647",
+    "storage_bucket": "greenthumb-79647.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970520996669:android:11f6fb6c35f73c6c5db354",
+        "android_client_info": {
+          "package_name": "com.utn.greenthumb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "970520996669-0di1202efu6a69pi0a5q6sblls6h7o1s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.utn.greenthumb",
+            "certificate_hash": "8e40674be83b55d08b6337d90ff16372b8dd40be"
+          }
+        },
+        {
+          "client_id": "970520996669-mc4pabdbnm6ds2n0lrr6icdnfb8db62j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7VXNW38EdJoFbO1rDUbSh_XPBmmH7o3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "970520996669-mc4pabdbnm6ds2n0lrr6icdnfb8db62j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
