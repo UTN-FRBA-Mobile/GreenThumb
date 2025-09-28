@@ -5,16 +5,30 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.utn.greenthumb.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
     onLogout: () -> Unit
 ) {
-    Scaffold (topBar = {
+    HomeScreenContent(
+        userName = authViewModel.getUserName(),
+        onLogout = { authViewModel.logout(onLogout) }
+    )
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeScreenContent(
+    userName: String?,
+    onLogout: () -> Unit
+) {
+    Scaffold(topBar = {
         TopAppBar(title = { Text("GreenThumb 🌿") })
         }
     ) { padding ->
@@ -26,18 +40,24 @@ fun HomeScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Bienvenido, ${authViewModel.getUserName() ?: "Usuario"}",
+                    text = "Bienvenido, ${userName ?: "Usuario no identificado"}",
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(
-                    modifier = Modifier.height(20.dp)
-                )
-                Button(onClick = {
-                    authViewModel.logout(onLogout)
-                }) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(onClick = onLogout) {
                     Text("Cerrar sesión")
                 }
             }
         }
     }
+}
+
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreenContent(
+        userName = "Usuario de Prueba",
+        onLogout = {}
+    )
 }
