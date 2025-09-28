@@ -1,12 +1,9 @@
 package com.utn.greenthumb.ui.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
@@ -31,8 +28,6 @@ fun AppNavHost(
         composable(NavRoutes.Login.route) {
             LoginScreen(
                 authViewModel = authViewModel,
-                navController = navController,
-                plantViewModel = plantViewModel,
                 onLoginSuccess = {
                     navController.navigate(NavRoutes.Home.route) {
                         popUpTo(NavRoutes.Login.route) { inclusive = true }
@@ -54,14 +49,14 @@ fun AppNavHost(
             )
         }
 
-        composable(NavRoutes.Result.route,) {
+        composable(NavRoutes.Result.route) {
             backStackEntry ->
             val imageUriString: String? = backStackEntry.savedStateHandle.get<String>("imageUri")
             ResultScreen(
                 imageUri = imageUriString,
                 navController = navController,
+                onBackPressed = { navController.popBackStack() },
                 plantViewModel = plantViewModel
-
             )
         }
     }
