@@ -7,16 +7,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.viewmodel.AuthViewModel
 
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
+    currentUser: User?,
+    onProfile: () -> Unit,
     onLogout: () -> Unit
 ) {
     HomeScreenContent(
-        userName = authViewModel.getUserName(),
-        onLogout = { authViewModel.logout(onLogout) }
+        userName = currentUser?.displayName ?: authViewModel.getUserName(),
+        onProfile = onProfile,
+        onLogout = onLogout
     )
 }
 
@@ -26,6 +30,7 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenContent(
     userName: String?,
+    onProfile: () -> Unit,
     onLogout: () -> Unit
 ) {
     Scaffold(topBar = {
@@ -44,8 +49,15 @@ private fun HomeScreenContent(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(20.dp))
+
                 Button(onClick = onLogout) {
                     Text("Cerrar sesión")
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = onProfile) {
+                    Text("Perfil")
                 }
             }
         }
@@ -58,6 +70,7 @@ private fun HomeScreenContent(
 fun HomeScreenPreview() {
     HomeScreenContent(
         userName = "Usuario de Prueba",
-        onLogout = {}
+        onProfile = { },
+        onLogout = { }
     )
 }

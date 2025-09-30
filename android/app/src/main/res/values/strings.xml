@@ -1,9 +1,71 @@
 <resources>
     <string name="app_name">GreenThumb</string>
+    <string name="app_logo">GreenThumb Logo</string>
     <string name="default_web_client_id">970520996669-mc4pabdbnm6ds2n0lrr6icdnfb8db62j.apps.googleusercontent.com</string>
+
+    <!-- Login Screen -->
     <string name="login_title">Bienvenido a GreenThumb 🌱</string>
     <string name="login_body">Con GreenThumb podrás obtener información sobre tus plantas y sus cuidados, solo con una foto. Además podrás generar recordatorios de riego y darles un cuidado ideal</string>
     <string name="login_google">Iniciar sesión con Google</string>
+    <string name="signing_in">Iniciando sesión...</string>
+    <string name="login_error_title">Error de autenticación</string>
+    <string name="login_error_suggestion">Verifica tu conexión a internet e intenta nuevamente.</string>
+    <string name="retry">Reintentar</string>
+    <string name="cancel">Cancelar</string>
+
+
     <string name="scan_now">Escanear ahora</string>
     <string name="back_navigation">Volver</string>
+    <string name="waiting_for_action">Esperando acción del usuario...</string>
+    <string name="no_results_title">No se encontraron resultados"</string>
+    <string name="no_results_message">"Intenta con otra imagen con mejor iluminación"</string>
+    <string name="string_error_ocurred">Ocurrió un error</string>
+    <string name="identification_results">Resultados de la identificación</string>
+    <string name="identifying_plant">Identificando planta...</string>
+    <string name="select_plant">Selecciona la planta identificada</string>
+    <string name="save_plant">Guardar en Mis Plantas</string>
+    <string name="plant_selected">Planta seleccionada</string>
+
+    <!-- Plant Card -->
+    <string name="synonyms">Sinónimos</string>
+    <string name="plant_description">Descripción</string>
+    <string name="probability_percentage">Probabilidad</string>
+    <string name="common_names">Nombres comunes</string>
+    <string name="similar_images">Imágenes similares</string>
+    <string name="taxonomy">Taxonomía</string>
+    <string name="taxonomy_class">Clase</string>
+    <string name="taxonomy_genus">Género</string>
+    <string name="taxonomy_order">Orden</string>
+    <string name="taxonomy_family">Familia</string>
+    <string name="taxonomy_phylum">Filo</string>
+    <string name="taxonomy_kingdom">Reino</string>
+    <string name="more_info">Más información</string>
+    <string name="error_open_url">Error al abrir enlace</string>
+    <string name="understood">Entendido</string>
+    <string name="copy_url">Copiar URL</string>
+    <string name="collapse_section">Contraer sección</string>
+    <string name="expand_section">Expandir sección</string>
+
+    <string name="profile">Perfil</string>
+    <string name="account_information">Información de la cuenta</string>
+    <string name="email_status">Estado del Email</string>
+    <string name="account_type">Tipo de cuenta</string>
+    <string name="profile_photo">Foto de perfil</string>
+    <string name="verified">Verificado</string>
+    <string name="not_verified">No verificado</string>
+    <string name="logout">Cerrar sesión</string>
+
+    <!-- Error messages -->
+    <string name="error_sign_in_required">Se requiere iniciar sesión</string>
+    <string name="error_invalid_account">Cuenta inválida seleccionada</string>
+    <string name="error_resolution_required">Se requiere resolución adicional</string>
+    <string name="error_network">Error de conexión de red</string>
+    <string name="error_internal">Error interno del servicio de Google</string>
+    <string name="error_service_disabled">Servicio de Google deshabilitado</string>
+    <string name="error_service_update_required">Se requiere actualizar Google Play Services</string>
+    <string name="error_canceled">Proceso de autenticación cancelado</string>
+    <string name="error_unknown">Error desconocido (Código: %d)</string>
+    <string name="error_no_internet">Sin conexión a internet. Verifica tu conexión.</string>
+    <string name="error_timeout">Tiempo de espera agotado. Intenta nuevamente.</string>
+    <string name="error_generic">Error de autenticación: %s</string>
 </resources>

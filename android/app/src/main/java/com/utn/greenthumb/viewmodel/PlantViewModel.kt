@@ -15,10 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlantViewModel @Inject constructor(
     private val repository: PlantRepository
-) : ViewModel() {
+) : BaseViewModel<List<Plant>>() {
 
-    private val _uiState = MutableStateFlow<UiState<List<Plant>>>(UiState.Idle)
-    val uiState: StateFlow<UiState<List<Plant>>> = _uiState
 
     fun identifyPlant(request: IdentificationRequest) {
         viewModelScope.launch {
