@@ -13,8 +13,6 @@
     <string name="retry">Reintentar</string>
     <string name="cancel">Cancelar</string>
 
-
-    <string name="scan_now">Escanear ahora</string>
     <string name="back_navigation">Volver</string>
     <string name="waiting_for_action">Esperando acción del usuario...</string>
     <string name="no_results_title">No se encontraron resultados"</string>
@@ -26,12 +24,32 @@
     <string name="save_plant">Guardar en Mis Plantas</string>
     <string name="plant_selected">Planta seleccionada</string>
 
+    <!-- Camara -->
+    <string name="camera_screen_title">Capturar Planta</string>
+    <string name="processing_image">Procesando imagen...</string>
+    <string name="processing_image_description">Estamos analizando la foto de tu planta</string>
+    <string name="take_photo">Sacar foto</string>
+    <string name="capture_instructions">Toma una foto clara de la planta que deseas identificar. Asegúrate de tener buena iluminación.</string>
+    <string name="ready_to_capture">Lista para capturar</string>
+
+
+    <!-- Permisos -->
+    <string name="camera_permission_required">Permiso de Cámara Necesario</string>
+    <string name="camera_permission_explanation">GreenThumb necesita acceso a tu cámara para identificar plantas. No compartimos tus fotos con terceros.</string>
+    <string name="grant_permission">Conceder Permiso</string>
+    <string name="camera_permission_denied">Permiso Denegado</string>
+    <string name="camera_permission_permanently_denied">Has denegado permanentemente el permiso de cámara. Para usar esta función, debes habilitarlo en la configuración de la aplicación.</string>
+    <string name="open_settings_instruction">Ve a Configuración → Aplicaciones → GreenThumb → Permisos → Cámara</string>
+    <string name="open_settings">Abrir Configuración</string>
+
+
     <!-- Plant Card -->
     <string name="synonyms">Sinónimos</string>
     <string name="plant_description">Descripción</string>
     <string name="probability_percentage">Probabilidad</string>
     <string name="common_names">Nombres comunes</string>
     <string name="similar_images">Imágenes similares</string>
+
     <string name="taxonomy">Taxonomía</string>
     <string name="taxonomy_class">Clase</string>
     <string name="taxonomy_genus">Género</string>
@@ -39,6 +57,7 @@
     <string name="taxonomy_family">Familia</string>
     <string name="taxonomy_phylum">Filo</string>
     <string name="taxonomy_kingdom">Reino</string>
+
     <string name="more_info">Más información</string>
     <string name="error_open_url">Error al abrir enlace</string>
     <string name="understood">Entendido</string>

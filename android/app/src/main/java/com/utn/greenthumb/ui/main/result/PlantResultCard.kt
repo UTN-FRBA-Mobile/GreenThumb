@@ -1,8 +1,6 @@
 package com.utn.greenthumb.ui.main.result
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.tooling.preview.Preview
-import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -27,6 +25,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +44,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,18 +56,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.domain.model.SimilarImage
@@ -85,7 +81,11 @@ fun PlantResultCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(),
+                onClick = onClick,
+            ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 4.dp else 2.dp
         ),
@@ -373,7 +373,11 @@ private fun ExpandableSectionContainer(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
-                    onClick = { isExpanded = !isExpanded }
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        isExpanded = !isExpanded
+                    }
                 )
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -427,7 +431,11 @@ private fun TaxonomySection(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
-                    onClick = { isExpanded = !isExpanded }
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        isExpanded = !isExpanded
+                    }
                 )
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -552,25 +560,31 @@ private fun MoreInfoSection(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        } else {
-                            errorMessage = "No hay aplicaciones disponibles para abrir enlaces web. Por favor, instala un navegador."
+                .clickable (
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(intent)
+                            } else {
+                                errorMessage =
+                                    "No hay aplicaciones disponibles para abrir enlaces web. Por favor, instala un navegador."
+                                showErrorDialog = true
+                            }
+                        } catch (e: Exception) {
+                            Log.e("PlantResultCard", "Error opening URL: $url", e)
+                            errorMessage = when (e) {
+                                is ActivityNotFoundException -> "No se encontró una aplicación para abrir el enlace"
+                                is SecurityException -> "El enlace fue bloqueado por razones de seguridad"
+                                is IllegalArgumentException -> "El enlace no es válido"
+                                else -> "Ocurrió un error inesperado al abrir el enlace"
+                            }
                             showErrorDialog = true
                         }
-                    } catch (e: Exception) {
-                        Log.e("PlantResultCard", "Error opening URL: $url", e)
-                        errorMessage = when (e) {
-                            is ActivityNotFoundException -> "No se encontró una aplicación para abrir el enlace"
-                            is SecurityException -> "El enlace fue bloqueado por razones de seguridad"
-                            is IllegalArgumentException -> "El enlace no es válido"
-                            else -> "Ocurrió un error inesperado al abrir el enlace"
-                        }
-                        showErrorDialog = true                    }
-                },
+                    }
+                ),
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.primaryContainer
         ) {

@@ -55,6 +55,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.5")
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Compose BOM
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
     // Material 3
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.compose.material3:material3")
@@ -62,11 +67,6 @@ dependencies {
 
     // Foundation
     implementation("androidx.compose.foundation:foundation")
-
-    // Compose BOM
-    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -98,11 +98,17 @@ dependencies {
     // WorkManager (notificaciones y tareas en background)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
+    // Permissions
+    implementation(libs.accompanist.permissions)
+
     // CameraX
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-camera2:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
     implementation("androidx.camera:camera-view:1.3.2")
+
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     // Retrofit + OkHttp para API
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

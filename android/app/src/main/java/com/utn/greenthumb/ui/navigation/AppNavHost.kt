@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.utn.greenthumb.state.UiState
+import com.utn.greenthumb.ui.main.camera.CameraScreen
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
@@ -98,6 +99,7 @@ fun AppNavHost(
             )
         }
 
+
         // ===== HOME SCREEN =====
         composable(
             route = NavRoutes.Home.route,
@@ -128,6 +130,10 @@ fun AppNavHost(
                         Log.d("AppNavHost", "Navigating to profile")
                         navController.navigate(NavRoutes.Profile.route)
                     },
+                    onCamera = {
+                        Log.d("AppNavHost", "Navigating to camera")
+                        navController.navigate(NavRoutes.Camera.route)
+                    },
                     onLogout = {
                         Log.d("AppNavHost", "Logout requested")
                         authViewModel.logout()
@@ -136,14 +142,40 @@ fun AppNavHost(
             }
         }
 
+
+        // ===== CAMERA SCREEN =====
+        composable(
+            route = NavRoutes.Camera.route,
+            enterTransition = { slideInVertically(initialOffsetY = { it }) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+        ) {
+            CameraScreen(
+                plantViewModel = plantViewModel,
+                onNavigateBack = {
+                    Log.d("AppNavHost", "Navigating back from camera")
+                    navController.popBackStack()
+                },
+                onNavigateToResult = { imageUri ->
+                    Log.d("AppNavHost", "Navigating to result with image: $imageUri")
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("imageUri", imageUri)
+                    Log.d("AppNavHost", "Navigating to results")
+                    navController.navigate(NavRoutes.Result.route)
+                }
+            )
+        }
+
+
         // ===== RESULT SCREEN =====
         composable(
             route = NavRoutes.Result.route,
             enterTransition = { slideInVertically(initialOffsetY = { it }) },
             exitTransition = { slideOutVertically(targetOffsetY = { it }) }
         ) {
-            backStackEntry ->
+                backStackEntry ->
             val imageUriString: String? = backStackEntry.savedStateHandle.get<String>("imageUri")
+            Log.d("AppNavHost", "Going to Result Screen with this URI: $imageUriString")
             ResultScreen(
                 imageUri = imageUriString,
                 navController = navController,
