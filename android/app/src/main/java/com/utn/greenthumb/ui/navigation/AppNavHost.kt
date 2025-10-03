@@ -39,6 +39,7 @@ fun AppNavHost(
         composable(NavRoutes.Home.route) {
             HomeScreen(
                 authViewModel = authViewModel,
+                navController = navController,
                 onLogout = {
                     authViewModel.logout {
                         navController.navigate(NavRoutes.Login.route) {

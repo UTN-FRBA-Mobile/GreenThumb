@@ -6,4 +6,8 @@
     <string name="login_google">Iniciar sesión con Google</string>
     <string name="scan_now">Escanear ahora</string>
     <string name="back_navigation">Volver</string>
+    <string name="home">Home</string>
+    <string name="my_plants">Mis Plantas</string>
+    <string name="remembers">Recordatorios</string>
+    <string name="profile">Perfil</string>
 </resources>
