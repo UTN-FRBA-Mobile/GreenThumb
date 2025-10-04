@@ -126,17 +126,17 @@ fun AppNavHost(
                 HomeScreen(
                     authViewModel = authViewModel,
                     currentUser = currentUser,
+                    onHome = {
+                        Log.d("AppNavHost", "Navigating to Home Screen")
+                        navController.navigate(NavRoutes.Home.route)
+                    },
                     onProfile = {
-                        Log.d("AppNavHost", "Navigating to profile")
+                        Log.d("AppNavHost", "Navigating to Profile Screen")
                         navController.navigate(NavRoutes.Profile.route)
                     },
                     onCamera = {
-                        Log.d("AppNavHost", "Navigating to camera")
+                        Log.d("AppNavHost", "Navigating to Camera Screen")
                         navController.navigate(NavRoutes.Camera.route)
-                    },
-                    onLogout = {
-                        Log.d("AppNavHost", "Logout requested")
-                        authViewModel.logout()
                     }
                 )
             }
@@ -179,10 +179,7 @@ fun AppNavHost(
             ResultScreen(
                 imageUri = imageUriString,
                 navController = navController,
-                onBackPressed = {
-                    Log.d("AppNavHost", "Navigating back from result")
-                    navController.popBackStack()
-                },
+                onBackPressed = { navController.popBackStack() },
                 plantViewModel = plantViewModel
             )
         }

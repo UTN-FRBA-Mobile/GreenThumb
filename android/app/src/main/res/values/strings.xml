@@ -13,6 +13,13 @@
     <string name="retry">Reintentar</string>
     <string name="cancel">Cancelar</string>
 
+    <!-- Home Screen -->
+    <string name="home">Home</string>
+    <string name="scan_now">Escanear ahora</string>
+    <string name="my_plants">Mis Plantas</string>
+    <string name="remembers">Recordatorios</string>
+    <string name="profile">Perfil</string>
+
     <string name="back_navigation">Volver</string>
     <string name="waiting_for_action">Esperando acción del usuario...</string>
     <string name="no_results_title">No se encontraron resultados"</string>
@@ -32,7 +39,6 @@
     <string name="capture_instructions">Toma una foto clara de la planta que deseas identificar. Asegúrate de tener buena iluminación.</string>
     <string name="ready_to_capture">Lista para capturar</string>
 
-
     <!-- Permisos -->
     <string name="camera_permission_required">Permiso de Cámara Necesario</string>
     <string name="camera_permission_explanation">GreenThumb necesita acceso a tu cámara para identificar plantas. No compartimos tus fotos con terceros.</string>
@@ -42,7 +48,6 @@
     <string name="open_settings_instruction">Ve a Configuración → Aplicaciones → GreenThumb → Permisos → Cámara</string>
     <string name="open_settings">Abrir Configuración</string>
 
-
     <!-- Plant Card -->
     <string name="synonyms">Sinónimos</string>
     <string name="plant_description">Descripción</string>
@@ -50,6 +55,7 @@
     <string name="common_names">Nombres comunes</string>
     <string name="similar_images">Imágenes similares</string>
 
+    <!-- Taxonomy Screen -->
     <string name="taxonomy">Taxonomía</string>
     <string name="taxonomy_class">Clase</string>
     <string name="taxonomy_genus">Género</string>
@@ -65,7 +71,6 @@
     <string name="collapse_section">Contraer sección</string>
     <string name="expand_section">Expandir sección</string>
 
-    <string name="profile">Perfil</string>
     <string name="account_information">Información de la cuenta</string>
     <string name="email_status">Estado del Email</string>
     <string name="account_type">Tipo de cuenta</string>
