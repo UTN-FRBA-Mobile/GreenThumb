@@ -73,7 +73,7 @@ fun BottomBar(navController: NavController) {
             text = stringResource(R.string.my_plants),
             onClick = {})
         BottomButton(
-            icon = painterResource(R.drawable.add),
+            icon = painterResource(R.drawable.photo_camera),
             onClick = {},
             modifier = Modifier
                 .size(72.dp)
