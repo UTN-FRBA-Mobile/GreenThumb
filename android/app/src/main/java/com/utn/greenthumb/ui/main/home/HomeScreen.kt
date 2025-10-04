@@ -31,13 +31,17 @@ fun HomeScreen(
     authViewModel: AuthViewModel,
     currentUser: User?,
     onHome: () -> Unit,
-    onProfile: () -> Unit,
-    onCamera: () -> Unit
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit
 ) {
     BaseScreen(
         onHome = onHome,
-        onProfile = onProfile,
+        onMyPlants = onMyPlants,
         onCamera = onCamera,
+        onRemembers = onRemembers,
+        onProfile = onProfile
     ) {
         HomeScreenContent(
             userName = currentUser?.displayName ?: authViewModel.getUserName()

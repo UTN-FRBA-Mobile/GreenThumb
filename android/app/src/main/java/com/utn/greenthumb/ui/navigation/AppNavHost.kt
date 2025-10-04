@@ -130,13 +130,23 @@ fun AppNavHost(
                         Log.d("AppNavHost", "Navigating to Home Screen")
                         navController.navigate(NavRoutes.Home.route)
                     },
-                    onProfile = {
-                        Log.d("AppNavHost", "Navigating to Profile Screen")
-                        navController.navigate(NavRoutes.Profile.route)
+                    onMyPlants = {
+                        Log.d("AppNavHost", "Navigating to My Plants Screen")
+                        // TODO: Navegar a la pantalla de plantas
+                        //navController.navigate(NavRoutes.MyPlants.route)
                     },
                     onCamera = {
                         Log.d("AppNavHost", "Navigating to Camera Screen")
                         navController.navigate(NavRoutes.Camera.route)
+                    },
+                    onRemembers = {
+                        Log.d("AppNavHost", "Navigating to Remembers Screen")
+                        // TODO: Navegar a la pantalla de Recordatorios
+                        //navController.navigate(NavRoutes.Remember.route)
+                    },
+                    onProfile = {
+                        Log.d("AppNavHost", "Navigating to Profile Screen")
+                        navController.navigate(NavRoutes.Profile.route)
                     }
                 )
             }
@@ -194,6 +204,28 @@ fun AppNavHost(
             if (currentUser != null) {
                 ProfileScreen(
                     user = currentUser,
+                    onHome = {
+                        Log.d("AppNavHost", "Navigating to Home Screen")
+                        navController.navigate(NavRoutes.Home.route)
+                    },
+                    onMyPlants = {
+                        Log.d("AppNavHost", "Navigating to My Plants Screen")
+                        // TODO: Navegar a la pantalla de plantas
+                        //navController.navigate(NavRoutes.MyPlants.route)
+                    },
+                    onCamera = {
+                        Log.d("AppNavHost", "Navigating to Camera Screen")
+                        navController.navigate(NavRoutes.Camera.route)
+                    },
+                    onRemembers = {
+                        Log.d("AppNavHost", "Navigating to Remembers Screen")
+                        // TODO: Navegar a la pantalla de Recordatorios
+                        //navController.navigate(NavRoutes.Remember.route)
+                    },
+                    onProfile = {
+                        Log.d("AppNavHost", "Navigating to Profile Screen")
+                        navController.navigate(NavRoutes.Profile.route)
+                    },
                     onNavigateBack = { navController.popBackStack() },
                     onLogout = { authViewModel.logout() }
                 )

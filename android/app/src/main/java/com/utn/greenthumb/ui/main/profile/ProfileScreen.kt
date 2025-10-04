@@ -53,22 +53,37 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.User
+import com.utn.greenthumb.ui.main.BaseScreen
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 
 
 @Composable
 fun ProfileScreen(
     user: User?,
+    onHome: () -> Unit,
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit,
     onNavigateBack: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ProfileScreenContent(
-        user = user,
-        onNavigateBack = onNavigateBack,
-        onLogout = onLogout,
-        modifier = modifier
-    )
+    BaseScreen(
+        onHome = onHome,
+        onMyPlants = onMyPlants,
+        onCamera = onCamera,
+        onRemembers = onRemembers,
+        onProfile = onProfile
+    ) {
+        ProfileScreenContent(
+            user = user,
+            onNavigateBack = onNavigateBack,
+            onLogout = onLogout,
+            modifier = modifier
+        )
+    }
+
 }
 
 /**

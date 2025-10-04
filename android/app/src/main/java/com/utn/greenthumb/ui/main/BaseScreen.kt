@@ -41,16 +41,20 @@ import com.utn.greenthumb.ui.theme.GreenBackground
 @Composable
 fun BaseScreen(
     onHome: () -> Unit,
-    onProfile: () -> Unit,
+    onMyPlants: () -> Unit,
     onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
         bottomBar = {
             BottomBar(
                 onHome = onHome,
-                onProfile = onProfile,
-                onCamera = onCamera
+                onMyPlants = onMyPlants,
+                onCamera = onCamera,
+                onRemembers = onRemembers,
+                onProfile = onProfile
             )
         }
     ) { innerPadding ->
@@ -65,8 +69,10 @@ fun BaseScreen(
 @Composable
 fun BottomBar(
     onHome: () -> Unit,
-    onProfile: () -> Unit,
-    onCamera: () -> Unit
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -84,7 +90,7 @@ fun BottomBar(
         BottomButton(
             icon = painterResource(R.drawable.leafs),
             text = stringResource(R.string.my_plants),
-            onClick = { }
+            onClick = onMyPlants
         )
         BottomButton(
             icon = painterResource(R.drawable.photo_camera),
@@ -97,7 +103,7 @@ fun BottomBar(
         BottomButton(
             icon = painterResource(R.drawable.reminder),
             text = stringResource(R.string.remembers),
-            onClick = { }
+            onClick = onRemembers
         )
         BottomButton(
             icon = painterResource(R.drawable.profile),
@@ -154,8 +160,10 @@ fun RowScope.BottomButton(
 fun BaseScreenPreview() {
     BaseScreen(
         onHome = { },
-        onProfile = { },
-        onCamera = { }
+        onMyPlants = { },
+        onCamera = { },
+        onRemembers = { },
+        onProfile = { }
     ) {
 
     }
