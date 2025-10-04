@@ -1,152 +1,511 @@
 package com.utn.greenthumb.ui.main.result
 
+import androidx.compose.ui.tooling.preview.Preview
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.domain.model.SimilarImage
 import com.utn.greenthumb.domain.model.Taxonomy
 import com.utn.greenthumb.domain.model.Watering
+import androidx.core.net.toUri
+import coil.compose.rememberImagePainter
 
 @Composable
-fun PlantResultCard(plant: Plant) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+fun PlantResultCard(
+    plant: Plant,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Nombre de la Planta
-            Text(
-                text = plant.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(),
+                onClick = onClick,
+            ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 4.dp else 2.dp
+        ),
+        border = if (isSelected) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else null,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Header con nombre y probabilidad
+                PlantHeader(
+                    name = plant.name,
+                    probability = plant.probability,
+                    isSelected = isSelected
+                )
 
-            Spacer(modifier = Modifier.height(4.dp))
 
             // Nombres comunes
             if (plant.commonNames.isNotEmpty()) {
-                Text(
-                    text = "Nombres comunes:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = plant.commonNames.joinToString(),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                    CommonNamesSection(
+                        commonNames = plant.commonNames
+                    )
             }
 
             // Imágenes similares
             if (plant.similarImages.isNotEmpty()) {
-                Text(
-                    text = "Imágenes similares:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                LazyRow {
-                    items(plant.similarImages) { image ->
-                        Image(
-                            painter = rememberAsyncImagePainter(image.url),
-                            contentDescription = "Imagen similar",
-                            modifier = Modifier
-                                .size(80.dp)
-                                .padding(end = 8.dp)
-                        )
-                    }
-                }
+                    SimilarImagesSection(
+                        images = plant.similarImages
+                    )
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Probabilidad
-            Text(
-                text = "Probabilidad:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "${(plant.probability * 100).toInt()}%",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             // Sinónimos
             if (plant.synonyms.isNotEmpty()) {
-                Text(
-                    text = "Sinónimos:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                ExpandableSectionContainer(
+                    title = stringResource(R.string.synonyms),
+                    collapsedContent = {
+                        Text(
+                            text = plant.synonyms.joinToString(", "),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    expandedContent = {
+                        Text(
+                            text = plant.synonyms.joinToString(", "),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 )
-                Text(
-                    text = plant.synonyms.joinToString(),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(4.dp))
             }
 
             // Descripción
             if (plant.description.isNotEmpty()) {
-                Text(
-                    text = "Descripción:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                ExpandableSectionContainer(
+                    title = stringResource(R.string.plant_description),
+                    collapsedContent = {
+                        Text(
+                            text = plant.description,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    expandedContent = {
+                        Text(
+                            text = plant.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 )
-                Text(
-                    text = plant.description,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(4.dp))
             }
 
             // Taxonomía
-            Text(
-                text = "Taxonomía:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+            TaxonomySection(
+                taxonomy = plant.taxonomy
             )
-            Text(
-                text = "Clase: ${plant.taxonomy.taxonomyClass}\n" +
-                        "Género: ${plant.taxonomy.genus}\n" +
-                        "Orden: ${plant.taxonomy.order}\n" +
-                        "Familia: ${plant.taxonomy.family}\n" +
-                        "Filo: ${plant.taxonomy.phylum}\n" +
-                        "Reino: ${plant.taxonomy.kingdom}",
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             // URL
-            Text(
-                text = "Más información:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+            MoreInfoSection(
+                url = plant.url
             )
+        }
+    }
+}
+
+
+@Composable
+private fun PlantHeader(
+    name: String,
+    probability: Double,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = "Encabezado de la Planta" },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
+            ) {
+                Row{
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = stringResource(R.string.plant_selected),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
+            // Nombre científico de la planta
             Text(
-                text = plant.url,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                text = name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Probabilidad
+        ProbabilityBadge(
+            probability = probability,
+        )
+    }
+}
+
+
+@Composable
+private fun ProbabilityBadge(
+    probability: Double,
+    modifier: Modifier = Modifier
+) {
+    val percentage = (probability * 100).toInt()
+    val (backgroundColor, fontColor, icon) = when {
+        percentage >= 80 -> Triple(
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+            Icons.Default.CheckCircle
+        )
+        percentage >= 60 -> Triple(
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+            Icons.Default.Warning
+        )
+        else -> Triple(
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+            Icons.Default.Close
+        )
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = stringResource(R.string.probability_percentage, percentage),
+                tint = fontColor,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "$percentage%",
+                style = MaterialTheme.typography.labelMedium,
+                color = fontColor,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun CommonNamesSection(
+    commonNames: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        SectionTitle(
+            title = stringResource(R.string.common_names)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            commonNames.forEach { name ->
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SimilarImagesSection(
+    images: List<SimilarImage>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        SectionTitle(
+            title = stringResource(R.string.similar_images)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            images.forEach { image ->
+                Surface(
+                    modifier = Modifier
+                        .size(80.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Image(
+                        painter = rememberImagePainter(data = image.url),
+                        contentDescription = "Imagen similar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun ExpandableSectionContainer(
+    title: String,
+    collapsedContent: @Composable () -> Unit,
+    expandedContent: @Composable () -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        isExpanded = !isExpanded
+                    }
+                )
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "$title:",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = if (isExpanded) {
+                    Icons.Default.KeyboardArrowUp
+                } else {
+                    Icons.Default.KeyboardArrowDown
+                },
+                contentDescription = if (isExpanded) {
+                    stringResource(R.string.collapse_section)
+                } else {
+                    stringResource(R.string.expand_section)
+                },
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        AnimatedContent(
+            targetState = isExpanded,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
+            },
+            label = "Expandir Contenido"
+        ) { expanded ->
+            if (expanded) expandedContent() else collapsedContent()
+        }
+
+    }
+}
+
+
+@Composable
+private fun TaxonomySection(
+    taxonomy: Taxonomy,
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        isExpanded = !isExpanded
+                    }
+                )
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.taxonomy) + ":",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = if (isExpanded) {
+                    stringResource(R.string.collapse_section)
+                } else {
+                    stringResource(R.string.expand_section)
+                },
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = expandVertically(
+                animationSpec = tween(300, easing = EaseInOut)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = shrinkVertically(
+                animationSpec = tween(300, easing = EaseInOut)
+            ) + fadeOut(animationSpec = tween(300))
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 28.dp, top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_class),
+                    value = taxonomy.taxonomyClass
+                )
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_genus),
+                    value = taxonomy.genus
+                )
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_order),
+                    value = taxonomy.order
+                )
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_family),
+                    value = taxonomy.family
+                )
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_phylum),
+                    value = taxonomy.phylum
+                )
+                TaxonomyItem(
+                    label = stringResource(R.string.taxonomy_kingdom),
+                    value = taxonomy.kingdom
+                )
+            }
+        }
+
+        // Preview cuando está colapsado
+        if (!isExpanded) {
+            Text(
+                text = "${stringResource(R.string.taxonomy_class)}: ${taxonomy.taxonomyClass} • ${stringResource(R.string.taxonomy_genus)}: ${taxonomy.genus}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 28.dp, top = 4.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -155,9 +514,171 @@ fun PlantResultCard(plant: Plant) {
 }
 
 
-@Preview (showBackground = true)
 @Composable
-fun ResultCardPreview() {
+private fun TaxonomyItem(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$label:",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(80.dp)
+        )
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+
+@SuppressLint("QueryPermissionsNeeded")
+@Composable
+private fun MoreInfoSection(
+    url: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    Column(modifier = modifier) {
+        SectionTitle(
+            title = stringResource(R.string.more_info),
+        )
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable (
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(),
+                    onClick = {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(intent)
+                            } else {
+                                errorMessage =
+                                    "No hay aplicaciones disponibles para abrir enlaces web. Por favor, instala un navegador."
+                                showErrorDialog = true
+                            }
+                        } catch (e: Exception) {
+                            Log.e("PlantResultCard", "Error opening URL: $url", e)
+                            errorMessage = when (e) {
+                                is ActivityNotFoundException -> "No se encontró una aplicación para abrir el enlace"
+                                is SecurityException -> "El enlace fue bloqueado por razones de seguridad"
+                                is IllegalArgumentException -> "El enlace no es válido"
+                                else -> "Ocurrió un error inesperado al abrir el enlace"
+                            }
+                            showErrorDialog = true
+                        }
+                    }
+                ),
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = url,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Abrir enlace externo",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        // Diálogo de error
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(stringResource(R.string.error_open_url))
+                },
+                text = {
+                    Text(errorMessage)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { showErrorDialog = false }
+                    ) {
+                        Text(stringResource(R.string.understood))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showErrorDialog = false
+                            // Copiar URL al clipboard como alternativa
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Plant URL", url)
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "URL copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text(stringResource(R.string.copy_url))
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SectionTitle(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.padding(bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$title:",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+
+/**
+ * Previews
+ */
+@Preview (
+    name = "Plant Result Card - No Selected")
+@Composable
+fun PlantResultCardPreview() {
     val plant = Plant(
         id = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
@@ -194,5 +715,202 @@ fun ResultCardPreview() {
             max = 2
         )
     )
-    PlantResultCard(plant = plant)
+    PlantResultCard(
+        plant = plant,
+        isSelected = false,
+        onClick = {}
+    )
 }
+
+
+@Preview (
+    name = "Plant Result Card - Selected")
+@Composable
+fun PlantResultCardSelectedPreview() {
+    val plant = Plant(
+        id = "662e0f8d4202acfc",
+        name = "Rhaphiolepis bibas",
+        probability = 0.8843,
+        similarImages = listOf(SimilarImage(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
+            similarity = 0.789)),
+        commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
+        synonyms = listOf(                                    "Crataegus bibas",
+            "Eriobotrya fragrans",
+            "Eriobotrya fragrans var. furfuracea",
+            "Eriobotrya japonica",
+            "Eriobotrya japonica f. variegata",
+            "Mespilus japonica",
+            "Photinia japonica",
+            "Pyrus bibas",
+            "Pyrus williamtelliana",
+            "Rhaphiolepis loquata",
+            "Rhaphiolepis williamtelliana",
+            "Rhaphiolepis williamtelliana var. furfuracea"),
+        taxonomy = Taxonomy(
+            taxonomyClass = "Magnoliopsida",
+            genus = "Rhaphiolepis",
+            order = "Rosales",
+            family = "Rosaceae",
+            phylum = "Tracheophyta",
+            kingdom = "Plantae"
+        ),
+        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
+        rank = "species",
+        description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
+        watering = Watering(
+            min = 2,
+            max = 2
+        )
+    )
+    PlantResultCard(
+        plant = plant,
+        isSelected = true,
+        onClick = {}
+    )
+}
+
+
+@Preview (
+    name = "Plant Result Card - High Probability")
+@Composable
+fun PlantResultCardHighProbabilityPreview() {
+    val plant = Plant(
+        id = "662e0f8d4202acfc",
+        name = "Rhaphiolepis bibas",
+        probability = 0.99,
+        similarImages = listOf(SimilarImage(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
+            similarity = 0.789)),
+        commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
+        synonyms = listOf(                                    "Crataegus bibas",
+            "Eriobotrya fragrans",
+            "Eriobotrya fragrans var. furfuracea",
+            "Eriobotrya japonica",
+            "Eriobotrya japonica f. variegata",
+            "Mespilus japonica",
+            "Photinia japonica",
+            "Pyrus bibas",
+            "Pyrus williamtelliana",
+            "Rhaphiolepis loquata",
+            "Rhaphiolepis williamtelliana",
+            "Rhaphiolepis williamtelliana var. furfuracea"),
+        taxonomy = Taxonomy(
+            taxonomyClass = "Magnoliopsida",
+            genus = "Rhaphiolepis",
+            order = "Rosales",
+            family = "Rosaceae",
+            phylum = "Tracheophyta",
+            kingdom = "Plantae"
+        ),
+        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
+        rank = "species",
+        description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
+        watering = Watering(
+            min = 2,
+            max = 2
+        )
+    )
+    PlantResultCard(
+        plant = plant,
+        isSelected = false,
+        onClick = {}
+    )
+}
+
+
+@Preview (
+    name = "Plant Result Card - Medium Probability")
+@Composable
+fun PlantResultCardMediumProbabilityPreview() {
+    val plant = Plant(
+        id = "662e0f8d4202acfc",
+        name = "Rhaphiolepis bibas",
+        probability = 0.70,
+        similarImages = listOf(SimilarImage(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
+            similarity = 0.789)),
+        commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
+        synonyms = listOf(                                    "Crataegus bibas",
+            "Eriobotrya fragrans",
+            "Eriobotrya fragrans var. furfuracea",
+            "Eriobotrya japonica",
+            "Eriobotrya japonica f. variegata",
+            "Mespilus japonica",
+            "Photinia japonica",
+            "Pyrus bibas",
+            "Pyrus williamtelliana",
+            "Rhaphiolepis loquata",
+            "Rhaphiolepis williamtelliana",
+            "Rhaphiolepis williamtelliana var. furfuracea"),
+        taxonomy = Taxonomy(
+            taxonomyClass = "Magnoliopsida",
+            genus = "Rhaphiolepis",
+            order = "Rosales",
+            family = "Rosaceae",
+            phylum = "Tracheophyta",
+            kingdom = "Plantae"
+        ),
+        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
+        rank = "species",
+        description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
+        watering = Watering(
+            min = 2,
+            max = 2
+        )
+    )
+    PlantResultCard(
+        plant = plant,
+        isSelected = false,
+        onClick = {}
+    )
+}
+
+
+@Preview (
+    name = "Plant Result Card - Low Probability")
+@Composable
+fun PlantResultCardLowProbabilityPreview() {
+    val plant = Plant(
+        id = "662e0f8d4202acfc",
+        name = "Rhaphiolepis bibas",
+        probability = 0.25,
+        similarImages = listOf(SimilarImage(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
+            similarity = 0.789)),
+        commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
+        synonyms = listOf(                                    "Crataegus bibas",
+            "Eriobotrya fragrans",
+            "Eriobotrya fragrans var. furfuracea",
+            "Eriobotrya japonica",
+            "Eriobotrya japonica f. variegata",
+            "Mespilus japonica",
+            "Photinia japonica",
+            "Pyrus bibas",
+            "Pyrus williamtelliana",
+            "Rhaphiolepis loquata",
+            "Rhaphiolepis williamtelliana",
+            "Rhaphiolepis williamtelliana var. furfuracea"),
+        taxonomy = Taxonomy(
+            taxonomyClass = "Magnoliopsida",
+            genus = "Rhaphiolepis",
+            order = "Rosales",
+            family = "Rosaceae",
+            phylum = "Tracheophyta",
+            kingdom = "Plantae"
+        ),
+        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
+        rank = "species",
+        description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
+        watering = Watering(
+            min = 2,
+            max = 2
+        )
+    )
+    PlantResultCard(
+        plant = plant,
+        isSelected = false,
+        onClick = {}
+    )
+}
+

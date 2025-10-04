@@ -24,9 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -38,11 +40,23 @@ import com.utn.greenthumb.ui.theme.GreenBackground
 
 @Composable
 fun BaseScreen(
-    navController: NavController,
+    onHome: () -> Unit,
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
-        bottomBar = { BottomBar(navController) }
+        bottomBar = {
+            BottomBar(
+                onHome = onHome,
+                onMyPlants = onMyPlants,
+                onCamera = onCamera,
+                onRemembers = onRemembers,
+                onProfile = onProfile
+            )
+        }
     ) { innerPadding ->
         Column(modifier = Modifier
             .fillMaxSize()
@@ -53,7 +67,13 @@ fun BaseScreen(
 }
 
 @Composable
-fun BottomBar(navController: NavController) {
+fun BottomBar(
+    onHome: () -> Unit,
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,16 +85,16 @@ fun BottomBar(navController: NavController) {
         BottomButton(
             icon = painterResource(R.drawable.home),
             text = stringResource(R.string.home),
-            onClick = {
-                navController.navigate(NavRoutes.Home.route)
-            })
+            onClick = onHome
+        )
         BottomButton(
             icon = painterResource(R.drawable.leafs),
             text = stringResource(R.string.my_plants),
-            onClick = {})
+            onClick = onMyPlants
+        )
         BottomButton(
             icon = painterResource(R.drawable.photo_camera),
-            onClick = {},
+            onClick = onCamera,
             modifier = Modifier
                 .size(72.dp)
                 .offset(y = (-32).dp)
@@ -83,11 +103,12 @@ fun BottomBar(navController: NavController) {
         BottomButton(
             icon = painterResource(R.drawable.reminder),
             text = stringResource(R.string.remembers),
-            onClick = {})
+            onClick = onRemembers
+        )
         BottomButton(
             icon = painterResource(R.drawable.profile),
             text = stringResource(R.string.profile),
-            onClick = {},
+            onClick = onProfile,
         )
     }
 }
@@ -129,6 +150,21 @@ fun RowScope.BottomButton(
                 color = GreenBackground
             )
         }
+
+    }
+}
+
+
+@Preview
+@Composable
+fun BaseScreenPreview() {
+    BaseScreen(
+        onHome = { },
+        onMyPlants = { },
+        onCamera = { },
+        onRemembers = { },
+        onProfile = { }
+    ) {
 
     }
 }
