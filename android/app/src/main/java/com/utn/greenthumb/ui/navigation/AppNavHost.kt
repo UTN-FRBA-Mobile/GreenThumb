@@ -24,6 +24,7 @@ import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.ui.main.camera.CameraScreen
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
+import com.utn.greenthumb.ui.main.my.plants.MyPlantsScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
@@ -132,8 +133,7 @@ fun AppNavHost(
                     },
                     onMyPlants = {
                         Log.d("AppNavHost", "Navigating to My Plants Screen")
-                        // TODO: Navegar a la pantalla de plantas
-                        //navController.navigate(NavRoutes.MyPlants.route)
+                        navController.navigate(NavRoutes.MyPlants.route)
                     },
                     onCamera = {
                         Log.d("AppNavHost", "Navigating to Camera Screen")
@@ -176,6 +176,39 @@ fun AppNavHost(
             )
         }
 
+        // ===== MY PLANTS SCREEN =====
+        composable(
+            route = NavRoutes.MyPlants.route,
+            enterTransition = { slideInVertically(initialOffsetY = { it }) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+        ) {
+            MyPlantsScreen(
+                authViewModel = authViewModel,
+                currentUser = currentUser,
+                onHome = {
+                    Log.d("AppNavHost", "Navigating to Home Screen")
+                    navController.navigate(NavRoutes.Home.route)
+                },
+                onMyPlants = {
+                    Log.d("AppNavHost", "Navigating to My Plants Screen")
+                    navController.navigate(NavRoutes.MyPlants.route)
+                },
+                onCamera = {
+                    Log.d("AppNavHost", "Navigating to Camera Screen")
+                    navController.navigate(NavRoutes.Camera.route)
+                },
+                onRemembers = {
+                    Log.d("AppNavHost", "Navigating to Remembers Screen")
+                    // TODO: Navegar a la pantalla de Recordatorios
+                    //navController.navigate(NavRoutes.Remember.route)
+                },
+                onProfile = {
+                    Log.d("AppNavHost", "Navigating to Profile Screen")
+                    navController.navigate(NavRoutes.Profile.route)
+                }
+            )
+        }
+
 
         // ===== RESULT SCREEN =====
         composable(
@@ -210,8 +243,7 @@ fun AppNavHost(
                     },
                     onMyPlants = {
                         Log.d("AppNavHost", "Navigating to My Plants Screen")
-                        // TODO: Navegar a la pantalla de plantas
-                        //navController.navigate(NavRoutes.MyPlants.route)
+                        navController.navigate(NavRoutes.MyPlants.route)
                     },
                     onCamera = {
                         Log.d("AppNavHost", "Navigating to Camera Screen")
