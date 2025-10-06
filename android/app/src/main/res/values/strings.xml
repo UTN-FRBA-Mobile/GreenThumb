@@ -43,6 +43,7 @@
     <string name="camera_permission_required">Permiso de Cámara Necesario</string>
     <string name="camera_permission_explanation">GreenThumb necesita acceso a tu cámara para identificar plantas. No compartimos tus fotos con terceros.</string>
     <string name="grant_permission">Conceder Permiso</string>
+    <string name="waiting_permission">Esperando permisos de cámara...</string>
     <string name="camera_permission_denied">Permiso Denegado</string>
     <string name="camera_permission_permanently_denied">Has denegado permanentemente el permiso de cámara. Para usar esta función, debes habilitarlo en la configuración de la aplicación.</string>
     <string name="open_settings_instruction">Ve a Configuración → Aplicaciones → GreenThumb → Permisos → Cámara</string>

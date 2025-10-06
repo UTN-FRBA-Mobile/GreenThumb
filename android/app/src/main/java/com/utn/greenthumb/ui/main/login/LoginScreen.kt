@@ -144,6 +144,89 @@ fun LoginScreen(
     }
 }
 
+
+private fun handleGoogleSignInClick(
+    googleSignInClient: GoogleSignInClient,
+    launcher: ActivityResultLauncher<Intent>,
+    onError: (String) -> Unit,
+) {
+    try {
+        val signInIntent = googleSignInClient.signInIntent
+        launcher.launch(signInIntent)
+    } catch (e: Exception) {
+        Log.e("LoginScreen", "Error launching Google Sign-In", e)
+        onError("Error al iniciar el proceso de autenticación")
+    }
+}
+
+
+private fun handleGoogleSignInResult(
+    result: ActivityResult,
+    onSuccess: (GoogleSignInAccount) -> Unit,
+    onError: (Exception) -> Unit
+) {
+    when (result.resultCode) {
+        Activity.RESULT_OK -> {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                Log.d("LoginScreen", "Google Sign-In successful for: ${account.email}")
+                onSuccess(account)
+            } catch (e: ApiException) {
+                Log.e("LoginScreen", "Google Sign-In API Exception", e)
+                onError(e)
+            } catch (e: Exception) {
+                Log.e("LoginScreen", "Google Sign-In Generic Exception", e)
+                onError(e)
+            }
+        }
+        Activity.RESULT_CANCELED -> {
+            Log.d("LoginScreen", "Google Sign-In canceled by user")
+        }
+        else -> {
+            Log.w("LoginScreen", "Unexpected result code: ${result.resultCode}")
+            onError(Exception("Error inesperado en la autenticación"))
+        }
+    }
+}
+
+
+private fun getErrorMessage(
+    exception: Exception,
+    context: Context
+): String {
+    return when (exception) {
+        is ApiException -> {
+            when (exception.statusCode) {
+                CommonStatusCodes.SIGN_IN_REQUIRED ->
+                    context.getString(R.string.error_sign_in_required)
+                CommonStatusCodes.INVALID_ACCOUNT ->
+                    context.getString(R.string.error_invalid_account)
+                CommonStatusCodes.RESOLUTION_REQUIRED ->
+                    context.getString(R.string.error_resolution_required)
+                CommonStatusCodes.NETWORK_ERROR ->
+                    context.getString(R.string.error_network)
+                CommonStatusCodes.INTERNAL_ERROR ->
+                    context.getString(R.string.error_internal)
+                CommonStatusCodes.SERVICE_DISABLED ->
+                    context.getString(R.string.error_service_disabled)
+                CommonStatusCodes.SERVICE_VERSION_UPDATE_REQUIRED ->
+                    context.getString(R.string.error_service_update_required)
+                CommonStatusCodes.CANCELED ->
+                    context.getString(R.string.error_canceled)
+                else -> context.getString(R.string.error_unknown, exception.statusCode)
+            }
+        }
+        is java.net.UnknownHostException ->
+            context.getString(R.string.error_no_internet)
+        is java.net.SocketTimeoutException ->
+            context.getString(R.string.error_timeout)
+        else ->
+            context.getString(R.string.error_generic, exception.message ?: "Desconocido")
+    }
+}
+
+
 @Composable
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
@@ -340,86 +423,6 @@ private fun LoginErrorDialog(
             }
         }
     )
-}
-
-private fun handleGoogleSignInClick(
-    googleSignInClient: GoogleSignInClient,
-    launcher: ActivityResultLauncher<Intent>,
-    onError: (String) -> Unit,
-) {
-    try {
-        val signInIntent = googleSignInClient.signInIntent
-        launcher.launch(signInIntent)
-    } catch (e: Exception) {
-        Log.e("LoginScreen", "Error launching Google Sign-In", e)
-        onError("Error al iniciar el proceso de autenticación")
-    }
-}
-
-private fun handleGoogleSignInResult(
-    result: ActivityResult,
-    onSuccess: (GoogleSignInAccount) -> Unit,
-    onError: (Exception) -> Unit
-) {
-    when (result.resultCode) {
-        Activity.RESULT_OK -> {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                Log.d("LoginScreen", "Google Sign-In successful for: ${account.email}")
-                onSuccess(account)
-            } catch (e: ApiException) {
-                Log.e("LoginScreen", "Google Sign-In API Exception", e)
-                onError(e)
-            } catch (e: Exception) {
-                Log.e("LoginScreen", "Google Sign-In Generic Exception", e)
-                onError(e)
-            }
-        }
-        Activity.RESULT_CANCELED -> {
-            Log.d("LoginScreen", "Google Sign-In canceled by user")
-            onError(Exception("Proceso de autenticación cancelado por el usuario"))
-        }
-        else -> {
-            Log.w("LoginScreen", "Unexpected result code: ${result.resultCode}")
-            onError(Exception("Error inesperado en la autenticación"))
-        }
-    }
-}
-
-private fun getErrorMessage(
-    exception: Exception,
-    context: Context
-): String {
-    return when (exception) {
-        is ApiException -> {
-            when (exception.statusCode) {
-                CommonStatusCodes.SIGN_IN_REQUIRED ->
-                    context.getString(R.string.error_sign_in_required)
-                CommonStatusCodes.INVALID_ACCOUNT ->
-                    context.getString(R.string.error_invalid_account)
-                CommonStatusCodes.RESOLUTION_REQUIRED ->
-                    context.getString(R.string.error_resolution_required)
-                CommonStatusCodes.NETWORK_ERROR ->
-                    context.getString(R.string.error_network)
-                CommonStatusCodes.INTERNAL_ERROR ->
-                    context.getString(R.string.error_internal)
-                CommonStatusCodes.SERVICE_DISABLED ->
-                    context.getString(R.string.error_service_disabled)
-                CommonStatusCodes.SERVICE_VERSION_UPDATE_REQUIRED ->
-                    context.getString(R.string.error_service_update_required)
-                CommonStatusCodes.CANCELED ->
-                    context.getString(R.string.error_canceled)
-                else -> context.getString(R.string.error_unknown, exception.statusCode)
-            }
-        }
-        is java.net.UnknownHostException ->
-            context.getString(R.string.error_no_internet)
-        is java.net.SocketTimeoutException ->
-            context.getString(R.string.error_timeout)
-        else ->
-            context.getString(R.string.error_generic, exception.message ?: "Desconocido")
-    }
 }
 
 

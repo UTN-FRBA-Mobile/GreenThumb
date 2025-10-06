@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -55,17 +56,26 @@ import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.SimilarImage
 import com.utn.greenthumb.domain.model.Taxonomy
 import com.utn.greenthumb.domain.model.Watering
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ResultScreen(
-    imageUri: String?,
-    navController: NavHostController,
     onBackPressed: () -> Unit,
     plantViewModel: PlantViewModel
 ) {
     val uiState by plantViewModel.uiState.collectAsState()
     var selectedPlantId by remember { mutableStateOf<String?>(null) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            CoroutineScope(Dispatchers.Main).launch {
+                plantViewModel.clearResults()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
