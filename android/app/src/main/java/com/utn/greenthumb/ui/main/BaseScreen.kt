@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,16 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.utn.greenthumb.R
-import com.utn.greenthumb.ui.navigation.NavRoutes
 import com.utn.greenthumb.ui.theme.DarkGreen
 import com.utn.greenthumb.ui.theme.Green
 import com.utn.greenthumb.ui.theme.GreenBackground
@@ -125,8 +123,9 @@ fun RowScope.BottomButton(
             .weight(1f)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-            ) { onClick() },
+                indication = rememberRipple(),
+                onClick = onClick
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

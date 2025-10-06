@@ -1,6 +1,9 @@
 package com.utn.greenthumb.ui.navigation
 
 import android.util.Log
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -156,22 +159,36 @@ fun AppNavHost(
         // ===== CAMERA SCREEN =====
         composable(
             route = NavRoutes.Camera.route,
-            enterTransition = { slideInVertically(initialOffsetY = { it }) },
-            exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
         ) {
+
             CameraScreen(
                 plantViewModel = plantViewModel,
                 onNavigateBack = {
                     Log.d("AppNavHost", "Navigating back from camera")
                     navController.popBackStack()
                 },
-                onNavigateToResult = { imageUri ->
-                    Log.d("AppNavHost", "Navigating to result with image: $imageUri")
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("imageUri", imageUri)
-                    Log.d("AppNavHost", "Navigating to results")
-                    navController.navigate(NavRoutes.Result.route)
+                onNavigateToResult = {
+                    Log.d("AppNavHost", "Plants identified, navigating to results")
+                    navController.navigate(NavRoutes.Result.route) {
+                        popUpTo(NavRoutes.Home.route) {
+                            inclusive = false
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = false
+                    }
                 }
             )
         }
@@ -213,16 +230,24 @@ fun AppNavHost(
         // ===== RESULT SCREEN =====
         composable(
             route = NavRoutes.Result.route,
-            enterTransition = { slideInVertically(initialOffsetY = { it }) },
-            exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
         ) {
-                backStackEntry ->
-            val imageUriString: String? = backStackEntry.savedStateHandle.get<String>("imageUri")
-            Log.d("AppNavHost", "Going to Result Screen with this URI: $imageUriString")
             ResultScreen(
-                imageUri = imageUriString,
-                navController = navController,
-                onBackPressed = { navController.popBackStack() },
+                onBackPressed = {
+                    Log.d("AppNavHost", "Navigating back from results")
+                    navController.popBackStack(NavRoutes.Home.route, inclusive = false)
+                },
                 plantViewModel = plantViewModel
             )
         }

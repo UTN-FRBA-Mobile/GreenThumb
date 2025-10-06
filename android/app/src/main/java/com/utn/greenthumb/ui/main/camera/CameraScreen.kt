@@ -51,6 +51,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
+import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.utils.ImageUtils
 import com.utn.greenthumb.viewmodel.PlantViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -66,79 +67,107 @@ import java.io.FileOutputStream
 fun CameraScreen(
     plantViewModel: PlantViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToResult: (String) -> Unit,
+    onNavigateToResult: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val uiState by plantViewModel.uiState.collectAsState()
 
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
     )
 
+    // Maneja diferentes estados de la pantalla
     var showPermissionDeniedDialog by remember { mutableStateOf(false) }
     var showPermanentlyDeniedDialog by remember { mutableStateOf(false) }
     var isProcessingImage by remember { mutableStateOf(false) }
+    var hasNavigatedToResult  by remember { mutableStateOf(false) }
 
     // Camera Launcher
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         if (bitmap != null) {
+            Log.d("CameraScreen", "Photo captured successfully")
+            isProcessingImage = true
             handleCapturedImage(
                 bitmap = bitmap,
                 context = context,
                 plantViewModel = plantViewModel,
-                onSuccess = { imageUri ->
-                    onNavigateToResult(imageUri)
-                },
                 onError = { error ->
+                    isProcessingImage = false
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                },
-                onProcessingStart = { isProcessingImage = true },
-                onProcessingEnd = { isProcessingImage = false }
+                }
             )
         } else {
-            Toast.makeText(context, "Error al capturar la foto",
-                Toast.LENGTH_SHORT).show()
+            Log.d("CameraScreen", "Photo capture cancelled by user")
+            onNavigateBack()
         }
     }
 
-    // Verifica los permisos de Cámara al iniciar la pantalla
+    // Limpiar los resultados obtenidos previamente
     LaunchedEffect(Unit) {
-        when {
-            cameraPermissionState.status.isGranted -> {
-                cameraLauncher.launch(null)
+        if (uiState is UiState.Success || uiState is UiState.Error) {
+            plantViewModel.clearResults()
+        }
+    }
+
+    // Maneja los estados de la API de consulta externa
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiState.Success -> {
+                if (!hasNavigatedToResult) {
+                    Log.d("CameraScreen", "Plants identified successfully, navigating to results")
+                    hasNavigatedToResult = true
+                    onNavigateToResult()
+                }
             }
-            cameraPermissionState.status.shouldShowRationale -> {
-                showPermissionDeniedDialog = true
+            is UiState.Error -> {
+                Log.e("CameraScreen", "Error identifying plants: ${(uiState as UiState.Error).message}")
+                isProcessingImage = false
+                hasNavigatedToResult = false
+                Toast.makeText(
+                    context,
+                    (uiState as UiState.Error).message,
+                    Toast.LENGTH_LONG
+                ).show()
             }
-            else -> {
-                cameraPermissionState.launchPermissionRequest()
+            is UiState.Loading -> {
+                Log.d("CameraScreen", "Loading state detected")
+                isProcessingImage = true
+            }
+            UiState.Idle -> {
+                Log.d("CameraScreen", "Idle state")
+                if (!isProcessingImage) {
+                    hasNavigatedToResult = false
+                }
             }
         }
     }
 
-    // Verifica el estado de los permisos de Cámara
+    // Manejar permisos de Cámara
     LaunchedEffect(cameraPermissionState.status) {
         when {
             cameraPermissionState.status.isGranted -> {
                 showPermissionDeniedDialog = false
                 showPermanentlyDeniedDialog = false
-                cameraLauncher.launch(null)
             }
-            !cameraPermissionState.status.isGranted &&
-                    !cameraPermissionState.status.shouldShowRationale -> {
-                        showPermanentlyDeniedDialog = true
+            cameraPermissionState.status.shouldShowRationale -> {
+                showPermissionDeniedDialog = true
+            }
+            !cameraPermissionState.status.isGranted -> {
+                cameraPermissionState.launchPermissionRequest()
             }
         }
     }
 
     CameraScreenContent(
         isProcessingImage = isProcessingImage,
+        hasPermission = cameraPermissionState.status.isGranted,
         onTakePhoto = {
-            if (cameraPermissionState.status.isGranted) {
+            if (cameraPermissionState.status.isGranted && !isProcessingImage) {
                 cameraLauncher.launch(null)
-            } else {
+            } else if (!cameraPermissionState.status.isGranted){
                 cameraPermissionState.launchPermissionRequest()
             }
         },
@@ -165,7 +194,59 @@ fun CameraScreen(
             }
         )
     }
+}
 
+
+private fun handleCapturedImage(
+    bitmap: Bitmap,
+    context: Context,
+    plantViewModel: PlantViewModel,
+    onError: (String) -> Unit
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val base64Image = ImageUtils.bitmapToBase64(bitmap)
+            Log.d("CameraScreen", "Image converted in Base64: $base64Image")
+
+            val location = getCurrentLocation(context)
+
+            val request = IdentificationRequest(
+                images = listOf(base64Image),
+                longitude = location?.longitude ?: 0.0,
+                latitude = location?.latitude ?: 0.0,
+                similarImages = true
+            )
+
+            Log.d("CameraScreen", "Sending image to PlantAPI")
+
+            withContext(Dispatchers.Main) {
+                plantViewModel.identifyPlant(request)
+            }
+
+        } catch (e: Exception) {
+            Log.e("CameraScreen", "Error processing image", e)
+            withContext(Dispatchers.Main) {
+                onError("Error al procesar la imagen: ${e.message}")
+            }
+        }
+    }
+}
+
+
+private fun getCurrentLocation(
+    context: Context
+): Location? {
+    // TODO: Implementar obtención de ubicación real
+    // Por ahora retorna null, puedes implementar con FusedLocationProviderClient
+    return null
+}
+
+
+private fun Context.openAppSettings() {
+    Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null)
+    ).also(::startActivity)
 }
 
 
@@ -173,6 +254,7 @@ fun CameraScreen(
 @Composable
 private fun CameraScreenContent(
     isProcessingImage: Boolean,
+    hasPermission: Boolean,
     onTakePhoto: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -204,10 +286,16 @@ private fun CameraScreenContent(
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            if (isProcessingImage) {
-                ProcessingImageContent()
-            } else {
-                ReadyToCaptureContent(onTakePhoto = onTakePhoto)
+            when {
+                isProcessingImage -> {
+                    ProcessingImageContent()
+                }
+                hasPermission -> {
+                    ReadyToCaptureContent(onTakePhoto = onTakePhoto)
+                }
+                else -> {
+                    WaitingForPermissionContent()
+                }
             }
         }
     }
@@ -298,6 +386,25 @@ private fun ReadyToCaptureContent(
 
 
 @Composable
+private fun WaitingForPermissionContent(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = stringResource(R.string.waiting_permission),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+@Composable
 private fun PermissionDeniedDialog(
     onDismiss: () -> Unit,
     onRequestPermission: () -> Unit
@@ -371,85 +478,4 @@ private fun PermanentlyDeniedDialog(
             }
         }
     )
-}
-
-
-private fun handleCapturedImage(
-    bitmap: Bitmap,
-    context: Context,
-    plantViewModel: PlantViewModel,
-    onSuccess: (String) -> Unit,
-    onError: (String) -> Unit,
-    onProcessingStart: () -> Unit,
-    onProcessingEnd: () -> Unit
-) {
-    onProcessingStart()
-
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            // Guardar bitmap temporalmente
-            val imageUri = saveBitmapToCache(context, bitmap)
-
-            // Convertir a Base64
-            val base64Image = ImageUtils.bitmapToBase64(bitmap)
-
-            // Obtener ubicación (opcional)
-            val location = getCurrentLocation(context)
-
-            // Crear request
-            val request = IdentificationRequest(
-                images = listOf(base64Image),
-                longitude = location?.longitude ?: 0.0,
-                latitude = location?.latitude ?: 0.0,
-                similarImages = true
-            )
-
-            Log.d("CameraScreen", "Enviando imagen al ViewModel")
-
-            withContext(Dispatchers.Main) {
-                plantViewModel.identifyPlant(request)
-                onProcessingEnd()
-                onSuccess(imageUri.toString())
-            }
-
-            Log.d("CameraScreen", "Imagen enviada al ViewModel")
-
-        } catch (e: Exception) {
-            Log.e("CameraScreen", "Error processing image", e)
-            withContext(Dispatchers.Main) {
-                onProcessingEnd()
-                onError("Error al procesar la imagen: ${e.message}")
-            }
-        }
-    }
-}
-
-
-private fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
-    val file = File(context.cacheDir, "plant_${System.currentTimeMillis()}.jpg")
-    FileOutputStream(file).use { out ->
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-    }
-    return FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        file
-    )
-}
-
-
-private fun getCurrentLocation(
-    context: Context
-): Location? {
-    // TODO: Implementar obtención de ubicación real
-    // Por ahora retorna null, puedes implementar con FusedLocationProviderClient
-    return null
-}
-
-
-private fun Context.openAppSettings() {
-    Intent(
-        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-        Uri.fromParts("package", packageName, null)
-    ).also(::startActivity)
 }

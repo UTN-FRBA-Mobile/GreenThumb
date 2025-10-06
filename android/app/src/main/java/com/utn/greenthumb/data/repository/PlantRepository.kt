@@ -10,7 +10,9 @@ import javax.inject.Inject
 class PlantRepository @Inject constructor(
     private val api: PlantIdApiService
 ) {
-    suspend fun identifyPlant(request: IdentificationRequest): List<Plant> {
+    suspend fun identifyPlant(
+        request: IdentificationRequest
+    ): List<Plant> {
 
         val dto = MockResponse.mockIdentificationResponse()
         // TODO: Solamente para mockear esto se comenta
@@ -18,7 +20,6 @@ class PlantRepository @Inject constructor(
 //            details = DEFAULT_DETAILS,
 //            language = DEFAULT_LANGUAGE,
 //            request = request)
-
 
         return PlantMapper.fromDto(dto)
     }
