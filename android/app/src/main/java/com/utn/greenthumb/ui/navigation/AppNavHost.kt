@@ -32,6 +32,7 @@ import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.ui.main.camera.CameraScreen
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
+import com.utn.greenthumb.ui.main.my.plants.MyPlantsScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
@@ -182,6 +183,26 @@ fun AppNavHost(
                     }
                 }
             )
+        }
+
+        // ===== MY PLANTS SCREEN =====
+        composable(
+            route = NavRoutes.MyPlants.route,
+            enterTransition = { slideInVertically(initialOffsetY = { it }) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+        ) {
+            ScreenWithBottomBar(
+                currentRoute = currentRoute ?: NavRoutes.Profile.route,
+                navController = navController
+            ) { navigation ->
+                MyPlantsScreen(
+                    onHome = navigation::onHome,
+                    onMyPlants = navigation::onMyPlants,
+                    onCamera = navigation::onCamera,
+                    onRemembers = navigation::onRemembers,
+                    onProfile = navigation::onProfile,
+                )
+            }
         }
 
 
