@@ -59,6 +59,7 @@ import com.utn.greenthumb.domain.model.Watering
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -68,6 +69,9 @@ fun ResultScreen(
 ) {
     val uiState by plantViewModel.uiState.collectAsState()
     var selectedPlantId by remember { mutableStateOf<String?>(null) }
+
+    var isProcessing by remember { mutableStateOf(false) }
+    var scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
         onDispose {
@@ -82,7 +86,10 @@ fun ResultScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.identification_results)) },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(
+                        onClick = onBackPressed,
+                        enabled = !isProcessing
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back_navigation)
@@ -118,9 +125,16 @@ fun ResultScreen(
                                 selectedPlantId = plant.id
                             },
                             onSavePlant = { plant ->
-                                // TODO: Implementar guardado en BD
-                                // plantViewModel.savePlant(plant)
-                                // navController.navigate("my_plants")
+                                scope.launch {
+                                    isProcessing = true
+                                    // TODO: Implementar guardado en BD
+                                    Log.d("ResultScreen", "Saving plant: $plant")
+                                    withContext(Dispatchers.IO) {
+                                        //plantViewModel.savePlant(plant)
+                                    }
+                                    // navController.navigate("my_plants")
+                                }
+                                isProcessing = false
                             },
                             onBackPressed = onBackPressed
                         )

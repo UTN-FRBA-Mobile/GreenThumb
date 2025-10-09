@@ -1,5 +1,6 @@
 package com.utn.greenthumb.ui.navigation
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -8,6 +9,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.ui.main.camera.CameraScreen
@@ -31,7 +36,10 @@ import com.utn.greenthumb.ui.main.profile.ProfileScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
+import com.utn.greenthumb.R
 
+
+@SuppressLint("RestrictedApi")
 @Composable
 fun AppNavHost(
     authViewModel: AuthViewModel,
@@ -39,6 +47,8 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     val isUserLoggedIn by authViewModel.isUserLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -96,7 +106,9 @@ fun AppNavHost(
                 onLoginSuccess = {
                     Log.d("AppNavHost", "Login successful, navigating to home")
                     navController.navigate(NavRoutes.Home.route) {
-                        popUpTo(NavRoutes.Login.route) { inclusive = true }
+                        popUpTo(NavRoutes.Login.route) {
+                            inclusive = true
+                        }
                     }
                 }
             )
@@ -109,49 +121,28 @@ fun AppNavHost(
             enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
         )  {
+            val backStackState = navController.currentBackStack.collectAsState()
+
             if (!isUserLoggedIn || currentUser == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Verificando autenticación...",
-                            style = MaterialTheme.typography.bodyMedium
+                LoadingAuthContent()
+            } else {
+                key(currentUser!!.uid, backStackState.value.size) {
+                    ScreenWithBottomBar(
+                        currentRoute = currentRoute ?: NavRoutes.Home.route,
+                        navController = navController
+                    ) { navigation ->
+                        HomeScreen(
+                            authViewModel = authViewModel,
+                            currentUser = currentUser,
+                            onHome = navigation::onHome,
+                            onMyPlants = navigation::onMyPlants,
+                            onCamera = navigation::onCamera,
+                            onRemembers = navigation::onRemembers,
+                            onProfile = navigation::onProfile
                         )
                     }
                 }
-            } else {
-                HomeScreen(
-                    authViewModel = authViewModel,
-                    currentUser = currentUser,
-                    onHome = {
-                        Log.d("AppNavHost", "Navigating to Home Screen")
-                        navController.navigate(NavRoutes.Home.route)
-                    },
-                    onMyPlants = {
-                        Log.d("AppNavHost", "Navigating to My Plants Screen")
-                        // TODO: Navegar a la pantalla de plantas
-                        //navController.navigate(NavRoutes.MyPlants.route)
-                    },
-                    onCamera = {
-                        Log.d("AppNavHost", "Navigating to Camera Screen")
-                        navController.navigate(NavRoutes.Camera.route)
-                    },
-                    onRemembers = {
-                        Log.d("AppNavHost", "Navigating to Remembers Screen")
-                        // TODO: Navegar a la pantalla de Recordatorios
-                        //navController.navigate(NavRoutes.Remember.route)
-                    },
-                    onProfile = {
-                        Log.d("AppNavHost", "Navigating to Profile Screen")
-                        navController.navigate(NavRoutes.Profile.route)
-                    }
-                )
+
             }
         }
 
@@ -182,7 +173,7 @@ fun AppNavHost(
                 onNavigateToResult = {
                     Log.d("AppNavHost", "Plants identified, navigating to results")
                     navController.navigate(NavRoutes.Result.route) {
-                        popUpTo(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.Camera.route) {
                             inclusive = false
                             saveState = true
                         }
@@ -213,7 +204,10 @@ fun AppNavHost(
             ResultScreen(
                 onBackPressed = {
                     Log.d("AppNavHost", "Navigating back from results")
-                    navController.popBackStack(NavRoutes.Home.route, inclusive = false)
+                    navController.popBackStack(
+                        route = NavRoutes.Home.route,
+                        inclusive = false
+                    )
                 },
                 plantViewModel = plantViewModel
             )
@@ -226,42 +220,60 @@ fun AppNavHost(
             enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
         ) {
-            if (currentUser != null) {
-                ProfileScreen(
-                    user = currentUser,
-                    onHome = {
-                        Log.d("AppNavHost", "Navigating to Home Screen")
-                        navController.navigate(NavRoutes.Home.route)
-                    },
-                    onMyPlants = {
-                        Log.d("AppNavHost", "Navigating to My Plants Screen")
-                        // TODO: Navegar a la pantalla de plantas
-                        //navController.navigate(NavRoutes.MyPlants.route)
-                    },
-                    onCamera = {
-                        Log.d("AppNavHost", "Navigating to Camera Screen")
-                        navController.navigate(NavRoutes.Camera.route)
-                    },
-                    onRemembers = {
-                        Log.d("AppNavHost", "Navigating to Remembers Screen")
-                        // TODO: Navegar a la pantalla de Recordatorios
-                        //navController.navigate(NavRoutes.Remember.route)
-                    },
-                    onProfile = {
-                        Log.d("AppNavHost", "Navigating to Profile Screen")
-                        navController.navigate(NavRoutes.Profile.route)
-                    },
-                    onNavigateBack = { navController.popBackStack() },
-                    onLogout = { authViewModel.logout() }
-                )
+            if (!isUserLoggedIn || currentUser == null) {
+                RedirectToLogin(navController)
             } else {
-                // Redireccionar a login si no hay usuario
-                LaunchedEffect(Unit) {
-                    navController.navigate(NavRoutes.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                ScreenWithBottomBar(
+                    currentRoute = currentRoute ?: NavRoutes.Profile.route,
+                    navController = navController
+                ) { navigation ->
+                    ProfileScreen(
+                        user = currentUser,
+                        onHome = navigation::onHome,
+                        onMyPlants = navigation::onMyPlants,
+                        onCamera = navigation::onCamera,
+                        onRemembers = navigation::onRemembers,
+                        onProfile = navigation::onProfile,
+                        onNavigateBack = { navController.popBackStack() },
+                        onLogout = { authViewModel.logout() }
+                    )
                 }
             }
+        }
+    }
+}
+
+
+
+// ===== COMPONENTES EXTRAS =====
+@Composable
+private fun LoadingAuthContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.verifying_authentication),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun RedirectToLogin(
+    navController: NavController
+) {
+    LaunchedEffect(Unit) {
+        navController.navigate(NavRoutes.Login.route) {
+            popUpTo(0) { inclusive = true }
         }
     }
 }

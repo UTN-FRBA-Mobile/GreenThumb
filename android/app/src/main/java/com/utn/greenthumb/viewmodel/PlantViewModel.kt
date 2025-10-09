@@ -8,11 +8,13 @@ import com.utn.greenthumb.data.repository.PlantRepository
 import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 import javax.inject.Inject
 
@@ -21,16 +23,27 @@ class PlantViewModel @Inject constructor(
     private val repository: PlantRepository
 ) : BaseViewModel<List<Plant>>() {
 
+    private var isIdentifying = false
 
     fun identifyPlant(request: IdentificationRequest) {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            // TODO: Solamente para mostrar la pantalla de Loading
-            delay(3000)
 
+        if (isIdentifying) {
+            Log.d("PlantViewModel", "Already identifying...")
+            return
+        }
+
+        viewModelScope.launch {
             try {
+                isIdentifying = true
+                _uiState.value = UiState.Loading
+                // TODO: Solamente para mostrar la pantalla de Loading
+                delay(3000)
+
                 Log.d("PlantViewModel", "Sending image to PlantAPI")
-                val result = repository.identifyPlant(request)
+                val result = withContext(Dispatchers.IO) {
+                    repository.identifyPlant(request)
+                }
+
                 if (result.isNotEmpty()) {
                     Log.d("PlantViewModel", "Plants identified: $result")
                     _uiState.value = UiState.Success(result)
@@ -40,7 +53,11 @@ class PlantViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("PlantViewModel", "Error identificando planta", e)
-                _uiState.value = UiState.Error("Error: ${e.localizedMessage}")            }
+                _uiState.value = UiState.Error("Error: ${e.localizedMessage}")
+            } finally {
+                isIdentifying = false
+            }
+
         }
     }
 

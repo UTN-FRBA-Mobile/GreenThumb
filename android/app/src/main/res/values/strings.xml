@@ -8,6 +8,7 @@
     <string name="login_body">Con GreenThumb podrás obtener información sobre tus plantas y sus cuidados, solo con una foto. Además podrás generar recordatorios de riego y darles un cuidado ideal</string>
     <string name="login_google">Iniciar sesión con Google</string>
     <string name="signing_in">Iniciando sesión...</string>
+    <string name="verifying_authentication">Verificando autenticación...</string>
     <string name="login_error_title">Error de autenticación</string>
     <string name="login_error_suggestion">Verifica tu conexión a internet e intenta nuevamente.</string>
     <string name="retry">Reintentar</string>

@@ -13,6 +13,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -35,6 +36,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,7 +47,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -58,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -70,7 +73,7 @@ import com.utn.greenthumb.domain.model.SimilarImage
 import com.utn.greenthumb.domain.model.Taxonomy
 import com.utn.greenthumb.domain.model.Watering
 import androidx.core.net.toUri
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 
 @Composable
 fun PlantResultCard(
@@ -78,16 +81,22 @@ fun PlantResultCard(
     isSelected: Boolean = false,
     onClick: () -> Unit = {}
     ) {
+
+    val elevation by animateDpAsState(
+        targetValue = if (isSelected) 8.dp else 2.dp,
+        label = "elevation"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(),
+                indication = null,
                 onClick = onClick,
             ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 2.dp
+            defaultElevation = elevation
         ),
         border = if (isSelected) {
             BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
@@ -114,16 +123,16 @@ fun PlantResultCard(
 
             // Nombres comunes
             if (plant.commonNames.isNotEmpty()) {
-                    CommonNamesSection(
-                        commonNames = plant.commonNames
-                    )
+                CommonNamesSection(
+                    commonNames = plant.commonNames
+                )
             }
 
             // Imágenes similares
             if (plant.similarImages.isNotEmpty()) {
-                    SimilarImagesSection(
-                        images = plant.similarImages
-                    )
+                SimilarImagesSection(
+                    images = plant.similarImages
+                )
             }
 
             // Sinónimos
@@ -190,8 +199,7 @@ fun PlantResultCard(
 private fun PlantHeader(
     name: String,
     probability: Double,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier
+    isSelected: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -299,13 +307,11 @@ private fun CommonNamesSection(
             title = stringResource(R.string.common_names)
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            commonNames.forEach { name ->
+            items(commonNames) { name ->
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
@@ -333,21 +339,25 @@ private fun SimilarImagesSection(
             title = stringResource(R.string.similar_images)
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            images.forEach { image ->
+            items(
+                items = images,
+                key = { it.url }
+            ) { image ->
                 Surface(
                     modifier = Modifier
-                        .size(80.dp),
+                        .size(80.dp)
+                        .clickable {
+                            // TODO: Abrir en pantalla completa
+                        },
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Image(
-                        painter = rememberImagePainter(data = image.url),
+                        painter = rememberAsyncImagePainter(model = image.url),
                         contentDescription = "Imagen similar",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -374,7 +384,7 @@ private fun ExpandableSectionContainer(
                 .fillMaxWidth()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple(),
+                    indication = null,
                     onClick = {
                         isExpanded = !isExpanded
                     }
@@ -404,15 +414,20 @@ private fun ExpandableSectionContainer(
             )
         }
 
-        AnimatedContent(
-            targetState = isExpanded,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(300)) togetherWith
-                        fadeOut(animationSpec = tween(300))
-            },
-            label = "Expandir Contenido"
-        ) { expanded ->
-            if (expanded) expandedContent() else collapsedContent()
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = expandVertically(
+                animationSpec = tween(300, easing = EaseInOut)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = shrinkVertically(
+                animationSpec = tween(300, easing = EaseInOut)
+            ) + fadeOut(animationSpec = tween(300))
+        ) {
+            expandedContent()
+        }
+
+        if (!isExpanded) {
+            collapsedContent()
         }
 
     }
@@ -432,7 +447,7 @@ private fun TaxonomySection(
                 .fillMaxWidth()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple(),
+                    indication = null,
                     onClick = {
                         isExpanded = !isExpanded
                     }
@@ -549,6 +564,7 @@ private fun MoreInfoSection(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -562,17 +578,33 @@ private fun MoreInfoSection(
                 .fillMaxWidth()
                 .clickable (
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple(),
+                    indication = null,
                     onClick = {
                         try {
-                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                            if (intent.resolveActivity(context.packageManager) != null) {
-                                context.startActivity(intent)
-                            } else {
-                                errorMessage =
-                                    "No hay aplicaciones disponibles para abrir enlaces web. Por favor, instala un navegador."
+                            if (url.isBlank()) {
+                                errorMessage = "URL no válida"
                                 showErrorDialog = true
+                                return@clickable
                             }
+
+                            try {
+                                uriHandler.openUri(url)
+                            } catch (e: Exception) {
+                                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                if (intent.resolveActivity(context.packageManager) != null) {
+                                    context.startActivity(intent)
+                                } else {
+                                    errorMessage =
+                                        "No hay aplicaciones disponibles para abrir enlaces web. Por favor, instala un navegador."
+                                    showErrorDialog = true
+                                }
+
+                            }
+
+                            Log.d("MoreInfoSection", "Successfully opened URL: $url")
+
                         } catch (e: Exception) {
                             Log.e("PlantResultCard", "Error opening URL: $url", e)
                             errorMessage = when (e) {
@@ -642,7 +674,11 @@ private fun MoreInfoSection(
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             val clip = ClipData.newPlainText("Plant URL", url)
                             clipboard.setPrimaryClip(clip)
-                            Toast.makeText(context, "URL copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "URL copiada al portapapeles",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     ) {
                         Text(stringResource(R.string.copy_url))
