@@ -1,22 +1,10 @@
 package com.utn.greenthumb.ui.main.result
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
@@ -45,17 +37,30 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import com.utn.greenthumb.domain.model.Plant
-import com.utn.greenthumb.state.UiState
-import com.utn.greenthumb.viewmodel.PlantViewModel
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.utn.greenthumb.R
-import com.utn.greenthumb.domain.model.SimilarImage
+import com.utn.greenthumb.domain.model.Image
+import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.domain.model.Taxonomy
 import com.utn.greenthumb.domain.model.Watering
+import com.utn.greenthumb.state.UiState
+import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.viewmodel.PlantViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -84,6 +89,7 @@ fun ResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
                 title = { Text(stringResource(R.string.identification_results)) },
                 navigationIcon = {
                     IconButton(
@@ -122,7 +128,7 @@ fun ResultScreen(
                             plants = state.data,
                             selectedPlantId = selectedPlantId,
                             onPlantSelected = { plant ->
-                                selectedPlantId = plant.id
+                                selectedPlantId = plant.name
                             },
                             onSavePlant = { plant ->
                                 scope.launch {
@@ -228,11 +234,11 @@ private fun SuccessContent(
 
         items(
             items = plants,
-            key = { it.id }
+            key = { it.name }
         ) { plant ->
             PlantResultCard(
                 plant = plant,
-                isSelected = plant.id == selectedPlantId,
+                isSelected = plant.name == selectedPlantId,
                 onClick = { onPlantSelected(plant) }
             )
         }
@@ -244,7 +250,7 @@ private fun SuccessContent(
                 Column {
                     Button(
                         onClick = {
-                            plants.find { it.id == selectedPlantId }?.let { onSavePlant(it) }
+                            plants.find { it.name == selectedPlantId }?.let { onSavePlant(it) }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -452,9 +458,8 @@ private fun SuccessContentPreview(
         id = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -476,8 +481,7 @@ private fun SuccessContentPreview(
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -488,9 +492,8 @@ private fun SuccessContentPreview(
         id = "662e0f8d4202aabc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -512,8 +515,7 @@ private fun SuccessContentPreview(
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -539,9 +541,8 @@ private fun SuccessContentSelectedPreview(
             id = "662e0f8d4202acfc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
-            similarImages = listOf(SimilarImage(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-                similarity = 0.789)),
+            images = listOf(Image(
+                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
             commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
             synonyms = listOf(                                    "Crataegus bibas",
                 "Eriobotrya fragrans",
@@ -563,8 +564,7 @@ private fun SuccessContentSelectedPreview(
                 phylum = "Tracheophyta",
                 kingdom = "Plantae"
             ),
-            url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            rank = "species",
+            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
             description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
             watering = Watering(
                 min = 2,
@@ -575,9 +575,8 @@ private fun SuccessContentSelectedPreview(
             id = "662e0f8d4202aabc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
-            similarImages = listOf(SimilarImage(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-                similarity = 0.789)),
+            images = listOf(Image(
+                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
             commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
             synonyms = listOf(                                    "Crataegus bibas",
                 "Eriobotrya fragrans",
@@ -599,8 +598,7 @@ private fun SuccessContentSelectedPreview(
                 phylum = "Tracheophyta",
                 kingdom = "Plantae"
             ),
-            url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            rank = "species",
+            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
             description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
             watering = Watering(
                 min = 2,

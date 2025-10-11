@@ -1,17 +1,25 @@
 package com.utn.greenthumb.client
 
 import com.utn.greenthumb.BuildConfig
-import com.utn.greenthumb.client.services.PlantIdApiService
+import com.utn.greenthumb.client.services.PlantsApiService
+import com.utn.greenthumb.data.repository.AuthRepository
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object PlantIdApiClient {
+object PlantsApiClient {
+
+    lateinit var authRepository: AuthRepository
+
+    fun init(authRepository: AuthRepository) {
+        this.authRepository = authRepository
+    }
 
     private val authInterceptor = Interceptor { chain ->
+        val userId = authRepository.getCurrentUser()?.uid ?: ""
         val newRequest = chain.request().newBuilder()
-            .addHeader("Api-Key", BuildConfig.PLANT_ID_API_KEY)
+            .addHeader("x-client-id", userId)
             .build()
         chain.proceed(newRequest)
     }
@@ -21,10 +29,10 @@ object PlantIdApiClient {
         .build()
 
     val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BuildConfig.PLANT_ID_BASE_URL)
+        .baseUrl(BuildConfig.PLANT_BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val api: PlantIdApiService = retrofit.create(PlantIdApiService::class.java)
+    val api: PlantsApiService = retrofit.create(PlantsApiService::class.java)
 }

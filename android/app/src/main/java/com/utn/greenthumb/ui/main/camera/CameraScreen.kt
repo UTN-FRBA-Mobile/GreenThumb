@@ -9,7 +9,6 @@ import android.net.Uri
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import com.google.accompanist.permissions.rememberPermissionState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -37,29 +36,35 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.state.UiState
+import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import com.utn.greenthumb.utils.ImageUtils
 import com.utn.greenthumb.viewmodel.PlantViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -161,19 +166,21 @@ fun CameraScreen(
         }
     }
 
-    CameraScreenContent(
-        isProcessingImage = isProcessingImage,
-        hasPermission = cameraPermissionState.status.isGranted,
-        onTakePhoto = {
-            if (cameraPermissionState.status.isGranted && !isProcessingImage) {
-                cameraLauncher.launch(null)
-            } else if (!cameraPermissionState.status.isGranted){
-                cameraPermissionState.launchPermissionRequest()
-            }
-        },
-        onNavigateBack = onNavigateBack,
-        modifier = modifier
-    )
+    GreenThumbTheme {
+        CameraScreenContent(
+            isProcessingImage = isProcessingImage,
+            hasPermission = cameraPermissionState.status.isGranted,
+            onTakePhoto = {
+                if (cameraPermissionState.status.isGranted && !isProcessingImage) {
+                    cameraLauncher.launch(null)
+                } else if (!cameraPermissionState.status.isGranted){
+                    cameraPermissionState.launchPermissionRequest()
+                }
+            },
+            onNavigateBack = onNavigateBack,
+            modifier = modifier
+        )
+    }
 
     if (showPermissionDeniedDialog) {
         PermissionDeniedDialog(
@@ -214,7 +221,6 @@ private fun handleCapturedImage(
                 images = listOf(base64Image),
                 longitude = location?.longitude ?: 0.0,
                 latitude = location?.latitude ?: 0.0,
-                similarImages = true
             )
 
             Log.d("CameraScreen", "Sending image to PlantAPI")
@@ -262,6 +268,7 @@ private fun CameraScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
                 title = {
                     Text(stringResource(R.string.camera_screen_title))
                 },
