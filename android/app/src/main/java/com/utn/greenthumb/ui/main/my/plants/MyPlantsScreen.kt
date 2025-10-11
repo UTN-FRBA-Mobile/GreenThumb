@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.ui.main.BaseScreen
+import com.utn.greenthumb.ui.theme.GreenBackground
 
 import com.utn.greenthumb.viewmodel.AuthViewModel
 
@@ -78,7 +80,10 @@ fun MyPlantsScreenContent(
 
 ) {
     Scaffold(topBar = {
-        TopAppBar(title = { Text("GreenThumb 🌿") })
+        TopAppBar(
+            title = { Text("GreenThumb 🌿") },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground)
+        )
     }
     ) { padding ->
         // Título de la sección

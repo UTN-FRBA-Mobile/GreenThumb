@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import coil.request.ImageRequest
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.ui.main.BaseScreen
+import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 
 
@@ -106,6 +108,7 @@ private fun ProfileScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
                 title = {
                     Text(text = stringResource(R.string.profile)) },
                 navigationIcon = {

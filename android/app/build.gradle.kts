@@ -20,8 +20,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "PLANT_ID_API_KEY", "\"${project.properties["PLANT_ID_API_KEY"]}\"")
-        buildConfigField("String", "PLANT_ID_BASE_URL", "\"${project.properties["PLANT_ID_BASE_URL"]}\"")
+        buildConfigField("String", "PLANT_BASE_URL", "\"${project.properties["PLANT_BASE_URL"]}\"")
     }
 
     buildTypes {

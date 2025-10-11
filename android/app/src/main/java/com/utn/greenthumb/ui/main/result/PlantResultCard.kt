@@ -1,6 +1,5 @@
 package com.utn.greenthumb.ui.main.result
 
-import androidx.compose.ui.tooling.preview.Preview
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -9,8 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.EaseInOut
@@ -22,17 +19,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,13 +34,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -61,17 +46,17 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -79,19 +64,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.utn.greenthumb.R
-import com.utn.greenthumb.domain.model.Plant
-import com.utn.greenthumb.domain.model.SimilarImage
-import com.utn.greenthumb.domain.model.Taxonomy
-import com.utn.greenthumb.domain.model.Watering
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.utn.greenthumb.R
+import com.utn.greenthumb.domain.model.Image
+import com.utn.greenthumb.domain.model.Plant
+import com.utn.greenthumb.domain.model.Taxonomy
+import com.utn.greenthumb.domain.model.Watering
+import com.utn.greenthumb.ui.theme.PurpleCard
 
 @Composable
 fun PlantResultCard(
@@ -124,7 +109,7 @@ fun PlantResultCard(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
             } else {
-                MaterialTheme.colorScheme.surface
+                PurpleCard
             }
         )
     ) {
@@ -147,9 +132,9 @@ fun PlantResultCard(
             }
 
             // Imágenes similares
-            if (plant.similarImages.isNotEmpty()) {
+            if (plant.images.isNotEmpty()) {
                 SimilarImagesSection(
-                    images = plant.similarImages,
+                    images = plant.images,
                     onImageClick = onImageClick
                 )
             }
@@ -207,7 +192,7 @@ fun PlantResultCard(
 
             // URL
             MoreInfoSection(
-                url = plant.url
+                url = plant.moreInfoUrl
             )
         }
     }
@@ -349,7 +334,7 @@ private fun CommonNamesSection(
 
 @Composable
 private fun SimilarImagesSection(
-    images: List<SimilarImage>,
+    images: List<Image>,
     modifier: Modifier = Modifier,
     onImageClick: ((imageIndex: Int, images: List<String>) -> Unit)? = null
 ) {
@@ -738,12 +723,12 @@ private fun SectionTitle(
 @Composable
 fun PlantResultCardPreview() {
     val plant = Plant(
-        id = "662e0f8d4202acfc",
+        id = null,
+        externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -765,8 +750,7 @@ fun PlantResultCardPreview() {
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -786,12 +770,12 @@ fun PlantResultCardPreview() {
 @Composable
 fun PlantResultCardSelectedPreview() {
     val plant = Plant(
-        id = "662e0f8d4202acfc",
+        id = null,
+        externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -813,8 +797,7 @@ fun PlantResultCardSelectedPreview() {
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -834,12 +817,12 @@ fun PlantResultCardSelectedPreview() {
 @Composable
 fun PlantResultCardHighProbabilityPreview() {
     val plant = Plant(
-        id = "662e0f8d4202acfc",
+        id = null,
+        externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.99,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -861,8 +844,7 @@ fun PlantResultCardHighProbabilityPreview() {
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -882,12 +864,12 @@ fun PlantResultCardHighProbabilityPreview() {
 @Composable
 fun PlantResultCardMediumProbabilityPreview() {
     val plant = Plant(
-        id = "662e0f8d4202acfc",
+        id = null,
+        externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.70,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -909,8 +891,7 @@ fun PlantResultCardMediumProbabilityPreview() {
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
@@ -930,12 +911,12 @@ fun PlantResultCardMediumProbabilityPreview() {
 @Composable
 fun PlantResultCardLowProbabilityPreview() {
     val plant = Plant(
-        id = "662e0f8d4202acfc",
+        id = null,
+        externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.25,
-        similarImages = listOf(SimilarImage(
-            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg",
-            similarity = 0.789)),
+        images = listOf(Image(
+            url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
         commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
         synonyms = listOf(                                    "Crataegus bibas",
             "Eriobotrya fragrans",
@@ -957,8 +938,7 @@ fun PlantResultCardLowProbabilityPreview() {
             phylum = "Tracheophyta",
             kingdom = "Plantae"
         ),
-        url = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-        rank = "species",
+        moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
         description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
         watering = Watering(
             min = 2,
