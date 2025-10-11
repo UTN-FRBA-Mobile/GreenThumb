@@ -143,7 +143,6 @@ fun AppNavHost(
                         )
                     }
                 }
-
             }
         }
 
@@ -164,7 +163,6 @@ fun AppNavHost(
                 ) + fadeOut(animationSpec = tween(300))
             }
         ) {
-
             CameraScreen(
                 plantViewModel = plantViewModel,
                 onNavigateBack = {
@@ -174,16 +172,12 @@ fun AppNavHost(
                 onNavigateToResult = {
                     Log.d("AppNavHost", "Plants identified, navigating to results")
                     navController.navigate(NavRoutes.Result.route) {
-                        popUpTo(NavRoutes.Camera.route) {
-                            inclusive = false
-                            saveState = true
-                        }
                         launchSingleTop = true
-                        restoreState = false
                     }
                 }
             )
         }
+
 
         // ===== MY PLANTS SCREEN =====
         composable(
@@ -191,17 +185,21 @@ fun AppNavHost(
             enterTransition = { slideInVertically(initialOffsetY = { it }) },
             exitTransition = { slideOutVertically(targetOffsetY = { it }) }
         ) {
-            ScreenWithBottomBar(
-                currentRoute = currentRoute ?: NavRoutes.Profile.route,
-                navController = navController
-            ) { navigation ->
-                MyPlantsScreen(
-                    onHome = navigation::onHome,
-                    onMyPlants = navigation::onMyPlants,
-                    onCamera = navigation::onCamera,
-                    onRemembers = navigation::onRemembers,
-                    onProfile = navigation::onProfile,
-                )
+            if (!isUserLoggedIn || currentUser == null) {
+                RedirectToLogin(navController)
+            } else {
+                ScreenWithBottomBar(
+                    currentRoute = currentRoute ?: NavRoutes.Profile.route,
+                    navController = navController
+                ) { navigation ->
+                    MyPlantsScreen(
+                        onHome = navigation::onHome,
+                        onMyPlants = navigation::onMyPlants,
+                        onCamera = navigation::onCamera,
+                        onRemembers = navigation::onRemembers,
+                        onProfile = navigation::onProfile,
+                    )
+                }
             }
         }
 

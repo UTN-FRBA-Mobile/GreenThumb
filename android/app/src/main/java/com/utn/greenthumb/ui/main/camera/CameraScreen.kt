@@ -101,7 +101,6 @@ fun CameraScreen(
             )
         } else {
             Log.d("CameraScreen", "Photo capture cancelled by user")
-            onNavigateBack()
         }
     }
 

@@ -1,6 +1,5 @@
 package com.utn.greenthumb.ui.main.result
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -15,8 +14,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import android.content.res.Configuration
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +39,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -49,6 +65,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.viewmodel.PlantViewModel
@@ -69,7 +92,6 @@ fun ResultScreen(
 ) {
     val uiState by plantViewModel.uiState.collectAsState()
     var selectedPlantId by remember { mutableStateOf<String?>(null) }
-
     var isProcessing by remember { mutableStateOf(false) }
     var scope = rememberCoroutineScope()
 
@@ -106,8 +128,11 @@ fun ResultScreen(
             contentAlignment = Alignment.Center
         ) {
             when (val state = uiState) {
+                // En caso que entre en este estado, sale de la pantalla de Resultados
                 UiState.Idle -> {
-                    IdleContent()
+                    LaunchedEffect(Unit) {
+                        onBackPressed()
+                    }
                 }
 
                 // Contenido mientras está cargando
@@ -122,21 +147,31 @@ fun ResultScreen(
                             plants = state.data,
                             selectedPlantId = selectedPlantId,
                             onPlantSelected = { plant ->
-                                selectedPlantId = plant.id
+                                selectedPlantId = if (selectedPlantId == plant.id) {
+                                    null
+                                } else {
+                                    plant.id
+                                }
                             },
                             onSavePlant = { plant ->
                                 scope.launch {
                                     isProcessing = true
-                                    // TODO: Implementar guardado en BD
-                                    Log.d("ResultScreen", "Saving plant: $plant")
-                                    withContext(Dispatchers.IO) {
-                                        //plantViewModel.savePlant(plant)
+                                    try {
+                                        // TODO: Implementar guardado en BD
+                                        Log.d("ResultScreen", "Saving plant: $plant")
+                                        withContext(Dispatchers.IO) {
+                                            //plantViewModel.savePlant(plant)
+                                        }
+                                        // navController.navigate("my_plants")
+                                    } catch(e: Exception) {
+                                        Log.e("ResultScreen", "Error saving plant", e)
+                                    } finally {
+                                        isProcessing = false
                                     }
-                                    // navController.navigate("my_plants")
                                 }
-                                isProcessing = false
                             },
-                            onBackPressed = onBackPressed
+                            onBackPressed = onBackPressed,
+                            isProcessing = isProcessing
                         )
                     } else {
                         EmptyResultsContent(
@@ -167,29 +202,6 @@ fun ResultScreen(
 
 
 @Composable
-private fun IdleContent() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(24.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Info,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.waiting_for_action),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-
-@Composable
 private fun LoadingContent() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -211,8 +223,16 @@ private fun SuccessContent(
     selectedPlantId: String?,
     onPlantSelected: (Plant) -> Unit,
     onSavePlant: (Plant) -> Unit,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    isProcessing: Boolean
 ) {
+    var selectedGalleryImages by remember { mutableStateOf<List<String>?>(null) }
+    var selectedGalleryIndex by remember { mutableIntStateOf(0) }
+
+    val selectedPlant = remember(selectedPlantId, plants) {
+        plants.find { it.id == selectedPlantId }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -233,42 +253,351 @@ private fun SuccessContent(
             PlantResultCard(
                 plant = plant,
                 isSelected = plant.id == selectedPlantId,
-                onClick = { onPlantSelected(plant) }
+                onClick = { onPlantSelected(plant) },
+                onImageClick = { imageIndex, images ->
+                    selectedGalleryImages = images
+                    selectedGalleryIndex = imageIndex
+                }
             )
         }
 
         item {
             Spacer(modifier = Modifier.height(8.dp))
 
-            AnimatedVisibility(visible = selectedPlantId != null) {
-                Column {
+            AnimatedVisibility(
+                visible = selectedPlantId != null,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Button(
                         onClick = {
-                            plants.find { it.id == selectedPlantId }?.let { onSavePlant(it) }
+                            selectedPlant?.let { onSavePlant(it) }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isProcessing
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        if (isProcessing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
                         Text(
-                            text = stringResource(R.string.save_plant)
+                            text = if (isProcessing) {
+                                stringResource(R.string.saving)
+                            } else {
+                                stringResource(R.string.save_plant)
+                            }
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = onBackPressed,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isProcessing
+                    ) {
+                        Text(stringResource(R.string.back_navigation))
+                    }
                 }
             }
 
-            OutlinedButton(
-                onClick = onBackPressed,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.back_navigation))
+            if (selectedPlant == null) {
+                OutlinedButton(
+                    onClick = onBackPressed,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.back_navigation))
+                }
             }
         }
+    }
+
+    if (selectedGalleryImages != null) {
+        FullScreenImageGallery(
+            images = selectedGalleryImages!!,
+            initialIndex = selectedGalleryIndex,
+            onDismiss = {
+                selectedGalleryImages = null
+                selectedGalleryIndex = 0
+            }
+        )
+    }
+}
+
+
+@Composable
+fun FullScreenImageGallery(
+    images: List<String>,
+    initialIndex: Int = 0,
+    onDismiss: () -> Unit
+) {
+    var currentIndex by remember { mutableIntStateOf(initialIndex) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+
+    // Resetear transformaciones al cambiar de imagen
+    LaunchedEffect(currentIndex) {
+        scale = 1f
+        offsetX = 0f
+        offsetY = 0f
+    }
+
+    BackHandler(onBack = onDismiss)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.95f))
+    ) {
+        val pagerState = rememberPagerState(
+            initialPage = initialIndex,
+            pageCount = { images.size }
+        )
+
+        LaunchedEffect(pagerState.currentPage) {
+            currentIndex = pagerState.currentPage
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = scale <= 1f
+        ) { page ->
+            ImageViewerPage(
+                imageUrl = images[page],
+                scale = scale,
+                offsetX = offsetX,
+                offsetY = offsetY,
+                onScaleChange = { newScale ->
+                    scale = newScale
+                },
+                onOffsetChange = { x, y ->
+                    offsetX = x
+                    offsetY = y
+                }
+            )
+        }
+
+        // Botón para salir de la galería
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopStart),
+            color = Color.Black.copy(alpha = 0.7f)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.close),
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Contador de imágenes
+                Text(
+                    text = "${currentIndex + 1}/${images.size}",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.width(48.dp))
+            }
+        }
+
+        if (images.size > 1) {
+            // Botón izquierda - Imagen anterior
+            if (currentIndex > 0) {
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(currentIndex - 1)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 16.dp)
+                        .size(48.dp)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronLeft,
+                        contentDescription = stringResource(R.string.previous_image),
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            // Botón derecha - Imagen siguiente
+            if (currentIndex < images.size - 1) {
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(currentIndex + 1)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 16.dp)
+                        .size(48.dp)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = stringResource(R.string.next_image),
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = scale > 1f,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Black.copy(alpha = 0.7f)
+            ) {
+                Text(
+                    text = "Zoom: ${(scale * 100).toInt()}%",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(
+                        horizontal = 16.dp,
+                        vertical = 8.dp
+                    )
+                )
+            }
+        }
+
+        if (images.size > 1 && scale <= 1f) {
+            Text(
+                text = stringResource(R.string.slide_instruction),
+                color = Color.White.copy(alpha = 0.5f),
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 32.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun ImageViewerPage(
+    imageUrl: String,
+    scale: Float,
+    offsetX: Float,
+    offsetY: Float,
+    onScaleChange: (Float) -> Unit,
+    onOffsetChange: (Float, Float) -> Unit
+) {
+    var currentScale by remember { mutableFloatStateOf(scale) }
+    var currentOffsetX by remember { mutableFloatStateOf(offsetX) }
+    var currentOffsetY by remember { mutableFloatStateOf(offsetY) }
+
+    LaunchedEffect(scale) {
+        currentScale = scale
+    }
+    LaunchedEffect(offsetX) {
+        currentOffsetX = offsetX
+    }
+    LaunchedEffect(offsetY) {
+        currentOffsetY = offsetY
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, zoom, _ ->
+
+                    if (zoom != 1f) {
+                        val newScale = (currentScale * zoom).coerceIn(1f, 5f)
+                        currentScale = newScale
+                        onScaleChange(newScale)
+                    }
+
+                    if (currentScale > 1f) {
+                        val maxX = (size.width * (currentScale - 1)) / 2
+                        val maxY = (size.height * (currentScale - 1)) / 2
+                        val newOffsetX = (currentOffsetX + pan.x).coerceIn(-maxX, maxX)
+                        val newOffsetY = (currentOffsetY + pan.y).coerceIn(-maxY, maxY)
+
+                        currentOffsetX = newOffsetX
+                        currentOffsetY = newOffsetY
+                        onOffsetChange(newOffsetX, newOffsetY)
+                    } else {
+                        currentOffsetX = 0f
+                        currentOffsetY = 0f
+                        onOffsetChange(0f, 0f)
+                    }
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = { tapOffset ->
+                        val newScale = if (currentScale >= 1.5f) 1f else 2f
+                        currentScale = newScale
+                        currentOffsetX = 0f
+                        currentOffsetY = 0f
+
+                        onScaleChange(newScale)
+                        onOffsetChange(0f, 0f)
+                    }
+                )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = stringResource(R.string.full_screen_image),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = currentScale,
+                    scaleY = currentScale,
+                    translationX = currentOffsetX,
+                    translationY = currentOffsetY
+                ),
+            contentScale = ContentScale.Fit
+        )
     }
 }
 
@@ -411,20 +740,6 @@ private fun ErrorContent(
  * Preview
  */
 @Preview(
-    name = "Idle State",
-    showBackground = true
-)
-@Composable
-private fun IdleContentPreview() {
-    MaterialTheme {
-        Surface {
-            IdleContent()
-        }
-    }
-}
-
-
-@Preview(
     name = "Loading State",
     showBackground = true
 )
@@ -525,7 +840,8 @@ private fun SuccessContentPreview(
         selectedPlantId = null,
         onPlantSelected = {},
         onSavePlant = {},
-        onBackPressed = {}
+        onBackPressed = {},
+        isProcessing = false
     )
 }
 
@@ -612,7 +928,8 @@ private fun SuccessContentSelectedPreview(
         selectedPlantId = "662e0f8d4202acfc",
         onPlantSelected = {},
         onSavePlant = {},
-        onBackPressed = {}
+        onBackPressed = {},
+        isProcessing = true
     )
 }
 

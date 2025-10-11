@@ -12,6 +12,7 @@
     <string name="login_error_title">Error de autenticación</string>
     <string name="login_error_suggestion">Verifica tu conexión a internet e intenta nuevamente.</string>
     <string name="retry">Reintentar</string>
+    <string name="close">Cerrar</string>
     <string name="cancel">Cancelar</string>
 
     <!-- Home Screen -->
@@ -26,14 +27,18 @@
     <string name="no_results_title">No se encontraron resultados"</string>
     <string name="no_results_message">"Intenta con otra imagen con mejor iluminación"</string>
     <string name="string_error_ocurred">Ocurrió un error</string>
+
     <string name="identification_results">Resultados de la identificación</string>
     <string name="identifying_plant">Identificando planta...</string>
     <string name="select_plant">Selecciona la planta identificada</string>
     <string name="save_plant">Guardar en Mis Plantas</string>
+    <string name="saving">Guardando...</string>
+    <string name="select_plant_hint">Selecciona una planta para guardarla en tu colección</string>
     <string name="plant_selected">Planta seleccionada</string>
 
     <!-- Camara -->
     <string name="camera_screen_title">Capturar Planta</string>
+    <string name="full_screen_image">Imagen en pantalla completa</string>
     <string name="processing_image">Procesando imagen...</string>
     <string name="processing_image_description">Estamos analizando la foto de tu planta</string>
     <string name="take_photo">Sacar foto</string>
@@ -55,7 +60,11 @@
     <string name="plant_description">Descripción</string>
     <string name="probability_percentage">Probabilidad</string>
     <string name="common_names">Nombres comunes</string>
+    <string name="similar_image">Imagen similar</string>
     <string name="similar_images">Imágenes similares</string>
+    <string name="slide_instruction">Desliza para ver más</string>
+    <string name="previous_image">Imagen anterior</string>
+    <string name="next_image">Imagen siguiente</string>
 
     <!-- Taxonomy Screen -->
     <string name="taxonomy">Taxonomía</string>

@@ -16,7 +16,15 @@ object MockResponse {
                             similarImages = listOf(
                                 SimilarImageDTO(
                                     url = "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/b32/0549ca7acfc14f40a325e8de90ad8b9fdbcff.jpeg",
+                                    similarity = 0.889
+                                ),
+                                SimilarImageDTO(
+                                    url = "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/e63/ee1c405b78fa21f5107cf63a064ac1e1ae01a.jpeg",
                                     similarity = 0.789
+                                ),
+                                SimilarImageDTO(
+                                    url = "https://plant.id/media/imgs/21d84ed3ead945d4a6ad28eb8b0ea562.jpg",
+                                    similarity = 0.989
                                 )
                             ),
                             details = DetailsDTO(
