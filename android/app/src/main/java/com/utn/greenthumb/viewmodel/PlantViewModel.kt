@@ -36,8 +36,6 @@ class PlantViewModel @Inject constructor(
             try {
                 isIdentifying = true
                 _uiState.value = UiState.Loading
-                // TODO: Solamente para mostrar la pantalla de Loading
-                delay(3000)
 
                 Log.d("PlantViewModel", "Sending image to PlantAPI")
                 val result = withContext(Dispatchers.IO) {

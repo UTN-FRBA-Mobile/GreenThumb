@@ -49,8 +49,7 @@ import com.utn.greenthumb.ui.theme.GreenThumbTheme
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    onLoginSuccess: () -> Unit,
-    modifier: Modifier = Modifier
+    onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
     val uiState by authViewModel.uiState.collectAsState()
@@ -181,7 +180,16 @@ private fun handleGoogleSignInResult(
             }
         }
         Activity.RESULT_CANCELED -> {
-            Log.d("LoginScreen", "Google Sign-In canceled by user")
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                task.getResult(ApiException::class.java)
+                Log.d("LoginScreen", "Google Sign-In canceled by user")
+            } catch (e: ApiException) {
+                Log.e("LoginScreen", "Google Sign-In failed with API Exception on CANCELED result", e)
+                onError(e)
+            } catch (e: Exception) {
+                Log.d("LoginScreen", "Google Sign-In canceled by user or generic error", e)
+            }
         }
         else -> {
             Log.w("LoginScreen", "Unexpected result code: ${result.resultCode}")
@@ -287,9 +295,7 @@ fun LoginScreenContent(
 }
 
 @Composable
-private fun LogoSection(
-    modifier: Modifier = Modifier
-) {
+private fun LogoSection() {
     Image(
         painter = painterResource(id = R.drawable.greenthumb),
         contentDescription = stringResource(R.string.app_logo),

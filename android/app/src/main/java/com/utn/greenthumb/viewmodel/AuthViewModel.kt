@@ -29,8 +29,9 @@ class AuthViewModel @Inject constructor(
     private val _revokeState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val revokeState: StateFlow<UiState<Unit>> = _revokeState.asStateFlow()
 
+    private var lastLoginAttempt: LoginAttempt? = null
+
     init {
-        // Sincronizar estado inicial con el repository
         viewModelScope.launch {
             val currentUser = authRepository.getCurrentUser()
             if (currentUser != null) {
@@ -42,11 +43,13 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
-     * Login con Google Token
+     * Iniciar sesión - Login
      */
     fun loginWithGoogleToken(
         idToken: String
     ) {
+        lastLoginAttempt = LoginAttempt.GoogleLogin(idToken)
+
         executeOperation(
             operation = {
                 authRepository.loginWithGoogle(idToken)
@@ -63,7 +66,7 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
-     * Logout del usuario actual
+     * Cerrar sesión - Logout
      */
     fun logout() {
         viewModelScope.launch {
@@ -71,7 +74,8 @@ class AuthViewModel @Inject constructor(
                 _logoutState.value = UiState.Loading
                 authManager.signOut()
                 _logoutState.value = UiState.Success(Unit)
-                setIdle() // Reset login state
+                setIdle()
+                lastLoginAttempt = null
                 Log.d("AuthViewModel", "Logout successful")
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Logout failed", e)
@@ -84,7 +88,7 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
-     * Revocar acceso del usuario
+     * Revocar acceso
      */
     fun revokeAccess() {
         viewModelScope.launch {
@@ -92,7 +96,8 @@ class AuthViewModel @Inject constructor(
                 _revokeState.value = UiState.Loading
                 authManager.revokeAccess()
                 _revokeState.value = UiState.Success(Unit)
-                setIdle() // Reset login state
+                setIdle()
+                lastLoginAttempt = null
                 Log.d("AuthViewModel", "Access revocation successful")
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Access revocation failed", e)
@@ -101,6 +106,24 @@ class AuthViewModel @Inject constructor(
                     throwable = e
                 )
             }
+        }
+    }
+
+    /**
+     * Reintentar inició de sesión - Retry Login
+     */
+    fun retryLogin() {
+        clearError()
+        val attempt = lastLoginAttempt
+        if (attempt != null) {
+            when (attempt) {
+                is LoginAttempt.GoogleLogin -> {
+                    Log.d("AuthViewModel", "Retrying Google login")
+                    loginWithGoogleToken(attempt.idToken)
+                }
+            }
+        } else {
+            Log.d("AuthViewModel", "No login attempt to retry")
         }
     }
 
@@ -125,18 +148,18 @@ class AuthViewModel @Inject constructor(
     fun getGoogleSignInClient() = authManager.googleSignInClient
 
     /**
-     * Reintentar última operación
-     */
-    fun retryLogin() {
-        clearError()
-    }
-
-    /**
      * Limpiar todos los estados de error
      */
     fun clearAllErrors() {
         clearError()
         _logoutState.value = UiState.Idle
         _revokeState.value = UiState.Idle
+    }
+
+    /**
+     * Intentos de inicio de sesión
+     */
+    private sealed class LoginAttempt {
+        data class GoogleLogin(val idToken: String) : LoginAttempt()
     }
 }
