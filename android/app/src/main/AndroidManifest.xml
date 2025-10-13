@@ -16,7 +16,8 @@
         android:supportsRtl="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules">
+        android:fullBackupContent="@xml/backup_rules"
+        android:usesCleartextTraffic="true">
         <activity
             android:name="com.utn.greenthumb.MainActivity"
             android:exported="true"
@@ -35,7 +36,9 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
+
         </provider>
+
     </application>
 
 </manifest>

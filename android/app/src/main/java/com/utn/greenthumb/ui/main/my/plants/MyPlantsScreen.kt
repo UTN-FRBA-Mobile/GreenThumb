@@ -21,37 +21,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.utn.greenthumb.domain.model.User
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.ui.main.BaseScreen
-import com.utn.greenthumb.ui.theme.GreenBackground
 
-import com.utn.greenthumb.viewmodel.AuthViewModel
-
-//val myPlants = mutableListOf("Red", "Green", "Blue")
-data class Planta(
-    val id: Int,
-    val nombre: String,
-    // Aquí iría el recurso o URL de la imagen (ej: val imagenResId: Int)
-    val colorPlaceholder: Color // Para el ejemplo de la imagen gris
-)
-// Datos de ejemplo para la lista
-val samplePlants =
-    mutableListOf(
-        Planta(1, "Planta #1", Color.LightGray),
-        Planta(2, "Planta #2", Color.LightGray),
-        Planta(3, "Planta #3", Color.LightGray),
-        Planta(4, "Planta #41", Color.LightGray),
-        // Puedes agregar muchas más, LazyColumn lo maneja eficientemente
-    )
+import com.utn.greenthumb.viewmodel.MyPlantsViewModel
 
 @Composable
 fun MyPlantsScreen(
@@ -59,8 +43,13 @@ fun MyPlantsScreen(
     onMyPlants: () -> Unit,
     onCamera: () -> Unit,
     onRemembers: () -> Unit,
-    onProfile: () -> Unit
+    onProfile: () -> Unit,
+    viewModel: MyPlantsViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.fetchMyPlants("user-123")
+    }
+
     BaseScreen(
         onHome = onHome,
         onMyPlants = onMyPlants,
@@ -68,8 +57,8 @@ fun MyPlantsScreen(
         onRemembers = onRemembers,
         onProfile = onProfile
     ) {
-        MyPlantsScreenContent(
-        )
+        val plants by viewModel.plants.collectAsState()
+        MyPlantsScreenContent(plants)
     }
 
 }
@@ -77,13 +66,10 @@ fun MyPlantsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyPlantsScreenContent(
-
+    plants: List<Plant>
 ) {
     Scaffold(topBar = {
-        TopAppBar(
-            title = { Text("GreenThumb 🌿") },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground)
-        )
+        TopAppBar(title = { Text("GreenThumb 🌿") })
     }
     ) { padding ->
         // Título de la sección
@@ -104,7 +90,7 @@ fun MyPlantsScreenContent(
 
             // Contador de elementos
             Text(
-                text = "Total ${samplePlants.size} elementos",
+                text = "Total ${plants.size} elementos",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 // Agrega el modifier para alinear a la derecha como en tu imagen original
@@ -116,7 +102,7 @@ fun MyPlantsScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(samplePlants) { planta ->
+                items(plants) { planta ->
                     PlantItem(planta = planta)
                 }
             }
@@ -126,7 +112,7 @@ fun MyPlantsScreenContent(
 
 
 @Composable
-fun PlantItem(planta: Planta) {
+fun PlantItem(planta: Plant) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,7 +130,7 @@ fun PlantItem(planta: Planta) {
             Box(
                 modifier = Modifier
                     .size(64.dp, 64.dp)
-                    .background(planta.colorPlaceholder, shape = RoundedCornerShape(4.dp))
+                    .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
                     .clip(RoundedCornerShape(4.dp))
             )
 
@@ -152,11 +138,9 @@ fun PlantItem(planta: Planta) {
 
             // Nombre de la planta
             Text(
-                text = planta.nombre,
+                text = planta.name,
                 style = MaterialTheme.typography.titleMedium // O titleLarge
             )
         }
     }
 }
-
-
