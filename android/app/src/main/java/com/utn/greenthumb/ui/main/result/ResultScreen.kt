@@ -1,16 +1,5 @@
 package com.utn.greenthumb.ui.main.result
 
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -36,10 +25,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Refresh
@@ -59,28 +52,37 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.utn.greenthumb.domain.model.Plant
-import com.utn.greenthumb.state.UiState
-import com.utn.greenthumb.viewmodel.PlantViewModel
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.Image
+import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.domain.model.Taxonomy
 import com.utn.greenthumb.domain.model.Watering
+import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.viewmodel.PlantViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -90,7 +92,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ResultScreen(
     onBackPressed: () -> Unit,
-    plantViewModel: PlantViewModel
+    plantViewModel: PlantViewModel,
+    onSuccessfulIdentification: () -> Unit,
 ) {
     val uiState by plantViewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -163,8 +166,10 @@ fun ResultScreen(
                                         // TODO: Implementar guardado en BD
                                         Log.d("ResultScreen", "Saving plant: $plant")
                                         withContext(Dispatchers.IO) {
-                                            //plantViewModel.savePlant(plant)
+                                            plantViewModel.savePlant(plant)
+                                            // navController.navigate("my_plants")
                                         }
+                                        onSuccessfulIdentification()
                                         // navController.navigate("my_plants")
                                     } catch(e: Exception) {
                                         Log.e("ResultScreen", "Error saving plant", e)
@@ -233,7 +238,7 @@ private fun SuccessContent(
     var selectedGalleryIndex by remember { mutableIntStateOf(0) }
 
     val selectedPlant = remember(selectedPlantExternalId, plants) {
-        plants.find { it.id == selectedPlantExternalId }
+        plants.find { it.externalId == selectedPlantExternalId }
     }
 
     LazyColumn(

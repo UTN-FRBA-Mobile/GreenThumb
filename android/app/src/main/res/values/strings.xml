@@ -103,4 +103,6 @@
     <string name="error_no_internet">Sin conexión a internet. Verifica tu conexión.</string>
     <string name="error_timeout">Tiempo de espera agotado. Intenta nuevamente.</string>
     <string name="error_generic">Error de autenticación: %s</string>
+
+    <string name="identification_successful">Planta guardada con éxito!</string>
 </resources>

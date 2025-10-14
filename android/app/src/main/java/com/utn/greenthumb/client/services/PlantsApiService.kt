@@ -20,4 +20,7 @@ interface PlantsApiService {
     @GET("plants/list")
     suspend fun getPlants(@Header("x-client-id") clientId: String): List<Plant>
 
+    @Headers("Content-Type: application/json")
+    @POST("/plants")
+    suspend fun save(@Body request: Plant)
 }

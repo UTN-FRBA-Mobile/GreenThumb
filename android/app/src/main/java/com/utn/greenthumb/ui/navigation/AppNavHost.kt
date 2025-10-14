@@ -18,26 +18,34 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.*
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.utn.greenthumb.R
 import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.ui.main.camera.CameraScreen
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.ui.main.my.plants.MyPlantsScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
+import com.utn.greenthumb.ui.main.result.IdentificationSuccessScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
-import com.utn.greenthumb.R
 
 
 @SuppressLint("RestrictedApi")
@@ -228,7 +236,13 @@ fun AppNavHost(
                         inclusive = false
                     )
                 },
-                plantViewModel = plantViewModel
+                plantViewModel = plantViewModel,
+                onSuccessfulIdentification = {
+                    navController.navigateToBottomBarDestination(
+                        route = NavRoutes.Success.route,
+                        currentRoute = currentRoute
+                    )
+                }
             )
         }
 
@@ -258,6 +272,34 @@ fun AppNavHost(
                     )
                 }
             }
+        }
+
+        // ===== SUCCESS SCREEN =====
+        composable(
+            route = NavRoutes.Success.route,
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
+        ) {
+            IdentificationSuccessScreen(
+                message = stringResource(R.string.identification_successful),
+                onAnimationEnds = {
+                    navController.navigate(NavRoutes.MyPlants.route) {
+                        popUpTo(NavRoutes.Home.route) {
+                            inclusive = false
+                        }
+                    }
+                }
+            )
         }
     }
 }

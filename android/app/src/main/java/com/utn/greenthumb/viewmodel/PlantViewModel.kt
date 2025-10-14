@@ -1,7 +1,6 @@
 package com.utn.greenthumb.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.repository.PlantRepository
@@ -9,13 +8,8 @@ import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withContext
-import java.lang.Thread.sleep
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,5 +56,11 @@ class PlantViewModel @Inject constructor(
     fun clearResults() {
         Log.d("PlantViewModel", "Results cleared")
         _uiState.value = UiState.Idle
+    }
+
+    fun savePlant(plant: Plant) {
+        viewModelScope.launch {
+            repository.save(plant)
+        }
     }
 }

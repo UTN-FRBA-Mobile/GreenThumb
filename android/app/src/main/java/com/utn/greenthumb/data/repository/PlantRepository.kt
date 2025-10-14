@@ -1,6 +1,5 @@
 package com.utn.greenthumb.data.repository
 
-import com.utn.greenthumb.client.services.PlantApiService
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
@@ -25,4 +24,8 @@ class PlantRepository @Inject constructor(
          return  plantsApi.getPlants(clientId)
 
     }
+    suspend fun save(plant: Plant) {
+        plantsApi.save(request = plant)
+    }
+
 }

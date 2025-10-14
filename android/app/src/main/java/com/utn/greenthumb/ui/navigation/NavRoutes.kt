@@ -8,4 +8,5 @@ sealed class NavRoutes(val route: String) {
     object Profile : NavRoutes("profile")
     object Remember : NavRoutes("remember")
     object MyPlants : NavRoutes("my.plants")
+    object Success : NavRoutes("success")
 }
