@@ -8,7 +8,6 @@ import com.utn.greenthumb.domain.model.Plant
 import javax.inject.Inject
 
 class PlantRepository @Inject constructor(
-    private val plantApi: PlantApiService,
     private val plantsApi: PlantsApiService
 ) {
     suspend fun identifyPlant(
@@ -23,7 +22,7 @@ class PlantRepository @Inject constructor(
     }
 
     suspend fun getPlants(clientId: String): List<Plant> {
-         return  plantApi.getPlants(clientId)
+         return  plantsApi.getPlants(clientId)
 
     }
 }

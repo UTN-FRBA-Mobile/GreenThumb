@@ -1,8 +1,6 @@
 package com.utn.greenthumb.di
 
-import com.utn.greenthumb.client.PlantApiClient
 import com.utn.greenthumb.client.PlantsApiClient
-import com.utn.greenthumb.client.services.PlantApiService
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.repository.AuthRepository
 import dagger.Module
@@ -22,9 +20,4 @@ object NetworkModule {
         return PlantsApiClient.api
     }
 
-    @Provides
-    @Singleton
-    fun providePlantApiService(): PlantApiService {
-        return PlantApiClient.api
-    }
 }
