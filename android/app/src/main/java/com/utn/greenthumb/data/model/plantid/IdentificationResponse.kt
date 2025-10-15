@@ -7,10 +7,16 @@ data class IdentificationResponse(
     val images: List<Image>?,
     val commonNames: List<String>,
     val taxonomy: Taxonomy?,
-    val moreInfoUrl: String,
+    val moreInfoUrl: String?,
     val description: String,
-    val synonyms: List<String>,
-    val watering: Watering?
+    val synonyms: List<String>?,
+    val watering: Watering?,
+    val bestWatering: String?,
+    val propagationMethods: List<String>?,
+    val culturalSignificance: String?,
+    val bestLightCondition: String?,
+    val commonUses: String?,
+    val toxicity: String?
 )
 data class Image(
     val url: String

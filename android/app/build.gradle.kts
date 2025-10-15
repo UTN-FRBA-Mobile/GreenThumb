@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +9,14 @@ plugins {
     alias(libs.plugins.google.services)
     kotlin("kapt")
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val googleTranslationApiKey: String? = localProperties.getProperty("GOOGLE_TRANSLATION_API_KEY")
 
 android {
     namespace = "com.utn.greenthumb"
@@ -21,6 +32,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "PLANT_BASE_URL", "\"${project.properties["PLANT_BASE_URL"]}\"")
+        buildConfigField("String", "TRANSLATE_BASE_URL", "\"${project.properties["TRANSLATE_BASE_URL"]}\"")
+        buildConfigField("String", "GOOGLE_API_KEY", "\"$googleTranslationApiKey\"")
     }
 
     buildTypes {
@@ -42,6 +55,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    packagingOptions {
+        exclude("META-INF/proguard/androidx-*.pro")
+        exclude("META-INF/proguard/retrofit2.pro")
     }
 }
 
@@ -85,6 +103,15 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.1.0")
 
+    // Retrofit + OkHttp para API
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0") {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
     // Hilt (DI)
     implementation("com.google.dagger:hilt-android:2.51")
     kapt("com.google.dagger:hilt-android-compiler:2.51")
@@ -95,7 +122,7 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
-    // WorkManager (notificaciones y tareas en background)
+    // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // Permissions
@@ -107,14 +134,12 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.2")
     implementation("androidx.camera:camera-view:1.3.2")
 
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
     // Location
     implementation("com.google.android.gms:play-services-location:21.0.1")
-
-    // Retrofit + OkHttp para API
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

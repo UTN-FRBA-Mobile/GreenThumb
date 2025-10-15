@@ -3,7 +3,7 @@ package com.utn.greenthumb.data.repository
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
-import com.utn.greenthumb.domain.model.Plant
+import com.utn.greenthumb.domain.model.PlantDTO
 import javax.inject.Inject
 
 class PlantRepository @Inject constructor(
@@ -11,7 +11,7 @@ class PlantRepository @Inject constructor(
 ) {
     suspend fun identifyPlant(
         request: IdentificationRequest
-    ): List<Plant> {
+    ): List<PlantDTO> {
 
         val response = api.identifyPlant(
             request = request

@@ -1,24 +1,30 @@
 package com.utn.greenthumb.domain.model
 
-data class Plant(
+data class PlantDTO(
     val id: String?,
-    val externalId: String?,
+    val externalId: String,
     val name: String,
     val probability: Double,
-    val images: List<Image>,
+    val images: List<ImageDTO>?,
     val commonNames: List<String>,
-    val taxonomy: Taxonomy,
-    val moreInfoUrl: String,
+    val taxonomy: TaxonomyDTO?,
+    val moreInfoUrl: String?,
     val description: String,
-    val synonyms: List<String>,
-    val watering: Watering?
+    val synonyms: List<String>?,
+    val watering: WateringDTO?,
+    val bestWatering: String?,
+    val propagationMethods: List<String>?,
+    val culturalSignificance: String?,
+    val bestLightCondition: String?,
+    val commonUses: String?,
+    val toxicity: String?
 )
 
-data class Image(
+data class ImageDTO(
     val url: String
 )
 
-data class Taxonomy(
+data class TaxonomyDTO(
     val taxonomyClass: String,
     val genus: String,
     val order: String,
@@ -27,7 +33,7 @@ data class Taxonomy(
     val kingdom: String
 )
 
-data class Watering(
+data class WateringDTO(
     val max: Int,
     val min: Int
 )

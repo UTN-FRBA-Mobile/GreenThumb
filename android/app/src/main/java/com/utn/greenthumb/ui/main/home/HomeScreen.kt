@@ -67,7 +67,6 @@ private fun HomeScreenContent(
                     text = "Bienvenido, ${userName ?: "Usuario no identificado"}",
                     style = MaterialTheme.typography.titleMedium
                 )
-
             }
         }
     }
