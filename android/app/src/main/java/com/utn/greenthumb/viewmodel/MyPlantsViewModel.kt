@@ -24,8 +24,8 @@ class MyPlantsViewModel @Inject constructor(
             try {
                 Log.d("MyPlantsViewModel", "Fetching plants for client: $clientId")
                 val result = repository.getPlants(clientId)
-                _plants.value = result
-                Log.d("MyPlantsViewModel", "Successfully fetched ${result.size} plants")
+                _plants.value = result.content
+                Log.d("MyPlantsViewModel", "Successfully fetched ${result.total} plants")
             } catch (e: Exception) {
                 Log.e("MyPlantsViewModel", "Error fetching plants", e)
             }

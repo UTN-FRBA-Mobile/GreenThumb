@@ -1,8 +1,6 @@
 package com.utn.greenthumb.ui.main.my.plants
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,9 +27,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.google.firebase.auth.FirebaseAuth
+import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.Plant
 import com.utn.greenthumb.ui.main.BaseScreen
 
@@ -46,8 +51,13 @@ fun MyPlantsScreen(
     onProfile: () -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.fetchMyPlants("user-123")
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val clientId = currentUser?.uid
+
+    LaunchedEffect(clientId) {
+        clientId?.let {
+            viewModel.fetchMyPlants(it)
+        }
     }
 
     BaseScreen(
@@ -126,11 +136,19 @@ fun PlantItem(planta: Plant) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Placeholder de Imagen (El bloque gris)
-            Box(
+             val imageUrl = if (planta.images.isNotEmpty()) planta.images.first().url else null
+            // Usar Coil para cargar la imagen de la planta
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.greenthumb), // Un placeholder de tus recursos
+                error = painterResource(id = R.drawable.greenthumb), // Una imagen de error de tus recursos
+                contentDescription = planta.name,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(64.dp, 64.dp)
-                    .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                    .size(64.dp)
                     .clip(RoundedCornerShape(4.dp))
             )
 

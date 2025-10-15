@@ -1,5 +1,6 @@
 package com.utn.greenthumb.client.services
 
+import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
 import com.utn.greenthumb.domain.model.Plant
@@ -18,7 +19,7 @@ interface PlantsApiService {
     ): List<IdentificationResponse>
 
     @GET("plants/list")
-    suspend fun getPlants(@Header("x-client-id") clientId: String): List<Plant>
+    suspend fun getPlants(@Header("x-client-id") clientId: String): PagedResponse<Plant>
 
     @Headers("Content-Type: application/json")
     @POST("/plants")
