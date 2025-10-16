@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.repository.PlantRepository
+import com.utn.greenthumb.data.services.PlantTranslationService
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlantViewModel @Inject constructor(
-    private val repository: PlantRepository
+    private val repository: PlantRepository,
+    private val plantTranslationService: PlantTranslationService
 ) : BaseViewModel<List<PlantDTO>>() {
 
     private var isIdentifying = false
@@ -25,9 +27,14 @@ class PlantViewModel @Inject constructor(
     private val _selectedPlant = MutableStateFlow<PlantDTO?>(null)
     val selectedPlant: StateFlow<PlantDTO?> = _selectedPlant.asStateFlow()
 
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
+
+    /**
+     * Identificar planta
+     */
     fun identifyPlant(request: IdentificationRequest) {
-
         if (isIdentifying) {
             Log.d("PlantViewModel", "Already identifying...")
             return
@@ -44,7 +51,7 @@ class PlantViewModel @Inject constructor(
                 }
 
                 if (result.isNotEmpty()) {
-                    Log.d("PlantViewModel", "Plants identified: $result")
+                    Log.d("PlantViewModel", "Plants identified: ${result.size}")
                     _uiState.value = UiState.Success(result)
                 } else {
                     Log.d("PlantViewModel", "No plants found")
@@ -56,7 +63,34 @@ class PlantViewModel @Inject constructor(
             } finally {
                 isIdentifying = false
             }
+        }
+    }
 
+
+    fun savePlantWithTranslation(plant: PlantDTO) {
+        viewModelScope.launch {
+            try {
+                _isSaving.value = true
+                Log.d("PlantViewModel", "Saving plant with translation: $plant")
+
+                val translatedPlant = withContext(Dispatchers.IO) {
+                    plantTranslationService.translatePlant(plant)
+                }
+
+                Log.d("PlantViewModel", "Translated plant: $translatedPlant")
+
+                Log.d("PlantViewModel", "Saving translated plant: ${plant.name}")
+
+                withContext(Dispatchers.IO) {
+                    savePlant(translatedPlant)
+                }
+                Log.d("PlantViewModel", "Plant saved: ${plant.name}")
+            } catch (e: Exception) {
+                Log.d("PlantViewModel", "Error saving plant: ${e.message}", e)
+                throw e
+            } finally {
+                _isSaving.value = false
+            }
         }
     }
 

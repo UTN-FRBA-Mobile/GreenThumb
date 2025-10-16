@@ -25,12 +25,12 @@ class TranslationRepository @Inject constructor(
      */
     suspend fun translateText(text:String): String {
         return try {
-            Log.d("TranslationRepository", "Translate: $text")
-
             if (text.isBlank()) {
                 Log.d("TranslationRepository", "Empty text")
                 return ""
             }
+
+            Log.d("TranslationRepository", "Translate: $text")
 
             val request = TranslationRequest(words=listOf(text))
             val response = api.translate(request, apiKey, "text", "base")
@@ -47,4 +47,38 @@ class TranslationRepository @Inject constructor(
             throw e
          }
     }
+
+
+    /**
+     * Traducción de múltiples textos
+     */
+    suspend fun translateTextList(textList: List<String>): List<String> {
+        return try {
+            if (textList.isEmpty()) {
+                return emptyList()
+            }
+
+            val nonEmptyTexts = textList.map { it.ifBlank { " " } }
+
+            Log.d("TranslationRepository", "Translating ${nonEmptyTexts.size} texts in batch")
+            val request = TranslationRequest(words = nonEmptyTexts)
+            val response = api.translate(request, apiKey, "text", "base")
+
+            if (response.data.translations.size != nonEmptyTexts.size) {
+                throw Exception(
+                    "Translation count mismatch: expected ${nonEmptyTexts.size}, " +
+                            "got ${response.data.translations.size}"
+                )
+            }
+
+            val translatedTexts = response.data.translations.map { it.translatedText }
+            Log.d("TranslationRepository", "Successfully translated ${translatedTexts.size} texts")
+            translatedTexts
+        } catch (e:Exception) {
+            Log.d("TranslationRepository", "Error translating text list: ${e.message}", e)
+            throw e
+        }
+    }
 }
+
+
