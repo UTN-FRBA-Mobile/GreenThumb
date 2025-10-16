@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,6 +46,7 @@ import com.utn.greenthumb.ui.main.profile.ProfileScreen
 import com.utn.greenthumb.ui.main.result.IdentificationSuccessScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
+import com.utn.greenthumb.viewmodel.NotificationViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
 
 
@@ -53,7 +55,8 @@ import com.utn.greenthumb.viewmodel.PlantViewModel
 fun AppNavHost(
     authViewModel: AuthViewModel,
     plantViewModel: PlantViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    notificationViewModel: NotificationViewModel = viewModel(),
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -142,6 +145,7 @@ fun AppNavHost(
                     ) { navigation ->
                         HomeScreen(
                             authViewModel = authViewModel,
+                            notificationViewModel = notificationViewModel,
                             currentUser = currentUser,
                             onHome = navigation::onHome,
                             onMyPlants = navigation::onMyPlants,
@@ -303,8 +307,6 @@ fun AppNavHost(
         }
     }
 }
-
-
 
 // ===== COMPONENTES EXTRAS =====
 @Composable

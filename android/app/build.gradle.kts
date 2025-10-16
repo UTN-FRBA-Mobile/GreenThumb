@@ -85,6 +85,9 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.1.0")
 
+    // Firebase messaging
+    implementation("com.google.firebase:firebase-messaging:25.0.1")
+
     // Hilt (DI)
     implementation("com.google.dagger:hilt-android:2.51")
     kapt("com.google.dagger:hilt-android-compiler:2.51")

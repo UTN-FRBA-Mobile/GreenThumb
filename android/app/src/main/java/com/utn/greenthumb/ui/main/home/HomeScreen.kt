@@ -1,5 +1,8 @@
 package com.utn.greenthumb.ui.main.home
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,17 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.ui.main.BaseScreen
 import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.utils.NotificationHelper
 import com.utn.greenthumb.viewmodel.AuthViewModel
+import com.utn.greenthumb.viewmodel.NotificationViewModel
 
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
+    notificationViewModel: NotificationViewModel,
     currentUser: User?,
     onHome: () -> Unit,
     onMyPlants: () -> Unit,
@@ -29,6 +37,24 @@ fun HomeScreen(
     onRemembers: () -> Unit,
     onProfile: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            notificationViewModel.refreshToken()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (NotificationHelper.hasNotificationPermission(context)) {
+            notificationViewModel.refreshToken()
+        } else {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     BaseScreen(
         onHome = onHome,
         onMyPlants = onMyPlants,
