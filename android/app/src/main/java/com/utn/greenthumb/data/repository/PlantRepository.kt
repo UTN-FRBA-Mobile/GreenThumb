@@ -4,7 +4,7 @@ import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
-import com.utn.greenthumb.domain.model.Plant
+import com.utn.greenthumb.domain.model.PlantDTO
 import javax.inject.Inject
 
 class PlantRepository @Inject constructor(
@@ -12,7 +12,7 @@ class PlantRepository @Inject constructor(
 ) {
     suspend fun identifyPlant(
         request: IdentificationRequest
-    ): List<Plant> {
+    ): List<PlantDTO> {
 
         val response = plantsApi.identifyPlant(
             request = request
@@ -21,11 +21,11 @@ class PlantRepository @Inject constructor(
         return PlantMapper.fromDto(response)
     }
 
-    suspend fun getPlants(clientId: String): PagedResponse<Plant> {
+    suspend fun getPlants(clientId: String): PagedResponse<PlantDTO> {
          return  plantsApi.getPlants(clientId)
 
     }
-    suspend fun save(plant: Plant) {
+    suspend fun save(plant: PlantDTO) {
         plantsApi.save(request = plant)
     }
 

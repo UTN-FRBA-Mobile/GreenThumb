@@ -1,27 +1,31 @@
 package com.utn.greenthumb.data.mapper
 
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
-import com.utn.greenthumb.domain.model.Image
-import com.utn.greenthumb.domain.model.Plant
-import com.utn.greenthumb.domain.model.Taxonomy
-import com.utn.greenthumb.domain.model.Watering
+import com.utn.greenthumb.domain.model.ImageDTO
+import com.utn.greenthumb.domain.model.PlantDTO
+import com.utn.greenthumb.domain.model.TaxonomyDTO
+import com.utn.greenthumb.domain.model.WateringDTO
 
 object PlantMapper {
 
-    fun fromDto(dto: List<IdentificationResponse>): List<Plant> {
+    fun fromDto(dto: List<IdentificationResponse>): List<PlantDTO> {
         return dto.map { suggestion ->
-            Plant(
+            PlantDTO(
                 id = null,
                 externalId = suggestion.externalId,
                 name = suggestion.name,
                 probability = suggestion.probability,
                 images = suggestion.images?.map { it ->
-                    Image(
+                    ImageDTO(
                         url = it.url
                     )
                 } ?: listOf(),
                 commonNames = suggestion.commonNames,
-                taxonomy = Taxonomy(
+                synonyms = suggestion.synonyms,
+                commonUses = suggestion.commonUses,
+                description = suggestion.description,
+                culturalSignificance = suggestion.culturalSignificance,
+                taxonomy = TaxonomyDTO(
                     taxonomyClass = suggestion.taxonomy?.taxonomyClass ?: "N/A",
                     genus = suggestion.taxonomy?.genus ?: "N/A",
                     order = suggestion.taxonomy?.order ?: "N/A",
@@ -29,15 +33,17 @@ object PlantMapper {
                     phylum = suggestion.taxonomy?.phylum ?: "N/A",
                     kingdom = suggestion.taxonomy?.kingdom ?: "N/A"
                 ),
+                toxicity = suggestion.toxicity,
                 moreInfoUrl = suggestion.moreInfoUrl,
-                description = suggestion.description,
-                synonyms = suggestion.synonyms,
-                watering = suggestion.watering?.let {
-                    Watering(
-                        max = it.max,
-                        min = it.min
+                watering = suggestion.watering.let {
+                    WateringDTO(
+                        max = it?.max ?: 0,
+                        min = it?.min ?: 0
                     )
-                }
+                },
+                bestWatering = suggestion.bestWatering,
+                propagationMethods = suggestion.propagationMethods,
+                bestLightCondition = suggestion.bestLightCondition
             )
         }
     }

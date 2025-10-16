@@ -58,6 +58,12 @@
     <!-- Plant Card -->
     <string name="synonyms">Sinónimos</string>
     <string name="plant_description">Descripción</string>
+    <string name="common_uses">Usos comunes</string>
+    <string name="cultural_significance">Significado cultural</string>
+    <string name="best_light_condition">Condiciones óptimas de iluminación</string>
+    <string name="best_watering">Riego óptimo</string>
+    <string name="propagation_methods">Métodos de propagación</string>
+    <string name="toxicity">Toxicidad</string>
     <string name="probability_percentage">Probabilidad</string>
     <string name="common_names">Nombres comunes</string>
     <string name="similar_image">Imagen similar</string>

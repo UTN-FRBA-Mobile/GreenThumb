@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.data.repository.PlantRepository
-import com.utn.greenthumb.domain.model.Plant
+import com.utn.greenthumb.domain.model.PlantDTO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +16,8 @@ class MyPlantsViewModel @Inject constructor(
     private val repository: PlantRepository
 ) : ViewModel() {
 
-    private val _plants = MutableStateFlow<List<Plant>>(emptyList())
-    val plants: StateFlow<List<Plant>> = _plants
+    private val _plants = MutableStateFlow<List<PlantDTO>>(emptyList())
+    val plants: StateFlow<List<PlantDTO>> = _plants
 
     fun fetchMyPlants(clientId: String) {
         viewModelScope.launch {

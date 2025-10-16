@@ -46,6 +46,7 @@ import com.utn.greenthumb.ui.main.result.IdentificationSuccessScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
+import com.utn.greenthumb.ui.main.my.plants.PlantScreen
 
 
 @SuppressLint("RestrictedApi")
@@ -62,6 +63,8 @@ fun AppNavHost(
     val isUserLoggedIn by authViewModel.isUserLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     val logoutState by authViewModel.logoutState.collectAsState()
+
+    val selectedPlant by plantViewModel.selectedPlant.collectAsState()
 
     var hasNavigatedInitially by remember { mutableStateOf(false) }
 
@@ -206,6 +209,51 @@ fun AppNavHost(
                         onCamera = navigation::onCamera,
                         onRemembers = navigation::onRemembers,
                         onProfile = navigation::onProfile,
+                        onPlantClick = { plant ->
+                            Log.d("AppNavHost", "Plant selected: ${plant.name}")
+                            plantViewModel.selectPlant(plant)
+                            navController.navigate(NavRoutes.PlanDetail.route)
+                        }
+                    )
+                }
+            }
+        }
+
+
+        // ===== PLANT DETAIL SCREEN =====
+        composable(
+            route = NavRoutes.PlanDetail.route,
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
+        ) {
+            selectedPlant?.let { plant->
+                PlantScreen(
+                    onBackPressed = {
+                        Log.d("AppNavHost", "Navigating back from plant detail")
+                        plantViewModel.clearSelectedPlant()
+                        navController.popBackStack(
+                            route = NavRoutes.MyPlants.route,
+                            inclusive = false
+                        )
+                    },
+                    plantSelected = plant
+                )
+            } ?: run {
+                LaunchedEffect(Unit) {
+                    Log.w("AppNavHost", "No Plant selected, navigating back to My Plants")
+                    navController.popBackStack(
+                        route = NavRoutes.MyPlants.route,
+                        inclusive = false
                     )
                 }
             }

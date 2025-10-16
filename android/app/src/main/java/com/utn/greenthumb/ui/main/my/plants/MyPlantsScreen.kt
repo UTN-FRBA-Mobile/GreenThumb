@@ -37,7 +37,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.utn.greenthumb.R
-import com.utn.greenthumb.domain.model.Plant
+import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.ui.main.BaseScreen
 
 import com.utn.greenthumb.viewmodel.MyPlantsViewModel
@@ -49,6 +49,7 @@ fun MyPlantsScreen(
     onCamera: () -> Unit,
     onRemembers: () -> Unit,
     onProfile: () -> Unit,
+    onPlantClick: (PlantDTO) -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel()
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -76,7 +77,7 @@ fun MyPlantsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyPlantsScreenContent(
-    plants: List<Plant>
+    plants: List<PlantDTO>
 ) {
     Scaffold(topBar = {
         TopAppBar(title = { Text("GreenThumb 🌿") })
@@ -122,7 +123,7 @@ fun MyPlantsScreenContent(
 
 
 @Composable
-fun PlantItem(planta: Plant) {
+fun PlantItem(planta: PlantDTO) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -136,7 +137,7 @@ fun PlantItem(planta: Plant) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-             val imageUrl = if (planta.images.isNotEmpty()) planta.images.first().url else null
+             val imageUrl = if (planta.images?.isNotEmpty() ?: false) planta.images.first().url else null
             // Usar Coil para cargar la imagen de la planta
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
