@@ -23,7 +23,7 @@ class MyPlantsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Log.d("MyPlantsViewModel", "Fetching plants for client: $clientId")
-                val result = repository.getPlants(clientId)
+                val result = repository.getPlants()
                 _plants.value = result.content
                 Log.d("MyPlantsViewModel", "Successfully fetched ${result.total} plants")
             } catch (e: Exception) {
