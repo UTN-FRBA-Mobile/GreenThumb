@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -81,6 +83,7 @@ import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.ImageDTO
 import com.utn.greenthumb.domain.model.TaxonomyDTO
+import com.utn.greenthumb.domain.model.TranslationException
 import com.utn.greenthumb.domain.model.WateringDTO
 import com.utn.greenthumb.ui.theme.GreenBackground
 import kotlinx.coroutines.CoroutineScope
@@ -99,6 +102,8 @@ fun ResultScreen(
     val scope = rememberCoroutineScope()
     var selectedPlantExternalId by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showErrorDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -163,16 +168,25 @@ fun ResultScreen(
                                 scope.launch {
                                     isProcessing = true
                                     try {
-                                        // TODO: Implementar guardado en BD
                                         Log.d("ResultScreen", "Saving plant: $plant")
+
                                         withContext(Dispatchers.IO) {
-                                            plantViewModel.savePlant(plant)
-                                            // navController.navigate("my_plants")
+                                            plantViewModel.savePlantWithTranslation(plant)
                                         }
+                                        Log.d("ResultScreen", "Plant saved succesfully!")
                                         onSuccessfulIdentification()
-                                        // navController.navigate("my_plants")
-                                    } catch(e: Exception) {
+                                    } catch (e: TranslationException) {
+                                        Log.d("ResultScreen", "Translation error", e)
+                                        errorMessage = "Error traduciendo la planta ${e.message}"
+                                        showErrorDialog = true
+                                    } catch (e: java.net.UnknownHostException) {
+                                        Log.e("ResultScreen", "Network error", e)
+                                        errorMessage = "Sin conexión a internet. Verifica tu conexión."
+                                        showErrorDialog = true
+                                    } catch (e: Exception) {
                                         Log.e("ResultScreen", "Error saving plant", e)
+                                        errorMessage = "Error al guardar la planta: ${e.localizedMessage}"
+                                        showErrorDialog = true
                                     } finally {
                                         isProcessing = false
                                     }
@@ -204,6 +218,49 @@ fun ResultScreen(
                     )
                 }
             }
+        }
+
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(48.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Error al guardar",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                text = {
+                    Text(
+                        text = errorMessage ?: "Ha ocurrido un error inesperado",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { showErrorDialog = false }
+                    ) {
+                        Text("Entendido")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showErrorDialog = false
+                            onBackPressed()
+                        }
+                    ) {
+                        Text("Volver")
+                    }
+                }
+            )
         }
     }
 }
@@ -282,7 +339,9 @@ private fun SuccessContent(
                 ) {
                     Button(
                         onClick = {
-                            selectedPlant?.let { onSavePlant(it) }
+                            selectedPlant?.let { plant ->
+                                onSavePlant(plant)
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isProcessing

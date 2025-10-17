@@ -25,12 +25,12 @@ data class ImageDTO(
 )
 
 data class TaxonomyDTO(
-    val taxonomyClass: String,
-    val genus: String,
-    val order: String,
-    val family: String,
-    val phylum: String,
-    val kingdom: String
+    val taxonomyClass: String?,
+    val genus: String?,
+    val order: String?,
+    val family: String?,
+    val phylum: String?,
+    val kingdom: String?
 )
 
 data class WateringDTO(

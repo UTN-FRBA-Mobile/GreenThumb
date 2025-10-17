@@ -500,30 +500,47 @@ private fun TaxonomySection(
                 modifier = Modifier.padding(start = 28.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_class),
-                    value = taxonomy.taxonomyClass
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_genus),
-                    value = taxonomy.genus
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_order),
-                    value = taxonomy.order
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_family),
-                    value = taxonomy.family
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_phylum),
-                    value = taxonomy.phylum
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_kingdom),
-                    value = taxonomy.kingdom
-                )
+                if (taxonomy.taxonomyClass != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_class),
+                        value = taxonomy.taxonomyClass
+                    )
+                }
+
+                if (taxonomy.genus != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_genus),
+                        value = taxonomy.genus
+                    )
+                }
+
+                if (taxonomy.order != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_order),
+                        value = taxonomy.order
+                    )
+                }
+
+                if (taxonomy.family != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_family),
+                        value = taxonomy.family
+                    )
+                }
+
+                if (taxonomy.phylum != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_phylum),
+                        value = taxonomy.phylum
+                    )
+                }
+
+                if (taxonomy.kingdom != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_kingdom),
+                        value = taxonomy.kingdom
+                    )
+                }
             }
         }
 

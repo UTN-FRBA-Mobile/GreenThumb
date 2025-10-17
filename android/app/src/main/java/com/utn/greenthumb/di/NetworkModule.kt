@@ -6,6 +6,8 @@ import com.utn.greenthumb.client.TranslateApiClient
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.client.services.TranslationApiService
 import com.utn.greenthumb.data.repository.AuthRepository
+import com.utn.greenthumb.data.repository.TranslationRepository
+import com.utn.greenthumb.data.services.PlantTranslationService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,4 +33,11 @@ object NetworkModule {
         return TranslateApiClient.api
     }
 
+    @Provides
+    @Singleton
+    fun providePlantTranslationService(
+        translationRepository: TranslationRepository
+    ): PlantTranslationService {
+        return PlantTranslationService(translationRepository)
+    }
 }

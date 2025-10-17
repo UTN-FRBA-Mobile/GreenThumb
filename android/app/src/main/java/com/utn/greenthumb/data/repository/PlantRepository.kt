@@ -26,7 +26,9 @@ class PlantRepository @Inject constructor(
 
     }
     suspend fun save(plant: PlantDTO) {
-        plantsApi.save(request = plant)
+        plantsApi.save(
+            request = plant
+        )
     }
 
 }

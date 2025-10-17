@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.PlantDTO
+import com.utn.greenthumb.ui.main.result.FullScreenImageGallery
 import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.viewmodel.PlantViewModel
 
@@ -34,7 +35,7 @@ import com.utn.greenthumb.viewmodel.PlantViewModel
 @Composable
 fun PlantScreen(
     onBackPressed: () -> Unit,
-    plantSelected: PlantDTO // TODO: ya viene con la planta seleccionada desde la base de datos
+    plantSelected: PlantDTO
 ) {
 
     var selectedGalleryImages by remember { mutableStateOf<List<String>?>(null) }
@@ -74,8 +75,15 @@ fun PlantScreen(
                 }
             )
         }
-
-        // TODO: poner states de Loading, Success y Error
-
+    }
+    if (selectedGalleryImages != null) {
+        FullScreenImageGallery(
+            images = selectedGalleryImages!!,
+            initialIndex = selectedGalleryIndex,
+            onDismiss = {
+                selectedGalleryImages = null
+                selectedGalleryIndex = 0
+            }
+        )
     }
 }

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -77,6 +78,8 @@ fun PlantCard(
     plant: PlantDTO,
     onImageClick: ((imageIndex: Int, images: List<String>) -> Unit)? = null
 ) {
+
+    Log.d("PlantCard", "PlantCard received: $plant")
 
     Card(
         modifier = Modifier
@@ -201,7 +204,18 @@ fun PlantCard(
 
 
             // CUIDADOS - Sección
-            SectionTitle(title = "CUIDADOS")
+            Text(
+                text = "CUIDADOS DE LA PLANTA",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+
+            Divider(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                thickness = 1.dp
+            )
 
             // Condiciones óptimas de iluminación
             if (plant.bestLightCondition?.isNotEmpty() ?: false) {
@@ -472,7 +486,7 @@ private fun ListSection(
     items: List<String>
 ) {
     Column(
-        modifier = Modifier.padding(start = 28.dp, top = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         SectionTitle(
@@ -523,8 +537,12 @@ private fun TaxonomySection(
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SectionTitle(
-                title = stringResource(R.string.taxonomy) + ":",
+            Text(
+                text = stringResource(R.string.taxonomy) + ":",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
             )
 
             Icon(
@@ -551,30 +569,47 @@ private fun TaxonomySection(
                 modifier = Modifier.padding(start = 28.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_class),
-                    value = taxonomy.taxonomyClass
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_genus),
-                    value = taxonomy.genus
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_order),
-                    value = taxonomy.order
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_family),
-                    value = taxonomy.family
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_phylum),
-                    value = taxonomy.phylum
-                )
-                TaxonomyItem(
-                    label = stringResource(R.string.taxonomy_kingdom),
-                    value = taxonomy.kingdom
-                )
+                if (taxonomy.taxonomyClass != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_class),
+                        value = taxonomy.taxonomyClass
+                    )
+                }
+
+                if (taxonomy.genus != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_genus),
+                        value = taxonomy.genus
+                    )
+                }
+
+                if (taxonomy.order != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_order),
+                        value = taxonomy.order
+                    )
+                }
+
+                if (taxonomy.family != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_family),
+                        value = taxonomy.family
+                    )
+                }
+
+                if (taxonomy.phylum != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_phylum),
+                        value = taxonomy.phylum
+                    )
+                }
+
+                if (taxonomy.kingdom != null) {
+                    TaxonomyItem(
+                        label = stringResource(R.string.taxonomy_kingdom),
+                        value = taxonomy.kingdom
+                    )
+                }
             }
         }
 

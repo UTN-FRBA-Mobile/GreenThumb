@@ -213,7 +213,7 @@ fun AppNavHost(
                         onCamera = navigation::onCamera,
                         onRemembers = navigation::onRemembers,
                         onProfile = navigation::onProfile,
-                        onPlantClick = { plant ->
+                        onPlantSelected = { plant ->
                             Log.d("AppNavHost", "Plant selected: ${plant.name}")
                             plantViewModel.selectPlant(plant)
                             navController.navigate(NavRoutes.PlanDetail.route)
