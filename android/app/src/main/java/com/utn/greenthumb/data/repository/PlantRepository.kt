@@ -21,8 +21,8 @@ class PlantRepository @Inject constructor(
         return PlantMapper.fromDto(response)
     }
 
-    suspend fun getPlants(clientId: String): PagedResponse<PlantDTO> {
-         return  plantsApi.getPlants(clientId)
+    suspend fun getPlants(): PagedResponse<PlantDTO> {
+         return  plantsApi.getPlants()
 
     }
     suspend fun save(plant: PlantDTO) {
