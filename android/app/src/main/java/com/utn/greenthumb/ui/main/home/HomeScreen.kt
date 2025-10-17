@@ -15,7 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,38 +40,28 @@ fun HomeScreen(
     onProfile: () -> Unit
 ) {
     val context = LocalContext.current
-    val token by notificationViewModel.token.collectAsState()
-    val isLoading by notificationViewModel.isLoading.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            currentUser?.uid?.let { userId ->
-                notificationViewModel.refreshAndSendToken(userId)
-            }
+            notificationViewModel.refreshToken()
         } else {
             Log.w("HomeScreen", "Notification permission denied")
         }
     }
 
-    LaunchedEffect(currentUser?.uid) {
+    LaunchedEffect(Unit) {
         currentUser?.let { user ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (NotificationHelper.hasNotificationPermission(context)) {
-                    notificationViewModel.refreshAndSendToken(user.uid)
+                    notificationViewModel.refreshToken()
                 } else {
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             } else {
-                notificationViewModel.refreshAndSendToken(user.uid)
+                notificationViewModel.refreshToken()
             }
-        }
-    }
-
-    LaunchedEffect(token) {
-        token?.let {
-            Log.d("HomeScreen", "Token received: ${it.take(20)}")
         }
     }
 

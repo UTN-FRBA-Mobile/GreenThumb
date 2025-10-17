@@ -4,12 +4,11 @@ import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
 import com.utn.greenthumb.domain.model.PlantDTO
+import com.utn.greenthumb.domain.model.UserTokenDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.PUT
 
 interface PlantsApiService {
 
@@ -27,6 +26,6 @@ interface PlantsApiService {
     suspend fun save(@Body request: PlantDTO)
 
     @Headers("Content-Type: application/json")
-    @PUT("/users/notification")
-    suspend fun updateNotificationToken(token: String)
+    @POST("/users/notification/token")
+    suspend fun updateNotificationToken(@Body request: UserTokenDTO)
 }

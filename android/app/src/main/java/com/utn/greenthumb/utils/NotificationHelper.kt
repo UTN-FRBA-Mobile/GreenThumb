@@ -7,7 +7,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.util.Log
 import androidx.core.content.ContextCompat.checkSelfPermission
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 
@@ -22,12 +21,7 @@ object NotificationHelper {
 
     suspend fun refreshToken(): String? {
         return try {
-            Log.d("NotificationHelper", "Getting token...")
-
-            val token = FirebaseMessaging.getInstance().token.await()
-
-            Log.d("NotificationHelper", "Token: ${token.take(20)}")
-            token
+            FirebaseMessaging.getInstance().token.await()
         } catch (e: Exception) {
             Log.d("NotificationHelper", "Error getting token", e)
             null

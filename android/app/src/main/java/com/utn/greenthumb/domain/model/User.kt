@@ -7,3 +7,7 @@ data class User(
     val photoUrl: String? = null,
     val isEmailVerified: Boolean = false
 )
+
+data class UserTokenDTO(
+    val token: String
+)
