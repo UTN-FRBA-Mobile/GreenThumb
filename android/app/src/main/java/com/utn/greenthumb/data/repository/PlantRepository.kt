@@ -5,6 +5,7 @@ import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.domain.model.PlantDTO
+import com.utn.greenthumb.domain.model.WateringReminderDTO
 import javax.inject.Inject
 
 class PlantRepository @Inject constructor(
@@ -29,6 +30,16 @@ class PlantRepository @Inject constructor(
         plantsApi.save(
             request = plant
         )
+    }
+
+    suspend fun getFavouritesPlants(): PagedResponse<PlantDTO> {
+        //return plantsApi.getFavouritesPlants()
+        return PagedResponse(emptyList(), 0, 0, 0, emptyList())
+    }
+
+    suspend fun getWateringSchedule(): PagedResponse<WateringReminderDTO> {
+        //return plantsApi.getWateringSchedule()
+        return PagedResponse(emptyList(), 0, 0, 0, emptyList())
     }
 
 }
