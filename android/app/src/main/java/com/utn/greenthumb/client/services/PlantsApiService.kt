@@ -1,6 +1,5 @@
 package com.utn.greenthumb.client.services
 
-import android.R
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plant.PlantRequest
 import com.utn.greenthumb.data.model.plant.FavouritePlantRequest
@@ -39,6 +38,8 @@ interface PlantsApiService {
     @POST("/users/notification/token")
     suspend fun updateNotificationToken(@Body request: UserTokenDTO)
 
+    @GET("plants/{plantId}")
+    suspend fun getPlant(@Path("plantId") plantId: String): PlantDTO
 
 
     @GET("plants/watering-reminders/list")
@@ -66,5 +67,4 @@ interface PlantsApiService {
         @Path("id") reminderId: String,
         @Body request: FavouritePlantRequest
     )
-
 }

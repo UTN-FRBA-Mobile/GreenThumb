@@ -42,13 +42,13 @@ import com.utn.greenthumb.ui.main.camera.CameraScreen
 import com.utn.greenthumb.ui.main.home.HomeScreen
 import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.ui.main.my.plants.MyPlantsScreen
+import com.utn.greenthumb.ui.main.my.plants.PlantScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
 import com.utn.greenthumb.ui.main.result.IdentificationSuccessScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.NotificationViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
-import com.utn.greenthumb.ui.main.my.plants.PlantScreen
 
 
 @SuppressLint("RestrictedApi")
@@ -101,6 +101,13 @@ fun AppNavHost(
                 Log.e("AppNavHost", "Logout failed: ${(logoutState as UiState.Error).message}")
             }
             else -> { }
+        }
+    }
+
+    // Para notificaciones
+    LaunchedEffect(selectedPlant) {
+        selectedPlant?.let {
+            navController.navigate(NavRoutes.PlanDetail.route)
         }
     }
 

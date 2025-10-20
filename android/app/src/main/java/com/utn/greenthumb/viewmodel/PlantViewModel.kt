@@ -100,6 +100,13 @@ class PlantViewModel @Inject constructor(
         _selectedPlant.value = plant
     }
 
+    fun selectPlant(plantId: String) {
+        viewModelScope.launch {
+            val plantDTO: PlantDTO = repository.getPlant(plantId)
+            selectPlant(plantDTO)
+        }
+    }
+
 
     fun clearSelectedPlant() {
         Log.d("PlantViewModel", "Selected plant cleared")

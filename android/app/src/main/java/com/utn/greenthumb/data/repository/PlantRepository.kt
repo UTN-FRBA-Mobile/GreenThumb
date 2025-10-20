@@ -35,6 +35,10 @@ class PlantRepository @Inject constructor(
         )
     }
 
+    suspend fun getPlant(plantId: String): PlantDTO {
+        return plantsApi.getPlant(plantId)
+    }
+
     suspend fun getFavouritePlants(): PagedResponse<PlantDTO> {
         return plantsApi.getPlants(PlantRequest(favourite = true))
     }
