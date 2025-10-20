@@ -70,6 +70,7 @@ import java.util.Date
 import kotlin.math.abs
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -111,6 +112,19 @@ fun FavouritePlantItem(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Image(
+            painter = painterResource(plant.imageUrl.toInt()),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(88.dp)
+                .clip(CircleShape)
+                .border(4.dp, Color(0xFF2A542C), CircleShape)
+                .padding(all = 4.dp)
+        )
+
+        /*
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(plant.imageUrl)
@@ -126,6 +140,7 @@ fun FavouritePlantItem(
                 .border(4.dp, Color(0xFF2A542C), CircleShape)
                 .padding(all = 4.dp)
         )
+        */
 
         val name = if (plant.name.length > 10) {
             plant.name.substring(0, 10) + "..."
@@ -180,12 +195,26 @@ fun WateringReminderCard (
         modifier = modifier
             .fillMaxWidth()
             //.padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 2.dp)
-            .padding(horizontal = 10.dp, vertical = 2.dp)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp)
         ) {
+
+            Image(
+                painter = painterResource(reminder.plantImageUrl.toInt()),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFFFFFFFF), RoundedCornerShape(8.dp))
+                    //.padding(all = 4.dp)
+            )
+            /*
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(reminder.plantImageUrl)
@@ -200,6 +229,8 @@ fun WateringReminderCard (
                     .clip(CircleShape)
                     .padding(start = 8.dp)
             )
+
+             */
             Column(
                 modifier = Modifier
                     //.fillMaxSize()
@@ -212,28 +243,33 @@ fun WateringReminderCard (
                     text = reminder.plantName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    color = Color(0xEE1E1D1D),
                     //modifier = Modifier.padding(horizontal = 2.dp)
                 )
                 Text(
                     text = SimpleDateFormat("EEEE, d 'de' MMMM").format(reminder.date),
                     style = MaterialTheme.typography.titleSmall,
+                    color = Color(0xEE1E1D1D),
                     //modifier = Modifier.padding(horizontal = 2.dp)
                 )
             }
+
+
+
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.watering_can_white_red),
+                    painter = painterResource(R.drawable.check_green),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
                 )
-
+                /*
                 val days = abs(reminder.daysLeft).toString() + " " +
                         if (abs(reminder.daysLeft) > 1 || reminder.daysLeft == 0) {
                             stringResource(R.string.remaining_days)
@@ -244,9 +280,12 @@ fun WateringReminderCard (
                 Text (
                     text = days,
                     style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 2.dp)
+                    modifier = Modifier.padding(horizontal = 2.dp),
+                    color = Color(0xEE1E1D1D),
                 )
+                */
             }
+
         }
     }
 }
@@ -411,6 +450,22 @@ fun HomeScreen(
 
 
 
+private val drawableFavouritePlantsUIState = FavouritePlantsUIState(
+    isLoading = false,
+    isValid = true,
+    userMessages = listOf(),
+    favourites = listOf(
+        Plant(id = "1", name = "Acer palmatum Thunb", R.drawable.anthurium_andraeanum.toString()),
+        Plant(id = "2", name = "Anturio", imageUrl = R.drawable.anturio.toString()),
+        Plant(id = "3", name = "Acacia de Constantinopla", imageUrl = R.drawable.clivia.toString()),
+        Plant(id = "4", name = "Impatiens", imageUrl = R.drawable.kalanchoe.toString()),
+        Plant(id = "5", name = "Alegrías de la casa", imageUrl = R.drawable.clerodendrum_thomsoniae.toString()),
+        Plant(id = "6", name = "Cactus", imageUrl = R.drawable.cephalotus_follicularis.toString()),
+        Plant(id = "7", name = "Cheflera", imageUrl = R.drawable.hoya_carnosa.toString()),
+    ),
+)
+
+
 private val favouritePlantsUIState = FavouritePlantsUIState(
     isLoading = false,
     isValid = true,
@@ -423,6 +478,30 @@ private val favouritePlantsUIState = FavouritePlantsUIState(
         Plant(id = "5", name = "Alegrías de la casa", imageUrl = "https://www.massogarden.com/images/plantas/Impatiens.jpg"),
         Plant(id = "6", name = "Cactus", imageUrl = "https://www.massogarden.com/images/plantas/Cactus.jpg"),
         Plant(id = "7", name = "Cheflera", imageUrl = "https://www.massogarden.com/images/plantas/cheflera.jpg"),
+    ),
+)
+
+private val drawableWateringScheduleUIState = WateringScheduleUIState(
+    isLoading = false,
+    isValid = false,
+    userMessages = listOf(),
+    schedule = listOf(
+        WateringReminder(id = "2", plantId = "4", plantName = "Impatients",
+            plantImageUrl = R.drawable.kalanchoe.toString(),
+            date = getDate(-2), daysLeft = -2, overdue = true, checked = false
+        ),
+        WateringReminder(id = "3", plantId = "2", plantName = "Anturio",
+            plantImageUrl = R.drawable.anturio.toString(),
+            date = getDate(0), daysLeft = 0, overdue = false, checked = false
+        ),
+        WateringReminder(id = "1", plantId = "6", plantName = "Cactus",
+            plantImageUrl = R.drawable.cephalotus_follicularis.toString(),
+            date = getDate(4), daysLeft = 4, overdue = false, checked = false
+        ),
+        WateringReminder(id = "4", plantId = "7", plantName = "Cheflera",
+            plantImageUrl = R.drawable.hoya_carnosa.toString(),
+            date = getDate(6), daysLeft = 6, overdue = false, checked = false
+        ),
     ),
 )
 
@@ -469,7 +548,7 @@ fun SearchBarPreview() {
 fun FavouritePlantItemPreview() {
     GreenThumbTheme {
         FavouritePlantItem(
-            plant = favouritePlantsUIState.favourites.first(),
+            plant = drawableFavouritePlantsUIState.favourites.first(),
             onClick = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -481,7 +560,7 @@ fun FavouritePlantItemPreview() {
 fun FavouritePlantSectionPreview() {
     GreenThumbTheme {
         FavouritePlantSection(
-            plants = favouritePlantsUIState,
+            plants = drawableFavouritePlantsUIState,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -492,7 +571,7 @@ fun FavouritePlantSectionPreview() {
 fun WateringReminderCardPreview() {
     GreenThumbTheme {
         WateringReminderCard(
-            reminder = wateringScheduleUIState.schedule.first(),
+            reminder = drawableWateringScheduleUIState.schedule.first(),
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -503,7 +582,7 @@ fun WateringReminderCardPreview() {
 fun WateringScheduleSectionPreview() {
     GreenThumbTheme {
         WateringScheduleSection(
-            wateringSchedule = wateringScheduleUIState,
+            wateringSchedule = drawableWateringScheduleUIState,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -523,8 +602,8 @@ fun HomeScreenPreview() {
         ) {
             HomeScreenContent(
                 userName = "Matias",
-                wateringSchedule = wateringScheduleUIState,
-                favouritePlants = favouritePlantsUIState
+                wateringSchedule = drawableWateringScheduleUIState,
+                favouritePlants = drawableFavouritePlantsUIState
             )
         }
     }

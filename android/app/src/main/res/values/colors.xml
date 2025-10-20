@@ -9,8 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green_background">#F0F8F3</color>
 
-    <color name="card_green_background">#5BD9B9</color>
-    <color name="card_red_background">#F2467A</color>
+    <color name="card_green_background">#d6eadf</color>
+    <color name="card_red_background">#f2e8cc</color>
     <color name="card_light_blue_background">#5BCED9</color>
     <color name="card_blue_background">#5BA7D9</color>
 
