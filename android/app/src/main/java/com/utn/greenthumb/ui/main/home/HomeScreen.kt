@@ -45,13 +45,14 @@ fun HomeScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
+            Log.d("Home", "Granted ${isGranted}")
             notificationViewModel.refreshToken()
         } else {
             Log.w("HomeScreen", "Notification permission denied")
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (NotificationHelper.hasNotificationPermission(context)) {

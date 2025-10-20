@@ -9,6 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface PlantsApiService {
 
@@ -28,4 +29,7 @@ interface PlantsApiService {
     @Headers("Content-Type: application/json")
     @POST("/users/notification/token")
     suspend fun updateNotificationToken(@Body request: UserTokenDTO)
+
+    @GET("plants/{plantId}")
+    suspend fun getPlant(@Path("plantId") plantId: String): PlantDTO
 }

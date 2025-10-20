@@ -31,4 +31,8 @@ class PlantRepository @Inject constructor(
         )
     }
 
+    suspend fun getPlant(plantId: String): PlantDTO {
+        return plantsApi.getPlant(plantId)
+    }
+
 }

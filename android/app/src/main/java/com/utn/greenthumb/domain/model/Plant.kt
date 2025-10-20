@@ -1,5 +1,7 @@
 package com.utn.greenthumb.domain.model
 
+import java.io.Serializable
+
 data class PlantDTO(
     val id: String?,
     val externalId: String,
@@ -18,11 +20,11 @@ data class PlantDTO(
     val bestLightCondition: String?,
     val commonUses: String?,
     val toxicity: String?
-)
+): Serializable
 
 data class ImageDTO(
     val url: String
-)
+): Serializable
 
 data class TaxonomyDTO(
     val taxonomyClass: String?,
@@ -31,9 +33,9 @@ data class TaxonomyDTO(
     val family: String?,
     val phylum: String?,
     val kingdom: String?
-)
+): Serializable
 
 data class WateringDTO(
     val max: Int,
     val min: Int
-)
+): Serializable
