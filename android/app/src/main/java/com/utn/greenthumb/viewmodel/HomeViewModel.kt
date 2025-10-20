@@ -4,8 +4,6 @@ import com.utn.greenthumb.domain.model.UserMessage
 import com.utn.greenthumb.domain.model.Severity
 
 import android.util.Log
-import androidx.annotation.DrawableRes
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.R
@@ -61,9 +59,6 @@ class HomeViewModel  @Inject constructor(
         val schedule: List<WateringReminder> = listOf(),
     )
 
-    //var uiFavouritePlantState by mutableStateOf(FavouritePlantsUIState())
-    //    private set
-
     private val _uiFavouritePlantState = MutableStateFlow(FavouritePlantsUIState())
     val uiFavouritePlantState: StateFlow<FavouritePlantsUIState> = _uiFavouritePlantState
 
@@ -83,29 +78,13 @@ class HomeViewModel  @Inject constructor(
             try {
                 Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
 
-                /*
-                // necesita API 26 como minimo
-                val todayLocalDate = Instant.ofEpochMilli(Date().time)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                */
-
-                val result = repository.getWateringSchedule()
+                val result = repository.getWateringReminders()
 
                 _uiWateringScheduleState.value = WateringScheduleUIState(
                     isLoading = false,
                     isValid = true,
                     userMessages = listOf(),
                     schedule = result.content.map { reminder ->
-
-                        /*
-                        val reminderLocalDate = Instant.ofEpochMilli(reminder.date.time)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-
-                        val daysLeft = ChronoUnit.DAYS.between(todayLocalDate, reminderLocalDate)
-                        val isOverdue = daysLeft < 0
-                        */
 
                         WateringReminder(
                             id = reminder.id,
@@ -148,7 +127,7 @@ class HomeViewModel  @Inject constructor(
             try {
                 Log.d("HomeViewModel", "Fetching favourite plants for client: $clientId")
 
-                val result = repository.getFavouritesPlants()
+                val result = repository.getFavouritePlants()
 
                 _uiFavouritePlantState.value = FavouritePlantsUIState(
                     isLoading = false,

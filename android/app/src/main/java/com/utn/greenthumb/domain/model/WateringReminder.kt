@@ -4,6 +4,7 @@ import java.util.Date
 data class WateringReminderDTO (
     val id: String,
     val plantId: String,
+    val userId: String,
     val plantName: String,
     val plantImageUrl: String,
     val date: Date,

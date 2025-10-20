@@ -71,6 +71,7 @@ import kotlin.math.abs
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 
 
@@ -167,9 +168,15 @@ fun WateringReminderCard (
     reminder: WateringReminder,
     modifier: Modifier = Modifier
 ) {
+    val cardColor = if (reminder.overdue)
+        colorResource(R.color.card_red_background)
+    else
+        colorResource(R.color.card_green_background)
+
     Surface(
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        //color = MaterialTheme.colorScheme.surfaceVariant,
+        color = cardColor,
         modifier = modifier
             .fillMaxWidth()
             //.padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 2.dp)
@@ -218,19 +225,13 @@ fun WateringReminderCard (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
-                val img = if (reminder.overdue)
-                    R.drawable.watering_can_white_red
-                else
-                    R.drawable.watering_can_white_green
-
                 Image(
-                    painter = painterResource(img),
+                    painter = painterResource(R.drawable.watering_can_white_red),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .border(2.dp, Color(0x000000), CircleShape)
                 )
 
                 val days = abs(reminder.daysLeft).toString() + " " +
