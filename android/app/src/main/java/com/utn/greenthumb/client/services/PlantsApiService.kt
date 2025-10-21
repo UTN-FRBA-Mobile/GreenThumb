@@ -17,7 +17,7 @@ interface PlantsApiService {
     @POST("/plants/identify")
     suspend fun identifyPlant(
         @Body request: IdentificationRequest
-    ): List<IdentificationResponse>
+    ): IdentificationResponse
 
     @GET("plants/list")
     suspend fun getPlants(): PagedResponse<PlantDTO>

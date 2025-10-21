@@ -1,6 +1,15 @@
 package com.utn.greenthumb.data.model.plantid
 
+import com.google.gson.annotations.SerializedName
+
 data class IdentificationResponse(
+    @SerializedName("plant_results")
+    val plantResults: List<PlantResults>,
+    @SerializedName("is_plant")
+    val isPlant: IsPlant
+)
+
+data class PlantResults(
     val externalId: String,
     val name: String,
     val probability: Double,
@@ -32,5 +41,12 @@ data class Taxonomy(
 )
 
 data class Watering(
-    val max: Int, val min: Int
+    val max: Int,
+    val min: Int
+)
+
+data class IsPlant(
+    val probability: Double,
+    val threshold: Double,
+    val binary: Boolean
 )

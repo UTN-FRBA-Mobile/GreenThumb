@@ -1,5 +1,6 @@
 package com.utn.greenthumb.data.repository
 
+import android.util.Log
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
@@ -17,8 +18,17 @@ class PlantRepository @Inject constructor(
         val response = plantsApi.identifyPlant(
             request = request
         )
+        Log.d("PlantRepository", "Response: $response")
+        Log.d("PlantRepository", "Response plantResults: ${response.plantResults}")
+        Log.d("PlantRepository", "Response isPlant: ${response.isPlant}")
 
-        return PlantMapper.fromDto(response)
+        // Solamente retorna los resultados completos SI es una planta
+        // - cuando la probabilidad de que sea una planta es mayor al umbral
+        return if (response.isPlant.probability >= response.isPlant.threshold) {
+            PlantMapper.fromDto(response.plantResults)
+        } else {
+            emptyList()
+        }
     }
 
     suspend fun getPlants(): PagedResponse<PlantDTO> {

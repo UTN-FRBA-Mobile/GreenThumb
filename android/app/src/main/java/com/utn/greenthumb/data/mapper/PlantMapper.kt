@@ -1,6 +1,6 @@
 package com.utn.greenthumb.data.mapper
 
-import com.utn.greenthumb.data.model.plantid.IdentificationResponse
+import com.utn.greenthumb.data.model.plantid.PlantResults
 import com.utn.greenthumb.domain.model.ImageDTO
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.TaxonomyDTO
@@ -8,7 +8,7 @@ import com.utn.greenthumb.domain.model.WateringDTO
 
 object PlantMapper {
 
-    fun fromDto(dto: List<IdentificationResponse>): List<PlantDTO> {
+    fun fromDto(dto: List<PlantResults>): List<PlantDTO> {
         return dto.map { suggestion ->
             PlantDTO(
                 id = null,
