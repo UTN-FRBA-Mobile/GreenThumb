@@ -28,6 +28,8 @@
     <string name="remaining_day">día</string>
     <string name="watering_schedule_section_title">Recordatorios de riego</string>
     <string name="favourite_plants_section_title">Favoritas</string>
+    <string name="no_watering_schedule_message">No tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, seleccionando la planta que deseas regar, y de esa forma recibiras notificaciones cuando sea el momento</string>
+    <string name="no_favourite_plants_message">Aún no has añadido ninguna planta a tus favoritos, pero puedes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
 
 
     <string name="back_navigation">Volver</string>

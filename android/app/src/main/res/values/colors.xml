@@ -13,5 +13,14 @@
     <color name="card_red_background">#f2e8cc</color>
     <color name="card_light_blue_background">#5BCED9</color>
     <color name="card_blue_background">#5BA7D9</color>
+    <color name="home_empty_data_background">#FFD8E8D9</color>
+    <color name="home_empty_data_border">#FF39963C</color>
+    <color name="home_error_data_background">#F2E3EB</color>
+    <color name="home_error_data_border">#DC6D95</color>
+    <color name="home_background">#FFFAFAFA</color>
+    <color name="home_border">#FFF5F5F5</color>
+
+
+
 
 </resources>

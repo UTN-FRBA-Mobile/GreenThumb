@@ -43,7 +43,8 @@ object PlantMapper {
                 },
                 bestWatering = suggestion.bestWatering,
                 propagationMethods = suggestion.propagationMethods,
-                bestLightCondition = suggestion.bestLightCondition
+                bestLightCondition = suggestion.bestLightCondition,
+                favourite = false
             )
         }
     }

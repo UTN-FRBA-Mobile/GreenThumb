@@ -2,7 +2,7 @@ package com.utn.greenthumb.client.services
 
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plant.PlantRequest
-import com.utn.greenthumb.data.model.plant.FavouritePlantRequest
+import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.watering.WateringReminderRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
@@ -16,6 +16,7 @@ import retrofit2.http.POST
 import retrofit2.http.PATCH
 import retrofit2.http.DELETE
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface PlantsApiService {
 
@@ -27,7 +28,7 @@ interface PlantsApiService {
 
     @GET("plants/list")
     suspend fun getPlants(
-        @Body request: PlantRequest? = null
+        @Query("favourites") favourites: Boolean? = null
     ): PagedResponse<PlantDTO>
 
     @Headers("Content-Type: application/json")
@@ -42,6 +43,7 @@ interface PlantsApiService {
     suspend fun getPlant(@Path("plantId") plantId: String): PlantDTO
 
 
+
     @GET("plants/watering-reminders/list")
     suspend fun getWateringReminders(): PagedResponse<WateringReminderDTO>
 
@@ -51,20 +53,23 @@ interface PlantsApiService {
         @Body request: WateringReminderRequest
     )
 
-    @PATCH("/plants/watering-reminders/{id}/check")
+    @PATCH("/plants/watering-reminders/{reminderId}/check")
     suspend fun checkWateringReminder(
-        @Path("id") reminderId: String
+        @Path("reminderId") reminderId: String
     )
 
-    @DELETE("/plants/watering-reminders/{id}")
+    @GET("plants/watering-reminders/{reminderId}")
+    suspend fun getWateringReminder(@Path("reminderId") reminderId: String): WateringReminderDTO
+
+    @DELETE("/plants/watering-reminders/{reminderId}")
     suspend fun deleteWateringReminder(
-        @Path("id") reminderId: String
+        @Path("reminderId") reminderId: String
     )
 
     @Headers("Content-Type: application/json")
-    @PATCH("/plants/{id}/favourite")
+    @PATCH("/plants/{plantId}/favourite")
     suspend fun setFavouritePlant(
-        @Path("id") reminderId: String,
-        @Body request: FavouritePlantRequest
+        @Path("plantId") plantId: String,
+        @Body request: SetFavouriteRequest
     )
 }

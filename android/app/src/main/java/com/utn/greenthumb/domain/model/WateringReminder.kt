@@ -7,6 +7,6 @@ data class WateringReminderDTO (
     val userId: String,
     val plantName: String,
     val plantImageUrl: String,
-    val date: Date,
+    val date: String,
     val checked: Boolean
 )
