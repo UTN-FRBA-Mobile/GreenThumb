@@ -7,14 +7,12 @@ import com.utn.greenthumb.viewmodel.HomeViewModel.FavouritePlant
 import com.utn.greenthumb.viewmodel.HomeViewModel.WateringReminder
 import com.utn.greenthumb.domain.model.UserMessage
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
-
 import android.Manifest
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -60,7 +58,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -72,7 +69,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.text.SimpleDateFormat
-//import com.utn.greenthumb.domain.model.WateringReminderDTO
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
@@ -87,12 +83,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -101,48 +91,37 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.style.TextAlign
 import com.utn.greenthumb.domain.model.Severity
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.ui.unit.sp
 
-
-
-// ...
 
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier
 ) {
-    // 1. Añade un estado para guardar el texto del campo de búsqueda.
-    //    'remember' asegura que el estado sobreviva a las recomposiciones.
-    //    'mutableStateOf' lo hace observable, para que la UI se actualice cuando cambie.
     var text by remember { mutableStateOf("") }
 
     TextField(
-        // 2. Vincula el valor del TextField a tu estado.
         value = text,
-        // 3. Actualiza el estado cada vez que el usuario escribe.
-        onValueChange = { newText ->
-            text = newText
-        },
+        onValueChange = { newText -> text = newText },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null
             )
         },
-        // --- INICIO DE LA LÓGICA PARA EL ICONO DE LIMPIEZA ---
+
         trailingIcon = {
-            // 4. Muestra el icono de la cruz SÓLO si el texto no está vacío.
+            // Muestra el icono de la cruz SÓLO si el texto no está vacío.
             if (text.isNotEmpty()) {
                 Icon(
-                    imageVector = Icons.Default.Clear, // El icono de la "X"
-                    contentDescription = "Clear text", // Descripción para accesibilidad
-                    modifier = Modifier.clickable {
-                        // 5. Al hacer clic, vacía el estado del texto.
-                        text = ""
-                    }
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Clear text",
+                    modifier = Modifier.clickable { text = "" }
                 )
             }
         },
-        // --- FIN DE LA LÓGICA ---
+
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedContainerColor = MaterialTheme.colorScheme.surface
@@ -150,7 +129,7 @@ fun SearchBar(
         placeholder = {
             Text(stringResource(R.string.placeholder_search_favourite))
         },
-        // 6. Queremos una sola línea para la barra de búsqueda.
+        // una sola línea para la barra de búsqueda.
         singleLine = true,
         modifier = modifier
             .fillMaxWidth()
@@ -207,7 +186,7 @@ fun FavouritePlantSection(
     modifier: Modifier = Modifier
 ) {
     if (!favouritePlantsUIState.isValid) {
-        // Ocurrio un error al buscar los datos
+        // Estado invalido de los datos
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -224,17 +203,30 @@ fun FavouritePlantSection(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            favouritePlantsUIState.userMessages.forEach { userMessage ->
-                Text(
-                    text = "🌿 " + userMessage.message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp)
                 )
+
+                favouritePlantsUIState.userMessages.forEach { userMessage ->
+                    Text(
+                        text = "🌿 " + stringResource(userMessage.message.toInt()),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
     } else {
         if (favouritePlantsUIState.favourites.isNotEmpty()) {
-            // Caso de Éxito con Contenido: Muestra la LazyRow.
+            // Caso de exito
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp), // Aumenté el espaciado
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -268,11 +260,17 @@ fun FavouritePlantSection(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "🌿 " + stringResource(R.string.no_favourite_plants_message),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "🌿 " + stringResource(R.string.empty_favourite_plants_message),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }
@@ -349,6 +347,7 @@ fun WateringReminderCard(
                 )
                 Text(
                     text = SimpleDateFormat("EEEE, d 'de' MMMM").format(reminder.date),
+                    //text = SimpleDateFormat("EEEE, d 'de' MMMM").format(reminder.date),
                     style = MaterialTheme.typography.titleSmall,
                     color = Color(0xEE1E1D1D)
                 )
@@ -380,29 +379,36 @@ fun WateringReminderCard(
                     .constrainAs(expandableContent) {
                         // Anclado DEBAJO de la columna de texto principal
                         top.linkTo(textInfo.bottom, margin = 8.dp)
-
-                        // --- INICIO DE LA CORRECCIÓN ---
-
                         // Ancla el inicio al inicio de la columna de texto
                         start.linkTo(textInfo.start)
                         // Ancla el final al final del icono de check
                         end.linkTo(checkIcon.end)
                         // Haz que el ancho llene el espacio definido por las anclas
                         width = Dimension.fillToConstraints
-
-                        // --- FIN DE LA CORRECCIÓN ---
                     }
             ) {
                 Column {
-                    val days = abs(reminder.daysLeft).toString() + " " +
+                    val days =
+                        abs(reminder.daysLeft).toString() + " " +
                             if (abs(reminder.daysLeft) > 1 || reminder.daysLeft == 0) {
                                 stringResource(R.string.remaining_days)
                             } else {
                                 stringResource(R.string.remaining_day)
                             }
 
+                    val notice =
+                        if (reminder.daysLeft == 0) {
+                            "Hoy es el dia de regar tu planta"
+                        }
+                        else if (reminder.daysLeft < 0) {
+                            "Tu riego esta retrasado por $days dias"
+                        }
+                        else {
+                            "Faltan $days para el próximo riego"
+                        }
+
                     Text(
-                        text = "Faltan $days para el próximo riego",
+                        text = notice,
                         style = MaterialTheme.typography.titleSmall,
                         color = Color(0xEE1E1D1D),
                     )
@@ -425,6 +431,7 @@ fun WateringScheduleSection (
     wateringScheduleUIState: WateringScheduleUIState,
     modifier: Modifier = Modifier
 ) {
+    // Estado invalido de los datos
     if (!wateringScheduleUIState.isValid) {
         Box (
             modifier = modifier
@@ -442,14 +449,20 @@ fun WateringScheduleSection (
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             )
             {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(64.dp)
+                )
+
                 wateringScheduleUIState.userMessages.forEach { userMessage ->
                     Text(
-                        text = "🌿 " + userMessage.message,
+                        text = "🌿 " + stringResource(userMessage.message.toInt()),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
@@ -458,13 +471,14 @@ fun WateringScheduleSection (
             }
         }
     } else {
+        // Estado exitoso
         if (wateringScheduleUIState.schedule.isNotEmpty()) {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = modifier
             ) {
                 itemsIndexed(
-                    items = wateringScheduleUIState.schedule, // Usa la lista desde el objeto de estado
+                    items = wateringScheduleUIState.schedule,
                     key = { _, reminder -> reminder.id }
                 ) { _, reminder ->
                     WateringReminderCard(
@@ -475,6 +489,7 @@ fun WateringScheduleSection (
             }
         }
         else {
+            // No hay datos para mostrar
             Box(
                 modifier = modifier
                     .fillMaxSize()
@@ -490,12 +505,22 @@ fun WateringScheduleSection (
                     ),
                 contentAlignment = Alignment.Center
             )  {
-                Text(
-                    text = "🌿 " + stringResource(R.string.no_watering_schedule_message),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🌱",
+                        style = MaterialTheme.typography.displayLarge,
+                        fontSize = 72.sp
+                    )
+                    Text(
+                        text = "🌿 " + stringResource(R.string.empty_watering_schedule_message),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }
@@ -609,12 +634,15 @@ fun HomeScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            Log.d("Home", "Granted ${isGranted}")
+            Log.d("Home", "Granted $isGranted")
             notificationViewModel.refreshToken()
         } else {
             Log.w("HomeScreen", "Notification permission denied")
         }
     }
+
+    //val clientId = currentUser?.uid ?: ""
+    val uiHomeState by viewModel.uiHomeState.collectAsState()
 
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
@@ -627,22 +655,13 @@ fun HomeScreen(
             } else {
                 notificationViewModel.refreshToken()
             }
+
+            if (currentUser.uid.isNotEmpty()) {
+                viewModel.fetchData(currentUser.uid)
+            }
         }
     }
 
-    val clientId = currentUser?.uid ?: ""
-    val uiWateringScheduleState = viewModel.uiWateringScheduleState.collectAsState()
-    val uiFavouritePlantState = viewModel.uiFavouritePlantState.collectAsState()
-
-    // 1. Dispara la carga de datos UNA SOLA VEZ cuando 'clientId' es válido.
-    //    LaunchedEffect se asegura de que esto no se ejecute en cada recomposición.
-    LaunchedEffect(clientId) {
-        if (clientId.isNotEmpty()) {
-            viewModel.fetchData(clientId)
-        }
-    }
-
-    val isLoading = uiWateringScheduleState.value.isLoading || uiFavouritePlantState.value.isLoading
 
     BaseScreen(
         onHome = onHome,
@@ -651,7 +670,7 @@ fun HomeScreen(
         onRemembers = onRemembers,
         onProfile = onProfile
     ) {
-        if (isLoading) {
+        if (uiHomeState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -668,8 +687,8 @@ fun HomeScreen(
         } else {
             HomeScreenContent(
                 userName = currentUser?.displayName ?: authViewModel.getUserName(),
-                wateringScheduleUIState = uiWateringScheduleState.value,
-                favouritePlantsUIState = uiFavouritePlantState.value
+                wateringScheduleUIState = uiHomeState.wateringScheduleUIState,
+                favouritePlantsUIState = uiHomeState.favouritePlantsUIState
             )
         }
     }
@@ -786,7 +805,7 @@ private val wateringScheduleUIState = WateringScheduleUIState(
 
 private fun getDate(days: Int): Date {
     val calendar = Calendar.getInstance()
-    calendar.add(Calendar.DATE, days);
+    calendar.add(Calendar.DATE, days)
     return calendar.time
 }
 
@@ -925,51 +944,3 @@ fun HomeScreenLoadingPreview() {
     }
 }
 
-
-
-/*
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeScreenContent(
-    userName: String?
-) {
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text("GreenThumb 🌿") },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground)
-        )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Bienvenido, ${userName ?: "Usuario no identificado"}",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun HomeScreenPreview(
-    authViewModel: AuthViewModel = AuthViewModel(
-        authRepository = TODO(),
-        authManager = TODO()
-    ),
-    currentUser: User? = null,
-    onHome: () -> Unit = {},
-    onProfile: () -> Unit = {},
-    onCamera: () -> Unit = {}
-) {
-
-}
-
- */

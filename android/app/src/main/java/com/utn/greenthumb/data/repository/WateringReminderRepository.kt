@@ -2,17 +2,17 @@ package com.utn.greenthumb.data.repository
 
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.model.plant.PagedResponse
-import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.watering.WateringReminderRequest
 import com.utn.greenthumb.domain.model.WateringReminderDTO
+import com.utn.greenthumb.data.mapper.WateringReminderMapper
 import javax.inject.Inject
 
 class WateringReminderRepository @Inject constructor(
     private val plantsApi: PlantsApiService
 ) {
-
     suspend fun getWateringReminders(): PagedResponse<WateringReminderDTO> {
-        return plantsApi.getWateringReminders()
+        val response = plantsApi.getWateringReminders()
+        return WateringReminderMapper.toPagedResponseDto(response)
     }
 
     suspend fun checkWateringReminder(reminderId: String) {

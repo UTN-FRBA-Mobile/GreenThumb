@@ -1,26 +1,21 @@
 package com.utn.greenthumb.viewmodel
-//import android.icu.util.TimeZone
-import com.utn.greenthumb.domain.model.WateringReminderDTO
 import com.utn.greenthumb.domain.model.UserMessage
 import com.utn.greenthumb.domain.model.Severity
-
 import androidx.annotation.DrawableRes
 import android.util.Log
-//import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.repository.PlantRepository
 import com.utn.greenthumb.data.repository.WateringReminderRepository
-import com.utn.greenthumb.domain.model.PlantDTO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.update
 import java.util.Date
 import javax.inject.Inject
-
 /*
 import java.time.Instant
 import java.time.LocalDate
@@ -28,7 +23,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 */
-
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -134,27 +128,62 @@ class HomeViewModel  @Inject constructor(
         val onCheckWateringReminder: (String) -> Unit = {}
     )
 
-    private val _uiFavouritePlantState = MutableStateFlow(FavouritePlantsUIState())
-    val uiFavouritePlantState: StateFlow<FavouritePlantsUIState> = _uiFavouritePlantState
+    data class HomeUIState(
+        val isLoading: Boolean = false,
+        val wateringScheduleUIState: WateringScheduleUIState = WateringScheduleUIState(),
+        val favouritePlantsUIState: FavouritePlantsUIState = FavouritePlantsUIState()
+    )
 
-    private val _uiWateringScheduleState = MutableStateFlow(WateringScheduleUIState())
-    val uiWateringScheduleState: StateFlow<WateringScheduleUIState> = _uiWateringScheduleState
+    private val _uiHomeState = MutableStateFlow(HomeUIState(
+        isLoading = true
+    ))
+    val uiHomeState: StateFlow<HomeUIState> = _uiHomeState
 
 
     init {
-        //fetchData(clientId)
+        Log.d("HomeViewModel", "ViewModel ha sido INICIADO.")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("HomeViewModel", "ViewModel ha sido DESTRUIDO (onCleared). Limpiando recursos.")
     }
 
     fun fetchData(clientId: String) {
-        if (clientId.isBlank()) return // No hacer nada si no hay ID
-        fetchWateringSchedule(clientId)
-        fetchFavouritePlants(clientId)
+        try {
+            if (clientId.isBlank()) {
+                Log.e("HomeViewModel", "No client ID provided")
+                return // No hacer nada si no hay ID
+            }
+
+            Log.d("HomeViewModel", "Fetching data for client: $clientId")
+
+            viewModelScope.launch {
+
+                val wateringScheduleUIState = fetchWateringSchedule(clientId)
+                val favouritePlantsUIState = fetchFavouritePlants(clientId)
+
+                Log.d("HomeViewModel", "Successfully fetched. data: $wateringScheduleUIState")
+
+                _uiHomeState.update {
+                    it.copy(
+                        isLoading = false,
+                        favouritePlantsUIState = favouritePlantsUIState,
+                        wateringScheduleUIState = wateringScheduleUIState
+                    )
+                }
+            }
+        }
+        catch (e: Exception) {
+            Log.e("HomeViewModel", "Error fetching data", e)
+        }
     }
 
     fun onCheckWateringReminder(reminderId: String) {
         viewModelScope.launch {
             try {
-                wateringReminderRepository.checkWateringReminder(reminderId)
+                Log.d("HomeViewModel", "Checking watering reminder: $reminderId")
+                //wateringReminderRepository.checkWateringReminder(reminderId)
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error checking watering reminder", e)
             }
@@ -164,6 +193,7 @@ class HomeViewModel  @Inject constructor(
     fun onSelectFavouritePlant(plantId: String) {
         viewModelScope.launch {
             try {
+                Log.d("HomeViewModel", "Selecting favourite plant: $plantId")
                 //plantRepository.selectFavouritePlant(plantId)
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error selecting favourite plant", e)
@@ -171,104 +201,104 @@ class HomeViewModel  @Inject constructor(
         }
     }
 
-    fun fetchWateringSchedule(clientId: String) {
-        _uiWateringScheduleState.value = WateringScheduleUIState(
-            isLoading = true,
-            isValid = false,
-            userMessages = listOf(),
-            schedule = listOf(),
-            onCheckWateringReminder = this::onCheckWateringReminder
-        )
+    private suspend fun fetchWateringSchedule(clientId: String): WateringScheduleUIState {
+        try {
+            Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
+            val result = wateringReminderRepository.getWateringReminders()
+            Log.d("HomeViewModel", "Successfully fetched watering schedule. Data: ${result.toString()}")
+            Log.d("HomeViewModel", "Successfully fetched ${result.total} watering reminders")
 
-        viewModelScope.launch {
-            try {
-                Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
+            return WateringScheduleUIState(
+                isLoading = false,
+                isValid = true,
+                userMessages = listOf(),
+                schedule = result.content.map { reminderDto ->
+                    val reminderDate = stringToLocalDate(reminderDto.date)
+                    val daysLeft = getDaysBetween(Date(), reminderDate)
+                    val isOverdue = daysLeft < 0
 
-                val result = wateringReminderRepository.getWateringReminders()
+                    WateringReminder(
+                        id = reminderDto.id,
+                        plantId = reminderDto.plantId,
+                        plantName = reminderDto.plantName,
+                        plantImageUrl = reminderDto.plantImageUrl,
+                        plantImagePlaceholder = R.drawable.greenthumb,
+                        daysLeft = daysLeft,
+                        date = reminderDate,
+                        overdue = isOverdue,
+                        checked = reminderDto.checked
+                    )
+                }
+            )
+        } catch (e: Exception) {
+            Log.e("HomeViewModel", "Error fetching watering schedule", e)
 
-                _uiWateringScheduleState.value = WateringScheduleUIState(
-                    isLoading = false,
-                    isValid = true,
-                    userMessages = listOf(),
-                    schedule = result.content.map { reminderDto ->
-                        val reminderDate = stringToLocalDate(reminderDto.date)
-                        val daysLeft = getDaysBetween(Date(), reminderDate)
-                        val isOverdue = daysLeft < 0
-
-                        WateringReminder(
-                            id = reminderDto.id,
-                            plantId = reminderDto.plantId,
-                            plantName = reminderDto.plantName,
-                            plantImageUrl = reminderDto.plantImageUrl,
-                            plantImagePlaceholder = R.drawable.greenthumb,
-                            daysLeft = daysLeft,
-                            date = reminderDate,
-                            overdue = isOverdue,
-                            checked = reminderDto.checked
-                        )
-                    }
-                )
-
-                Log.d("HomeViewModel", "Successfully fetched ${result.total} watering schedule")
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error fetching watering schedule", e)
-
-                _uiWateringScheduleState.value = WateringScheduleUIState(
+            if (e !is CancellationException) {
+                return WateringScheduleUIState(
                     isLoading = false,
                     isValid = false,
-                    userMessages = listOf(UserMessage(
-                        message = R.string.error_fetching_favourites.toString(),
-                        severity = Severity.ERROR)),
+                    userMessages = listOf(
+                        UserMessage(
+                            message = R.string.error_fetching_watering.toString(),
+                            severity = Severity.ERROR
+                        )
+                    ),
                     schedule = listOf()
                 )
-            }
-        }
-    }
+            } else {
+                Log.d("HomeViewModel", "Watering schedule fetch was cancelled.")
 
-    fun fetchFavouritePlants(clientId: String) {
-        _uiFavouritePlantState.value = FavouritePlantsUIState(
-            isLoading = true,
-            isValid = false,
-            userMessages = listOf(),
-            favourites = listOf(),
-            onSelectFavouritePlant = this::onSelectFavouritePlant
-        )
-
-        viewModelScope.launch {
-            try {
-                Log.d("HomeViewModel", "Fetching favourite plants for client: $clientId")
-
-                val result = plantRepository.getFavouritePlants()
-
-                _uiFavouritePlantState.value = FavouritePlantsUIState(
-                    isLoading = false,
-                    isValid = true,
-                    userMessages = listOf(),
-                    favourites = result.content.map { plant ->
-                        FavouritePlant(
-                            id = plant.id?: "",
-                            name = plant.name,
-                            imageUrl = plant.images?.firstOrNull()?.url ?: "",
-                            imagePlaceholder = R.drawable.greenthumb,
-                        )
-                    }
-                )
-
-                Log.d("HomeViewModel", "Successfully fetched ${result.total} favourite plants")
-
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error fetching favourite plants", e)
-
-                _uiFavouritePlantState.value = FavouritePlantsUIState(
+                return WateringScheduleUIState(
                     isLoading = false,
                     isValid = false,
-                    userMessages = listOf(UserMessage(
-                        message = R.string.error_fetching_watering.toString(),
-                        severity = Severity.ERROR
-                    )),
-                    favourites = listOf()
                 )
             }
         }
     }
+
+    private suspend fun fetchFavouritePlants(clientId: String): FavouritePlantsUIState {
+        try {
+            Log.d("HomeViewModel", "Fetching favourite plants for client: $clientId")
+            val result = plantRepository.getFavouritePlants()
+            Log.d("HomeViewModel", "Successfully fetched favourite plants. Data: ${result.toString()}")
+            Log.d("HomeViewModel", "Successfully fetched ${result.total} favourite plants")
+
+            return FavouritePlantsUIState(
+                isLoading = false,
+                isValid = true,
+                userMessages = listOf(),
+                favourites = result.content.map { plant ->
+                    FavouritePlant(
+                        id = plant.id?: "",
+                        name = plant.name,
+                        imageUrl = plant.images?.firstOrNull()?.url ?: "",
+                        imagePlaceholder = R.drawable.greenthumb,
+                    )
+                }
+            )
+        } catch (e: Exception) {
+            Log.e("HomeViewModel", "Error fetching favourite plants", e)
+
+            if (e !is CancellationException) {
+                return FavouritePlantsUIState(
+                    isLoading = false,
+                    isValid = false,
+                    userMessages = listOf(
+                        UserMessage(
+                            message = R.string.error_fetching_favourites.toString(),
+                            severity = Severity.ERROR
+                        )
+                    ),
+                    favourites = listOf()
+                )
+            } else {
+                Log.d("HomeViewModel", "Favourite plants fetch was cancelled.")
+                return FavouritePlantsUIState (
+                    isLoading = false,
+                    isValid = false,
+                )
+            }
+        }
+    }
+
 }

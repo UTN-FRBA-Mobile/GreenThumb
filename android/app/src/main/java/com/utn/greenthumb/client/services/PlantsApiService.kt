@@ -1,9 +1,9 @@
 package com.utn.greenthumb.client.services
 
 import com.utn.greenthumb.data.model.plant.PagedResponse
-import com.utn.greenthumb.data.model.plant.PlantRequest
 import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.watering.WateringReminderRequest
+import com.utn.greenthumb.data.model.watering.WateringReminderResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
 import com.utn.greenthumb.domain.model.PlantDTO
@@ -42,10 +42,8 @@ interface PlantsApiService {
     @GET("plants/{plantId}")
     suspend fun getPlant(@Path("plantId") plantId: String): PlantDTO
 
-
-
     @GET("plants/watering-reminders/list")
-    suspend fun getWateringReminders(): PagedResponse<WateringReminderDTO>
+    suspend fun getWateringReminders(): PagedResponse<WateringReminderResponse>
 
     @Headers("Content-Type: application/json")
     @POST("/plants/watering-reminders")

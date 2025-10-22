@@ -3,11 +3,11 @@ package com.utn.greenthumb.data.repository
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
-import com.utn.greenthumb.data.model.plant.PlantRequest
 import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.domain.model.PlantDTO
 import javax.inject.Inject
+
 
 class PlantRepository @Inject constructor(
     private val plantsApi: PlantsApiService
