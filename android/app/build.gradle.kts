@@ -56,10 +56,10 @@ android {
         compose = true
         buildConfig = true
     }
-
     packagingOptions {
-        exclude("META-INF/proguard/androidx-*.pro")
-        exclude("META-INF/proguard/retrofit2.pro")
+        resources {
+            excludes += setOf("META-INF/proguard/androidx-*.pro", "META-INF/proguard/retrofit2.pro")
+        }
     }
 }
 
@@ -70,8 +70,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.5")
     implementation(libs.androidx.compose.ui)
     implementation(libs.material3)
+    implementation(libs.androidx.compose.foundation)
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.5")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
     // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")

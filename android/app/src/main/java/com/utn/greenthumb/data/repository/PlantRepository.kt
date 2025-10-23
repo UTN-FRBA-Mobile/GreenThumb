@@ -4,11 +4,13 @@ import android.util.Log
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
+import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.domain.model.PlantDTO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
 
 class PlantRepository @Inject constructor(
     private val plantsApi: PlantsApiService
@@ -103,6 +105,18 @@ class PlantRepository @Inject constructor(
             Log.e("PlantRepository", "Error deleting plant with ID: $plantId", e)
             throw e
         }
+    }
+
+    suspend fun getFavouritePlants(): PagedResponse<PlantDTO> {
+        return plantsApi.getPlants(favourites = true)
+    }
+
+    suspend fun setFavouritePlant(plantId: String) {
+        plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = true))
+    }
+
+    suspend fun unSetFavouritePlant(plantId: String) {
+        plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = false))
     }
 
 }

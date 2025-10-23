@@ -3,6 +3,7 @@ package com.utn.greenthumb.ui.main.my.plants
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -39,6 +40,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFlorist
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
@@ -358,7 +362,9 @@ private fun AnimatedPlantItem(
         PlantItem(
             plant = plant,
             onDeleteClick = onDeleteClick,
-            onDetailsClick = onDetailsClick
+            onDetailsClick = onDetailsClick,
+            onFavoriteClick = {},
+            isFavorite = false
         )
     }
 }
@@ -368,8 +374,11 @@ private fun AnimatedPlantItem(
 private fun PlantItem(
     plant: PlantDTO,
     onDeleteClick: () -> Unit,
-    onDetailsClick: () -> Unit
+    onDetailsClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    isFavorite: Boolean
 ) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -401,7 +410,11 @@ private fun PlantItem(
             // Botones de acción
             ActionButtons(
                 onDetailsClick = onDetailsClick,
-                onDeleteClick = onDeleteClick
+                onDeleteClick = onDeleteClick,
+                onFavoriteClick = {
+                    onFavoriteClick()
+                },
+                isFavorite = false
             )
         }
     }
@@ -415,8 +428,7 @@ private fun PlantImage(
 ) {
     Card(
         modifier = Modifier.size(72.dp),
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(10.dp)
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -482,12 +494,72 @@ private fun PlantInfo(
 
 
 @Composable
+private fun FavoriteButton(
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    scale: Float,
+    modifier: Modifier = Modifier
+) {
+    // Animación del color
+    val containerColor by animateColorAsState(
+        targetValue = if (isFavorite) {
+            Color(0xFFFFE5E5) // Fondo rosa suave cuando es favorito
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        animationSpec = tween(300),
+        label = "containerColor"
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = if (isFavorite) {
+            Color(0xFFE91E63) // Rosa/Rojo intenso cuando es favorito
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(300),
+        label = "iconColor"
+    )
+
+    FilledIconButton(
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = containerColor,
+            contentColor = iconColor
+        ),
+        modifier = modifier
+            .size(40.dp)
+            .scale(scale)
+    ) {
+        Icon(
+            imageVector = if (isFavorite) {
+                Icons.Default.Favorite // Corazón relleno
+            } else {
+                Icons.Default.FavoriteBorder // Corazón vacío
+            },
+            contentDescription = if (isFavorite) {
+                stringResource(R.string.remove_from_favorites)
+            } else {
+                stringResource(R.string.add_to_favorites)
+            },
+            modifier = Modifier.size(20.dp),
+            tint = iconColor
+        )
+    }
+}
+
+
+@Composable
 private fun ActionButtons(
     onDetailsClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    isFavorite: Boolean
 ) {
+    var favoritePressed by remember { mutableStateOf(false) }
     var detailsPressed by remember { mutableStateOf(false) }
     var deletePressed by remember { mutableStateOf(false) }
+
 
     val detailsScale by animateFloatAsState(
         targetValue = if (detailsPressed) 0.85f else 1f,
@@ -507,10 +579,29 @@ private fun ActionButtons(
         label = "deleteScale"
     )
 
+    val favoriteScale by animateFloatAsState(
+        targetValue = if (favoritePressed) 1.2f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "favoriteScale"
+    )
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Botón de favorito
+        FavoriteButton(
+            isFavorite = isFavorite,
+            onClick = {
+                favoritePressed = true
+                onFavoriteClick()
+            },
+            scale = favoriteScale
+        )
+
         // Botón de detalles
         FilledIconButton(
             onClick = {
@@ -526,7 +617,7 @@ private fun ActionButtons(
                 .scale(detailsScale)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = Icons.Default.Info,
                 contentDescription = stringResource(R.string.more_details),
                 modifier = Modifier.size(20.dp)
             )
@@ -565,6 +656,13 @@ private fun ActionButtons(
         if (deletePressed) {
             delay(200)
             deletePressed = false
+        }
+    }
+
+    LaunchedEffect(favoritePressed) {
+        if (favoritePressed) {
+            delay(300)
+            favoritePressed = false
         }
     }
 }

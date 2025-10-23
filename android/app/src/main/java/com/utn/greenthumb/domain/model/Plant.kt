@@ -20,7 +20,8 @@ data class PlantDTO(
     val culturalSignificance: String?,
     val bestLightCondition: String?,
     val commonUses: String?,
-    val toxicity: String?
+    val toxicity: String?,
+    val favourite: Boolean?
 ): Serializable
 
 data class ImageDTO(

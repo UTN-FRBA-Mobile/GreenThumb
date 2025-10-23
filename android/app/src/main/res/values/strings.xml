@@ -22,6 +22,16 @@
     <string name="my_plants">Mis Plantas</string>
     <string name="remembers">Recordatorios</string>
     <string name="profile">Perfil</string>
+    <string name="placeholder_search_favourite">Busca tu favorita ...</string>
+    <string name="error_fetching_favourites">Ocurrio un error al obtener tus favoritas. Vuelve a intentarlo</string>
+    <string name="error_fetching_watering">Ocurrio un error al tus recordatorios de riego. Vuelve a intentarlo</string>
+    <string name="remaining_days">días</string>
+    <string name="remaining_day">día</string>
+    <string name="watering_schedule_section_title">Recordatorios de riego</string>
+    <string name="favourite_plants_section_title">Mis Plantas Favoritas</string>
+    <string name="empty_watering_schedule_message">Todavia no tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, y de esa forma recibiras notificaciones cuando sea el momento de regarla</string>
+    <string name="empty_favourite_plants_message">Aún no has añadido ninguna planta a tus favoritos, pero puedes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
+
 
     <string name="back_navigation">Volver</string>
     <string name="waiting_for_action">Esperando acción del usuario...</string>
@@ -79,6 +89,8 @@
     <string name="next_image">Imagen siguiente</string>
 
     <string name="more_details">Más detalles</string>
+    <string name="add_to_favorites">Agregar a favoritos</string>
+    <string name="remove_from_favorites">Quitar de favoritos</string>
     <string name="delete_plant">Eliminar planta</string>
     <string name="deleting_plant">Eliminando planta...</string>
     <string name="delete_plant_intention">¿Estas seguro de eliminar esta planta?</string>
