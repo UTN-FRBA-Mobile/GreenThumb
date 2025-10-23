@@ -1,5 +1,6 @@
 package com.utn.greenthumb.ui.main.my.plants
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,7 @@ fun PlantScreen(
     var selectedGalleryImages by remember { mutableStateOf<List<String>?>(null) }
     var selectedGalleryIndex by remember { mutableIntStateOf(0) }
 
+    BackHandler(onBack = onBackPressed)
 
     Scaffold(
         topBar = {

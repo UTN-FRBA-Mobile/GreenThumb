@@ -3,13 +3,12 @@ package com.utn.greenthumb.data.model.plantid
 import com.google.gson.annotations.SerializedName
 
 data class IdentificationResponse(
-    @SerializedName("plant_results")
-    val plantResults: List<PlantResults>,
-    @SerializedName("is_plant")
-    val isPlant: IsPlant
+    @SerializedName("plant_results") val plantResults: List<PlantResults>,
+    @SerializedName("is_plant") val isPlant: IsPlant
 )
 
 data class PlantResults(
+    @SerializedName("_id") val id: String,
     val externalId: String,
     val name: String,
     val probability: Double,

@@ -11,6 +11,7 @@
     <string name="verifying_authentication">Verificando autenticación...</string>
     <string name="login_error_title">Error de autenticación</string>
     <string name="login_error_suggestion">Verifica tu conexión a internet e intenta nuevamente.</string>
+    <string name="understood">Entendido</string>
     <string name="retry">Reintentar</string>
     <string name="close">Cerrar</string>
     <string name="cancel">Cancelar</string>
@@ -30,9 +31,14 @@
 
     <string name="identification_results">Resultados de la identificación</string>
     <string name="identifying_plant">Identificando planta...</string>
+    <string name="loading_plants">Cargando plantas...</string>
+    <string name="error_loading_plants">Error al cargar plantas</string>
     <string name="select_plant">Selecciona la planta identificada</string>
+    <string name="no_plants_saved">No tienes plantas guardadas</string>
+    <string name="take_picture_to_start">Toma una foto de una planta para comenzar</string>
     <string name="save_plant">Guardar en Mis Plantas</string>
     <string name="saving">Guardando...</string>
+    <string name="error_saving_plant">No se pudo eliminar la planta</string>
     <string name="select_plant_hint">Selecciona una planta para guardarla en tu colección</string>
     <string name="plant_selected">Planta seleccionada</string>
 
@@ -72,6 +78,14 @@
     <string name="previous_image">Imagen anterior</string>
     <string name="next_image">Imagen siguiente</string>
 
+    <string name="more_details">Más detalles</string>
+    <string name="delete_plant">Eliminar planta</string>
+    <string name="deleting_plant">Eliminando planta...</string>
+    <string name="delete_plant_intention">¿Estas seguro de eliminar esta planta?</string>
+    <string name="delete_plant_confirmation">Estas a punto de eliminar:</string>
+    <string name="delete_plant_last_warning">Esta acción no se puede deshacer</string>
+    <string name="delete">Eliminar</string>
+
     <!-- Taxonomy Screen -->
     <string name="taxonomy">Taxonomía</string>
     <string name="taxonomy_class">Clase</string>
@@ -83,7 +97,6 @@
 
     <string name="more_info">Más información</string>
     <string name="error_open_url">Error al abrir enlace</string>
-    <string name="understood">Entendido</string>
     <string name="copy_url">Copiar URL</string>
     <string name="collapse_section">Contraer sección</string>
     <string name="expand_section">Expandir sección</string>

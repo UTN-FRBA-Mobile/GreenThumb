@@ -211,7 +211,7 @@ fun AppNavHost(
                 RedirectToLogin(navController)
             } else {
                 ScreenWithBottomBar(
-                    currentRoute = currentRoute ?: NavRoutes.Profile.route,
+                    currentRoute = currentRoute ?: NavRoutes.MyPlants.route,
                     navController = navController
                 ) { navigation ->
                     MyPlantsScreen(
@@ -220,10 +220,13 @@ fun AppNavHost(
                         onCamera = navigation::onCamera,
                         onRemembers = navigation::onRemembers,
                         onProfile = navigation::onProfile,
+                        onNavigateBack = { navController.popBackStack() },
                         onPlantSelected = { plant ->
                             Log.d("AppNavHost", "Plant selected: ${plant.name}")
                             plantViewModel.selectPlant(plant)
-                            navController.navigate(NavRoutes.PlanDetail.route)
+                            navController.navigate(NavRoutes.PlanDetail.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }

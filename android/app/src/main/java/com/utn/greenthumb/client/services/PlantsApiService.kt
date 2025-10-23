@@ -6,6 +6,7 @@ import com.utn.greenthumb.data.model.plantid.IdentificationResponse
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.UserTokenDTO
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
@@ -32,4 +33,7 @@ interface PlantsApiService {
 
     @GET("plants/{plantId}")
     suspend fun getPlant(@Path("plantId") plantId: String): PlantDTO
+
+    @DELETE("plants/{plantId}")
+    suspend fun deletePlant(@Path("plantId") plantId: String)
 }

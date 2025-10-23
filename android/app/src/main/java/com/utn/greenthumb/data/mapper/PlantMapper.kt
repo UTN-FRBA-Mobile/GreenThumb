@@ -11,7 +11,7 @@ object PlantMapper {
     fun fromDto(dto: List<PlantResults>): List<PlantDTO> {
         return dto.map { suggestion ->
             PlantDTO(
-                id = null,
+                id = suggestion.id,
                 externalId = suggestion.externalId,
                 name = suggestion.name,
                 probability = suggestion.probability,

@@ -746,7 +746,7 @@ private fun SectionTitle(
 @Composable
 fun PlantResultCardPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
@@ -799,7 +799,7 @@ fun PlantResultCardPreview() {
 @Composable
 fun PlantResultCardSelectedPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,
@@ -852,7 +852,7 @@ fun PlantResultCardSelectedPreview() {
 @Composable
 fun PlantResultCardHighProbabilityPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.99,
@@ -905,7 +905,7 @@ fun PlantResultCardHighProbabilityPreview() {
 @Composable
 fun PlantResultCardMediumProbabilityPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.70,
@@ -958,7 +958,7 @@ fun PlantResultCardMediumProbabilityPreview() {
 @Composable
 fun PlantResultCardLowProbabilityPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.25,

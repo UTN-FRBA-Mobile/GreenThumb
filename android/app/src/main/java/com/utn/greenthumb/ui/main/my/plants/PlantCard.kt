@@ -811,7 +811,7 @@ private fun SectionTitle(
 @Composable
 fun PlantCardPreview() {
     val plant = PlantDTO(
-        id = null,
+        id = "1",
         externalId = "662e0f8d4202acfc",
         name = "Rhaphiolepis bibas",
         probability = 0.8843,

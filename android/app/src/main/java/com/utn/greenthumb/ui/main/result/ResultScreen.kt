@@ -822,7 +822,7 @@ private fun SuccessContentPreview(
 ) {
     val plants = listOf<PlantDTO>(
         PlantDTO(
-            id = null,
+            id = "1",
             externalId = "662e0f8d4202acfc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
@@ -863,7 +863,7 @@ private fun SuccessContentPreview(
             toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset."
         ),
         PlantDTO(
-            id = null,
+            id = "2",
             externalId = "662e0f8d4202aabc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
@@ -921,7 +921,7 @@ private fun SuccessContentSelectedPreview(
 ) {
     val plants = listOf<PlantDTO>(
         PlantDTO(
-            id = null,
+            id = "1",
             externalId = "662e0f8d4202acfc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
@@ -962,7 +962,7 @@ private fun SuccessContentSelectedPreview(
             toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset."
         ),
         PlantDTO(
-            id = null,
+            id = "2",
             externalId = "662e0f8d4202aabc",
             name = "Rhaphiolepis bibas",
             probability = 0.8843,
