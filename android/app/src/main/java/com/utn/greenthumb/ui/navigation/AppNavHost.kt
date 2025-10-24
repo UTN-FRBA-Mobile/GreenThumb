@@ -108,7 +108,7 @@ fun AppNavHost(
     // Para notificaciones
     LaunchedEffect(selectedPlant) {
         selectedPlant?.let {
-            navController.navigate(NavRoutes.PlanDetail.route)
+            navController.navigate(NavRoutes.PlantDetail.route)
         }
     }
 
@@ -149,7 +149,6 @@ fun AppNavHost(
             if (!isUserLoggedIn || currentUser == null) {
                 LoadingAuthContent()
             } else {
-
                 key(currentUser!!.uid, backStackState.value.size) {
                     ScreenWithBottomBar(
                         currentRoute = currentRoute ?: NavRoutes.Home.route,
@@ -226,7 +225,7 @@ fun AppNavHost(
                         onPlantSelected = { plant ->
                             Log.d("AppNavHost", "Plant selected: ${plant.name}")
                             plantViewModel.selectPlant(plant)
-                            navController.navigate(NavRoutes.PlanDetail.route) {
+                            navController.navigate(NavRoutes.PlantDetail.route) {
                                 launchSingleTop = true
                             }
                         }
@@ -238,7 +237,7 @@ fun AppNavHost(
 
         // ===== PLANT DETAIL SCREEN =====
         composable(
-            route = NavRoutes.PlanDetail.route,
+            route = NavRoutes.PlantDetail.route,
             enterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { it },

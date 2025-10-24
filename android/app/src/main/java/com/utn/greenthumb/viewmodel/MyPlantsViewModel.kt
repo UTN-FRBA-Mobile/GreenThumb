@@ -6,10 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.data.repository.PlantRepository
 import com.utn.greenthumb.domain.model.PlantDTO
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.io.IOException
@@ -40,9 +43,12 @@ class MyPlantsViewModel @Inject constructor(
     private val _deleteSuccess = MutableStateFlow(false)
     val deleteSuccess: StateFlow<Boolean> = _deleteSuccess.asStateFlow()
 
+    private val favoriteJobs = mutableMapOf<String, Job>()
+
     companion object {
         private const val FETCH_TIMEOUT = 30000L // 30 segundos
         private const val DELETE_TIMEOUT = 15000L // 15 segundos
+        private const val FAVORITE_DEBOUNCE_TIME = 500L // 500ms de debounce
     }
 
 
@@ -127,6 +133,72 @@ class MyPlantsViewModel @Inject constructor(
     fun resetDeleteState() {
         _deleteError.value = null
         _deleteSuccess.value = false
+    }
+
+
+    fun setFavoritePlant(plantID: String) {
+        viewModelScope.launch {
+            try {
+                repository.setFavouritePlant(plantID)
+            } catch (e: Exception) {
+                Log.d("MyPlantsViewModel", "Error setting favorite: $e")
+                throw e
+            }
+        }
+    }
+
+    fun unsetFavoritePlant(plantID: String) {
+        viewModelScope.launch {
+            try {
+                repository.unSetFavouritePlant(plantID)
+            } catch (e: Exception) {
+                Log.d("MyPlantsViewModel", "Error unsetting favorite: $e")
+                throw e
+            }
+        }
+    }
+
+    fun toggleFavorite(plantId: String, newFavoriteState: Boolean) {
+        // Cancelar el Job previo para esta planta si existe
+        favoriteJobs[plantId]?.cancel()
+
+        // Actualización optimista: cambiar el estado local inmediatamente
+        updateLocalFavoriteState(plantId, newFavoriteState)
+
+        // Crear un nuevo Job con debounce
+        favoriteJobs[plantId] = viewModelScope.launch {
+            try {
+
+                delay(FAVORITE_DEBOUNCE_TIME)
+
+                Log.d("MyPlantsViewModel", "Toggling favorite for plant: $plantId to $newFavoriteState")
+
+                if (newFavoriteState) {
+                    setFavoritePlant(plantId)
+                    Log.d("MyPlantsViewModel", "Favorite set successfully")
+                } else {
+                    unsetFavoritePlant(plantId)
+                    Log.d("MyPlantsViewModel", "Favorite unset successfully")
+                }
+            } catch (e: Exception) {
+                Log.e("MyPlantsViewModel", "Error toggling favorite", e)
+                updateLocalFavoriteState(plantId, !newFavoriteState)
+            } finally {
+                favoriteJobs.remove(plantId)
+            }
+        }
+    }
+
+    private fun updateLocalFavoriteState(plantId: String, isFavorite: Boolean) {
+        _plants.update { currentPlants ->
+            currentPlants.map { plant ->
+                if (plant.id == plantId) {
+                    plant.copy(favourite = isFavorite)
+                } else {
+                    plant
+                }
+            }
+        }
     }
 
     fun clearError() {

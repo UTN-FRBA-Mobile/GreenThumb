@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class PlantDTO(
-    @SerializedName("_id") val id: String,
+    @SerializedName("_id") val id: String?,
     val externalId: String,
     val name: String,
     val probability: Double,

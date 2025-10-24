@@ -107,16 +107,48 @@ class PlantRepository @Inject constructor(
         }
     }
 
+    /**
+     * Obtener todas las plantas favoritas del usuario
+     */
     suspend fun getFavouritePlants(): PagedResponse<PlantDTO> {
-        return plantsApi.getPlants(favourites = true)
+        try {
+            Log.d("PlantRepository", "Fetching favourite plants...")
+            val favouritesPlants = plantsApi.getPlants(favourites = true)
+            Log.d("PlantRepository", "Favourite plants fetched successfully")
+            return favouritesPlants
+        } catch (e: Exception) {
+            Log.d("PlantRepository", "Error fetching favourite plants", e)
+            throw e
+        }
     }
 
+    /**
+     * Marca una planta como favorita
+     */
     suspend fun setFavouritePlant(plantId: String) {
-        plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = true))
+        try {
+            Log.d("PlantRepository", "Setting favourite plant with ID: $plantId")
+            plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = true))
+            Log.d("PlantRepository", "Favourite plant set successfully")
+        } catch (e: Exception) {
+            Log.e("PlantRepository", "Error setting favourite plant with ID: $plantId")
+            throw e
+        }
     }
 
+
+    /**
+     * Desmarca una planta como favorita
+     */
     suspend fun unSetFavouritePlant(plantId: String) {
-        plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = false))
+        try {
+            Log.d("PlantRepository", "Unsetting favourite plant with ID: $plantId")
+            plantsApi.setFavouritePlant(plantId, SetFavouriteRequest(favourite = false))
+            Log.d("PlantRepository", "Favourite plant unset successfully")
+        } catch (e: Exception) {
+            Log.e("PlantRepository", "Error unsetting favourite plant with ID: $plantId")
+            throw e
+        }
     }
 
 }

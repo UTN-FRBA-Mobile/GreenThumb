@@ -162,7 +162,10 @@ fun FavouritePlantItem(
                 .clip(CircleShape)
                 .border(4.dp, Color(0xFF2A542C), CircleShape)
                 .padding(all = 4.dp)
-                .clickable(onClick = { onSelectFavouritePlant(favouritePlant.id) })
+                .clickable(onClick = {
+                    Log.d("HomeScreen", "Favourite plant clicked: ${favouritePlant.id} | ${favouritePlant.name}")
+                    onSelectFavouritePlant(favouritePlant.id)
+                })
         )
 
         val name = if (favouritePlant.name.length > 10) {
@@ -301,7 +304,7 @@ fun WateringReminderCard(
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp) // Un único padding interno para todo el layout
+                .padding(10.dp) // Un único padding interno para el layout
         ) {
             // Crea las referencias (IDs) para cada elemento del layout
             val (plantImage, textInfo, checkIcon, expandableContent) = createRefs()
@@ -390,22 +393,21 @@ fun WateringReminderCard(
                 Column {
                     val days =
                         abs(reminder.daysLeft).toString() + " " +
-                            if (abs(reminder.daysLeft) > 1 || reminder.daysLeft == 0) {
+                            if (abs(reminder.daysLeft) > 1) {
                                 stringResource(R.string.remaining_days)
                             } else {
                                 stringResource(R.string.remaining_day)
                             }
 
-                    // TODO: reemplazar con función para que determine si es 1 día / X días
                     val notice =
                         if (reminder.daysLeft == 0) {
                             "Hoy es el dia de regar tu planta"
                         }
                         else if (reminder.daysLeft < 0) {
-                            "Tu riego esta retrasado por $days dias"
+                            "Tu riego esta retrasado por $days"
                         }
                         else {
-                            "Faltan $days para el próximo riego"
+                            "$days para el próximo riego"
                         }
 
                     Text(
@@ -414,7 +416,7 @@ fun WateringReminderCard(
                         color = Color(0xEE1E1D1D),
                     )
                     Text(
-                        text = "Sugerencia: regar con un mínimo de 200 ml y un máximo de 400 ml de agua",
+                        text = stringResource(R.string.watering_suggestion),
                         style = MaterialTheme.typography.titleSmall,
                         color = Color(0xEE1E1D1D),
                         modifier = Modifier.padding(top = 4.dp)
@@ -636,7 +638,7 @@ fun HomeScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            Log.d("Home", "Granted $isGranted")
+            Log.d("Home", "User Granted")
             notificationViewModel.refreshToken()
         } else {
             Log.w("HomeScreen", "Notification permission denied")

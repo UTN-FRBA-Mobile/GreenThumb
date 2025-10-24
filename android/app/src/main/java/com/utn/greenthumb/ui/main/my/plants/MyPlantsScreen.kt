@@ -32,17 +32,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFlorist
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
@@ -52,7 +49,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -81,7 +77,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -120,7 +115,6 @@ fun MyPlantsScreen(
     val deleteError by viewModel.deleteError.collectAsState()
     val deleteSuccess by viewModel.deleteSuccess.collectAsState()
 
-
     LaunchedEffect(clientId) {
         clientId?.let {
             viewModel.fetchMyPlants(it)
@@ -145,6 +139,7 @@ fun MyPlantsScreen(
         onProfile = onProfile
     ) {
         MyPlantsScreenContent(
+            viewModel = viewModel,
             plants = plants,
             isLoading = isLoading,
             error = error,
@@ -154,8 +149,10 @@ fun MyPlantsScreen(
             onPlantSelected = onPlantSelected,
             onPlantDeleted = { plant ->
                 clientId?.let {
-                    Log.d("MyPlantsScreen", "Plant to delete: ${plant.id}")
-                    viewModel.deletePlant(plant.id)
+                    if (plant.id != null) {
+                        Log.d("MyPlantsScreen", "Plant to delete: ${plant.id}")
+                        viewModel.deletePlant(plant.id)
+                    }
                 }
             },
             onRetry = { clientId?.let { viewModel.fetchMyPlants(it) } },
@@ -168,6 +165,7 @@ fun MyPlantsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MyPlantsScreenContent(
+    viewModel: MyPlantsViewModel,
     plants: List<PlantDTO>,
     isLoading: Boolean,
     error: String?,
@@ -220,6 +218,7 @@ private fun MyPlantsScreenContent(
 
                     else -> {
                         MyPlantsListContent(
+                            viewModel = viewModel,
                             plants = plants,
                             onPlantDeleted = onPlantDeleted,
                             onPlantSelected = onPlantSelected
@@ -244,6 +243,7 @@ private fun MyPlantsScreenContent(
 
 @Composable
 private fun MyPlantsListContent(
+    viewModel: MyPlantsViewModel,
     plants: List<PlantDTO>,
     onPlantDeleted: (PlantDTO) -> Unit,
     onPlantSelected: (PlantDTO) -> Unit
@@ -266,12 +266,18 @@ private fun MyPlantsListContent(
         ) {
             items(
                 items = plants,
-                key = { it.id }
+                key = { it.id!! }
             ) { plant ->
                 AnimatedPlantItem(
                     plant = plant,
-                    onDeleteClick = { plantToDelete  = plant },
-                    onDetailsClick = { onPlantSelected(plant) }
+                    onDeleteClick = { plantToDelete = plant },
+                    onDetailsClick = { onPlantSelected(plant) },
+                    onFavoriteClick = {
+                        if (plant.id != null) {
+                            Log.d("MyPlantsScreen", "Favorite clicked for plant: ${plant.name} to ${!(plant.favourite ?: false)}")
+                            viewModel.toggleFavorite(plant.id, !(plant.favourite ?: false))
+                        }
+                    }
                 )
             }
             item {
@@ -337,7 +343,8 @@ private fun HeaderSection(
 private fun AnimatedPlantItem(
     plant: PlantDTO,
     onDeleteClick: () -> Unit,
-    onDetailsClick: () -> Unit
+    onDetailsClick: () -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -363,8 +370,7 @@ private fun AnimatedPlantItem(
             plant = plant,
             onDeleteClick = onDeleteClick,
             onDetailsClick = onDetailsClick,
-            onFavoriteClick = {},
-            isFavorite = false
+            onFavoriteClick = onFavoriteClick
         )
     }
 }
@@ -375,12 +381,13 @@ private fun PlantItem(
     plant: PlantDTO,
     onDeleteClick: () -> Unit,
     onDetailsClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    isFavorite: Boolean
+    onFavoriteClick: () -> Unit
 ) {
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDetailsClick() },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
@@ -409,12 +416,9 @@ private fun PlantItem(
 
             // Botones de acción
             ActionButtons(
-                onDetailsClick = onDetailsClick,
                 onDeleteClick = onDeleteClick,
-                onFavoriteClick = {
-                    onFavoriteClick()
-                },
-                isFavorite = false
+                onFavoriteClick = onFavoriteClick,
+                isFavorite = plant.favourite ?: false
             )
         }
     }
@@ -503,7 +507,7 @@ private fun FavoriteButton(
     // Animación del color
     val containerColor by animateColorAsState(
         targetValue = if (isFavorite) {
-            Color(0xFFFFE5E5) // Fondo rosa suave cuando es favorito
+            Color(0xFFFFE5E5)
         } else {
             MaterialTheme.colorScheme.surfaceVariant
         },
@@ -513,7 +517,7 @@ private fun FavoriteButton(
 
     val iconColor by animateColorAsState(
         targetValue = if (isFavorite) {
-            Color(0xFFE91E63) // Rosa/Rojo intenso cuando es favorito
+            Color(0xFFE91E63)
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
@@ -551,24 +555,12 @@ private fun FavoriteButton(
 
 @Composable
 private fun ActionButtons(
-    onDetailsClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     isFavorite: Boolean
 ) {
     var favoritePressed by remember { mutableStateOf(false) }
-    var detailsPressed by remember { mutableStateOf(false) }
     var deletePressed by remember { mutableStateOf(false) }
-
-
-    val detailsScale by animateFloatAsState(
-        targetValue = if (detailsPressed) 0.85f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "detailsScale"
-    )
 
     val deleteScale by animateFloatAsState(
         targetValue = if (deletePressed) 0.85f else 1f,
@@ -602,27 +594,6 @@ private fun ActionButtons(
             scale = favoriteScale
         )
 
-        // Botón de detalles
-        FilledIconButton(
-            onClick = {
-                detailsPressed = true
-                onDetailsClick()
-            },
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-            modifier = Modifier
-                .size(40.dp)
-                .scale(detailsScale)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = stringResource(R.string.more_details),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
         // Botón de eliminar
         FilledIconButton(
             onClick = {
@@ -630,8 +601,8 @@ private fun ActionButtons(
                 onDeleteClick()
             },
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                containerColor = Color(0xFFD32F2F),
+                contentColor = Color.White
             ),
             modifier = Modifier
                 .size(40.dp)
@@ -642,13 +613,6 @@ private fun ActionButtons(
                 contentDescription = stringResource(R.string.delete_plant),
                 modifier = Modifier.size(20.dp)
             )
-        }
-    }
-
-    LaunchedEffect(detailsPressed) {
-        if (detailsPressed) {
-            delay(200)
-            detailsPressed = false
         }
     }
 

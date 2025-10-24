@@ -31,7 +31,7 @@
     <string name="favourite_plants_section_title">Mis Plantas Favoritas</string>
     <string name="empty_watering_schedule_message">Todavia no tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, y de esa forma recibiras notificaciones cuando sea el momento de regarla</string>
     <string name="empty_favourite_plants_message">Aún no has añadido ninguna planta a tus favoritos, pero puedes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
-
+    <string name="watering_suggestion">Sugerencia: regar con un mínimo de 200 ml y un máximo de 400 ml de agua</string>
 
     <string name="back_navigation">Volver</string>
     <string name="waiting_for_action">Esperando acción del usuario...</string>
