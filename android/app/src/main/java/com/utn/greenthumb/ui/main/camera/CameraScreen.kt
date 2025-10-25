@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +55,10 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.state.UiState
@@ -64,6 +69,7 @@ import com.utn.greenthumb.viewmodel.PlantViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 
@@ -78,15 +84,22 @@ fun CameraScreen(
     val context = LocalContext.current
     val uiState by plantViewModel.uiState.collectAsState()
 
+
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
     )
 
+    val locationPermissionState = rememberPermissionState(
+        permission = Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
     // Maneja diferentes estados de la pantalla
-    var showPermissionDeniedDialog by remember { mutableStateOf(false) }
-    var showPermanentlyDeniedDialog by remember { mutableStateOf(false) }
+    var showCameraPermissionDeniedDialog by remember { mutableStateOf(false) }
+    var showCameraPermanentlyDeniedDialog by remember { mutableStateOf(false) }
+    var showLocationPermissionDialog by remember { mutableStateOf(false) }
     var isProcessingImage by remember { mutableStateOf(false) }
     var hasNavigatedToResult  by remember { mutableStateOf(false) }
+    var hasAskedLocationPermission by remember { mutableStateOf(false) }
 
     // Camera Launcher
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -99,6 +112,7 @@ fun CameraScreen(
                 bitmap = bitmap,
                 context = context,
                 plantViewModel = plantViewModel,
+                hasLocationPermission = locationPermissionState.status.isGranted,
                 onError = { error ->
                     isProcessingImage = false
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
@@ -153,13 +167,21 @@ fun CameraScreen(
     LaunchedEffect(cameraPermissionState.status) {
         when {
             cameraPermissionState.status.isGranted -> {
-                showPermissionDeniedDialog = false
-                showPermanentlyDeniedDialog = false
+                Log.d("CameraScreen", "Camera permission granted")
+                showCameraPermissionDeniedDialog = false
+                showCameraPermanentlyDeniedDialog = false
+
+                // Una vez que tenemos permiso de cámara, solicitar ubicación si no se ha hecho
+                if (!hasAskedLocationPermission && !locationPermissionState.status.isGranted) {
+                    showLocationPermissionDialog = true
+                }
             }
             cameraPermissionState.status.shouldShowRationale -> {
-                showPermissionDeniedDialog = true
+                Log.d("CameraScreen", "Camera permission denied - should show rationale")
+                showCameraPermissionDeniedDialog = true
             }
             !cameraPermissionState.status.isGranted -> {
+                Log.d("CameraScreen", "Requesting camera permission")
                 cameraPermissionState.launchPermissionRequest()
             }
         }
@@ -168,7 +190,8 @@ fun CameraScreen(
     GreenThumbTheme {
         CameraScreenContent(
             isProcessingImage = isProcessingImage,
-            hasPermission = cameraPermissionState.status.isGranted,
+            hasCameraPermission = cameraPermissionState.status.isGranted,
+            hasLocationPermission = locationPermissionState.status.isGranted,
             onTakePhoto = {
                 if (cameraPermissionState.status.isGranted && !isProcessingImage) {
                     cameraLauncher.launch(null)
@@ -181,22 +204,37 @@ fun CameraScreen(
         )
     }
 
-    if (showPermissionDeniedDialog) {
-        PermissionDeniedDialog(
+    if (showCameraPermissionDeniedDialog) {
+        CameraPermissionDeniedDialog(
             onDismiss = onNavigateBack,
             onRequestPermission = {
-                showPermissionDeniedDialog = false
+                showCameraPermissionDeniedDialog = false
                 cameraPermissionState.launchPermissionRequest()
             }
         )
     }
 
-    if (showPermanentlyDeniedDialog) {
-        PermanentlyDeniedDialog(
+    if (showCameraPermanentlyDeniedDialog) {
+        CameraPermanentlyDeniedDialog(
             onDismiss = onNavigateBack,
             onOpenSettings  = {
                 context.openAppSettings()
                 onNavigateBack
+            }
+        )
+    }
+
+    if (showLocationPermissionDialog) {
+        LocationPermissionDialog(
+            onDismiss = {
+                showLocationPermissionDialog = false
+                hasAskedLocationPermission = true
+                        Log.d("CameraScreen", "Location permission dismissed - continuing without location")
+            },
+            onRequestPermission = {
+                showLocationPermissionDialog = false
+                hasAskedLocationPermission = true
+                locationPermissionState.launchPermissionRequest()
             }
         )
     }
@@ -207,6 +245,7 @@ private fun handleCapturedImage(
     bitmap: Bitmap,
     context: Context,
     plantViewModel: PlantViewModel,
+    hasLocationPermission: Boolean,
     onError: (String) -> Unit
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -214,7 +253,13 @@ private fun handleCapturedImage(
             val base64Image = ImageUtils.bitmapToBase64(bitmap)
             Log.d("CameraScreen", "Image converted in Base64: $base64Image")
 
-            val location = getCurrentLocation(context)
+            val location = if (hasLocationPermission) {
+                Log.d("CameraScreen", "Attempting to get current location")
+                getCurrentLocation(context)
+            } else {
+                Log.d("CameraScreen", "Location permission not granted, using default coordinates")
+                null
+            }
 
             val request = IdentificationRequest(
                 images = listOf(base64Image),
@@ -222,7 +267,7 @@ private fun handleCapturedImage(
                 latitude = location?.latitude ?: 0.0,
             )
 
-            Log.d("CameraScreen", "Sending image to PlantAPI")
+            Log.d("CameraScreen", "Sending request to PlantAPI: ${request.toString()}")
 
             withContext(Dispatchers.Main) {
                 plantViewModel.identifyPlant(request)
@@ -238,12 +283,53 @@ private fun handleCapturedImage(
 }
 
 
-private fun getCurrentLocation(
+private suspend fun getCurrentLocation(
     context: Context
 ): Location? {
-    // TODO: Implementar obtención de ubicación real
-    // Por ahora retorna null, puedes implementar con FusedLocationProviderClient
-    return null
+    return try {
+        val fusedLocationClient: FusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(context)
+
+        // Intentar obtener la última ubicación conocida primero (más rápido)
+        val lastLocation = try {
+            fusedLocationClient.lastLocation.await()
+        } catch (e: Exception) {
+            Log.w("CameraScreen", "Could not get last known location: ${e.message}")
+            null
+        }
+
+        // Si hay última ubicación y no es muy antigua, usarla
+        if (lastLocation != null) {
+            Log.d("CameraScreen", "Using last known location: lat=${lastLocation.latitude}, lon=${lastLocation.longitude}")
+            return lastLocation
+        }
+
+        // Si no hay última ubicación, obtener ubicación actual
+        val cancellationTokenSource = CancellationTokenSource()
+        val currentLocation = try {
+            fusedLocationClient.getCurrentLocation(
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                cancellationTokenSource.token
+            ).await()
+        } catch (e: Exception) {
+            Log.w("CameraScreen", "Could not get current location: ${e.message}")
+            null
+        }
+
+        if (currentLocation != null) {
+            Log.d("CameraScreen", "Current location obtained: lat=${currentLocation.latitude}, lon=${currentLocation.longitude}")
+        } else {
+            Log.d("CameraScreen", "Could not obtain any location")
+        }
+
+        currentLocation
+    } catch (e: SecurityException) {
+        Log.e("CameraScreen", "Security exception getting location - permission may have been revoked", e)
+        null
+    } catch (e: Exception) {
+        Log.e("CameraScreen", "Unexpected error getting location", e)
+        null
+    }
 }
 
 
@@ -259,7 +345,8 @@ private fun Context.openAppSettings() {
 @Composable
 private fun CameraScreenContent(
     isProcessingImage: Boolean,
-    hasPermission: Boolean,
+    hasCameraPermission: Boolean,
+    hasLocationPermission: Boolean,
     onTakePhoto: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -296,8 +383,11 @@ private fun CameraScreenContent(
                 isProcessingImage -> {
                     ProcessingImageContent()
                 }
-                hasPermission -> {
-                    ReadyToCaptureContent(onTakePhoto = onTakePhoto)
+                hasCameraPermission -> {
+                    ReadyToCaptureContent(
+                        onTakePhoto = onTakePhoto,
+                        hasLocationPermission = hasLocationPermission
+                    )
                 }
                 else -> {
                     WaitingForPermissionContent()
@@ -341,6 +431,7 @@ private fun ProcessingImageContent(
 @Composable
 private fun ReadyToCaptureContent(
     onTakePhoto: () -> Unit,
+    hasLocationPermission: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -367,6 +458,15 @@ private fun ReadyToCaptureContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+
+        if (!hasLocationPermission) {
+            Text(
+                text = stringResource(R.string.location_permission_optional),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -402,7 +502,7 @@ private fun WaitingForPermissionContent(
     ) {
         CircularProgressIndicator()
         Text(
-            text = stringResource(R.string.waiting_permission),
+            text = stringResource(R.string.waiting_camera_permission),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
@@ -411,7 +511,7 @@ private fun WaitingForPermissionContent(
 
 
 @Composable
-private fun PermissionDeniedDialog(
+private fun CameraPermissionDeniedDialog(
     onDismiss: () -> Unit,
     onRequestPermission: () -> Unit
 ) {
@@ -446,7 +546,7 @@ private fun PermissionDeniedDialog(
 
 
 @Composable
-private fun PermanentlyDeniedDialog(
+private fun CameraPermanentlyDeniedDialog(
     onDismiss: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -481,6 +581,48 @@ private fun PermanentlyDeniedDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.back_navigation))
+            }
+        }
+    )
+}
+
+
+@Composable
+private fun LocationPermissionDialog(
+    onDismiss: () -> Unit,
+    onRequestPermission: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(stringResource(R.string.location_permission_title))
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.location_permission_explanation))
+                Text(
+                    text = stringResource(R.string.location_permission_optional),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onRequestPermission) {
+                Text(stringResource(R.string.allow_location))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.continue_without_location))
             }
         }
     )

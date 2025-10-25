@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">GreenThumb</string>
     <string name="app_logo">GreenThumb Logo</string>
     <string name="default_web_client_id">970520996669-mc4pabdbnm6ds2n0lrr6icdnfb8db62j.apps.googleusercontent.com</string>
@@ -7,8 +7,8 @@
     <string name="login_title">Bienvenido a GreenThumb 🌱</string>
     <string name="login_body">Con GreenThumb podrás obtener información sobre tus plantas y sus cuidados, solo con una foto. Además podrás generar recordatorios de riego y darles un cuidado ideal</string>
     <string name="login_google">Iniciar sesión con Google</string>
-    <string name="signing_in">Iniciando sesión...</string>
-    <string name="verifying_authentication">Verificando autenticación...</string>
+    <string name="signing_in" tools:ignore="TypographyEllipsis">Iniciando sesión...</string>
+    <string name="verifying_authentication" tools:ignore="TypographyEllipsis">Verificando autenticación...</string>
     <string name="login_error_title">Error de autenticación</string>
     <string name="login_error_suggestion">Verifica tu conexión a internet e intenta nuevamente.</string>
     <string name="understood">Entendido</string>
@@ -22,32 +22,32 @@
     <string name="my_plants">Mis Plantas</string>
     <string name="remembers">Recordatorios</string>
     <string name="profile">Perfil</string>
-    <string name="placeholder_search_favourite">Busca tu favorita ...</string>
+    <string name="placeholder_search_favourite" tools:ignore="TypographyEllipsis">Busca tu favorita ...</string>
     <string name="error_fetching_favourites">Ocurrio un error al obtener tus favoritas. Vuelve a intentarlo</string>
     <string name="error_fetching_watering">Ocurrio un error al tus recordatorios de riego. Vuelve a intentarlo</string>
     <string name="remaining_days">días</string>
     <string name="remaining_day">día</string>
     <string name="watering_schedule_section_title">Recordatorios de riego</string>
     <string name="favourite_plants_section_title">Mis Plantas Favoritas</string>
-    <string name="empty_watering_schedule_message">Todavia no tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, y de esa forma recibiras notificaciones cuando sea el momento de regarla</string>
+    <string name="empty_watering_schedule_message" tools:ignore="Typos">Todavia no tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, y de esa forma recibiras notificaciones cuando sea el momento de regarla</string>
     <string name="empty_favourite_plants_message">Aún no has añadido ninguna planta a tus favoritos, pero puedes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
     <string name="watering_suggestion">Sugerencia: regar con un mínimo de 200 ml y un máximo de 400 ml de agua</string>
 
     <string name="back_navigation">Volver</string>
-    <string name="waiting_for_action">Esperando acción del usuario...</string>
+    <string name="waiting_for_action" tools:ignore="TypographyEllipsis">Esperando acción del usuario...</string>
     <string name="no_results_title">No se encontraron resultados"</string>
     <string name="no_results_message">"Intenta con otra imagen con mejor iluminación"</string>
     <string name="string_error_ocurred">Ocurrió un error</string>
 
     <string name="identification_results">Resultados de la identificación</string>
-    <string name="identifying_plant">Identificando planta...</string>
-    <string name="loading_plants">Cargando plantas...</string>
+    <string name="identifying_plant" tools:ignore="TypographyEllipsis">Identificando planta...</string>
+    <string name="loading_plants" tools:ignore="TypographyEllipsis">Cargando plantas...</string>
     <string name="error_loading_plants">Error al cargar plantas</string>
     <string name="select_plant">Selecciona la planta identificada</string>
     <string name="no_plants_saved">No tienes plantas guardadas</string>
     <string name="take_picture_to_start">Toma una foto de una planta para comenzar</string>
     <string name="save_plant">Guardar en Mis Plantas</string>
-    <string name="saving">Guardando...</string>
+    <string name="saving" tools:ignore="TypographyEllipsis">Guardando...</string>
     <string name="error_saving_plant">No se pudo eliminar la planta</string>
     <string name="select_plant_hint">Selecciona una planta para guardarla en tu colección</string>
     <string name="plant_selected">Planta seleccionada</string>
@@ -55,7 +55,7 @@
     <!-- Camara -->
     <string name="camera_screen_title">Capturar Planta</string>
     <string name="full_screen_image">Imagen en pantalla completa</string>
-    <string name="processing_image">Procesando imagen...</string>
+    <string name="processing_image" tools:ignore="TypographyEllipsis">Procesando imagen...</string>
     <string name="processing_image_description">Estamos analizando la foto de tu planta</string>
     <string name="take_photo">Sacar foto</string>
     <string name="capture_instructions">Toma una foto clara de la planta que deseas identificar. Asegúrate de tener buena iluminación.</string>
@@ -65,9 +65,15 @@
     <string name="camera_permission_required">Permiso de Cámara Necesario</string>
     <string name="camera_permission_explanation">GreenThumb necesita acceso a tu cámara para identificar plantas. No compartimos tus fotos con terceros.</string>
     <string name="grant_permission">Conceder Permiso</string>
-    <string name="waiting_permission">Esperando permisos de cámara...</string>
+    <string name="waiting_camera_permission" tools:ignore="TypographyEllipsis">Esperando permisos de cámara...</string>
     <string name="camera_permission_denied">Permiso Denegado</string>
     <string name="camera_permission_permanently_denied">Has denegado permanentemente el permiso de cámara. Para usar esta función, debes habilitarlo en la configuración de la aplicación.</string>
+    <string name="location_permission_title">Mejorar resultados con ubicación</string>
+    <string name="location_permission_explanation">Permitir el acceso a tu ubicación ayuda a identificar plantas de tu región con mayor precisión.</string>
+    <string name="location_permission_optional">La ubicación es opcional. Puedes continuar sin ella.</string>
+    <string name="location_permission_not_granted">Continuando sin ubicación (resultados menos precisos)</string>
+    <string name="allow_location">Permitir ubicación</string>
+    <string name="continue_without_location">Continuar sin ubicación</string>
     <string name="open_settings_instruction">Ve a Configuración → Aplicaciones → GreenThumb → Permisos → Cámara</string>
     <string name="open_settings">Abrir Configuración</string>
 
@@ -92,7 +98,7 @@
     <string name="add_to_favorites">Agregar a favoritos</string>
     <string name="remove_from_favorites">Quitar de favoritos</string>
     <string name="delete_plant">Eliminar planta</string>
-    <string name="deleting_plant">Eliminando planta...</string>
+    <string name="deleting_plant" tools:ignore="TypographyEllipsis">Eliminando planta...</string>
     <string name="delete_plant_intention">¿Estas seguro de eliminar esta planta?</string>
     <string name="delete_plant_confirmation">Estas a punto de eliminar:</string>
     <string name="delete_plant_last_warning">Esta acción no se puede deshacer</string>
