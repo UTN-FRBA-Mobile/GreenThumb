@@ -41,3 +41,8 @@ data class WateringDTO(
     val max: Int,
     val min: Int
 ): Serializable
+
+data class PlantCatalogDTO(
+    val id: String,
+    val name: String,
+)

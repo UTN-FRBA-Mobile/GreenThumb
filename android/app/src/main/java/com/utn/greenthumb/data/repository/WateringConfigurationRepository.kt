@@ -1,0 +1,16 @@
+package com.utn.greenthumb.data.repository
+
+import com.utn.greenthumb.client.services.PlantsApiService
+import com.utn.greenthumb.data.model.plant.PagedResponse
+import com.utn.greenthumb.domain.model.watering.WateringConfigurationDTO
+import javax.inject.Inject
+
+
+class WateringConfigurationRepository @Inject constructor(
+    private val plantsApi: PlantsApiService
+) {
+
+    suspend fun getConfigurations(): PagedResponse<WateringConfigurationDTO> {
+        return plantsApi.getWateringConfigurations()
+    }
+}

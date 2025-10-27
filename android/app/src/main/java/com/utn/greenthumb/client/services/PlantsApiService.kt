@@ -2,19 +2,21 @@ package com.utn.greenthumb.client.services
 
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
-import com.utn.greenthumb.data.model.watering.WateringReminderRequest
-import com.utn.greenthumb.data.model.watering.WateringReminderResponse
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationResponse
+import com.utn.greenthumb.data.model.watering.WateringReminderRequest
+import com.utn.greenthumb.data.model.watering.WateringReminderResponse
+import com.utn.greenthumb.domain.model.PlantCatalogDTO
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.UserTokenDTO
 import com.utn.greenthumb.domain.model.WateringReminderDTO
+import com.utn.greenthumb.domain.model.watering.WateringConfigurationDTO
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Headers
-import retrofit2.http.POST
 import retrofit2.http.PATCH
-import retrofit2.http.DELETE
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -73,4 +75,13 @@ interface PlantsApiService {
         @Path("plantId") plantId: String,
         @Body request: SetFavouriteRequest
     )
+
+    @Headers("Content-Type: application/json")
+    @GET("/plants/catalog")
+    suspend fun getPlantsCatalog(): List<PlantCatalogDTO>
+
+    // Watering configurations
+    @Headers("Content-Type: application/json")
+    @GET("/watering/configurations")
+    suspend fun getWateringConfigurations(): PagedResponse<WateringConfigurationDTO>
 }
