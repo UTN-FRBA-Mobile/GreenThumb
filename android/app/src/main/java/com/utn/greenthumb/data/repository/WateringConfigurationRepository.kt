@@ -13,4 +13,12 @@ class WateringConfigurationRepository @Inject constructor(
     suspend fun getConfigurations(): PagedResponse<WateringConfigurationDTO> {
         return plantsApi.getWateringConfigurations()
     }
+
+    suspend fun create(request: WateringConfigurationDTO) {
+        plantsApi.createWateringConfiguration(request)
+    }
+
+    suspend fun delete(reminder: WateringConfigurationDTO) {
+        plantsApi.deleteWateringConfiguration(reminder.id ?: "")
+    }
 }

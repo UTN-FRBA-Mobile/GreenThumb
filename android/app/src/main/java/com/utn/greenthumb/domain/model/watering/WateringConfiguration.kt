@@ -1,14 +1,12 @@
 package com.utn.greenthumb.domain.model.watering
 
 import com.google.gson.annotations.SerializedName
-import com.utn.greenthumb.domain.model.watering.WateringType.DATES_FREQUENCY
-import com.utn.greenthumb.domain.model.watering.WateringType.SCHEDULES
-import java.time.LocalTime
 
 data class WateringConfigurationDTO(
-    val id: String?,
+    @SerializedName("_id") val id: String?,
     val plantId: String,
-    val time: LocalTime,
+    val plantName: String? = null,
+    val time: String,
     val details: WateringConfigurationDetailsDTO
 )
 
@@ -20,16 +18,16 @@ enum class WateringType {
     DATES_FREQUENCY
 }
 
-sealed class WateringConfigurationDetailsDTO {
-    abstract val type: WateringType
+enum class DayOfWeek {
+    monday, tuesday, wednesday, thursday, friday, saturday, sunday
 }
 
+sealed class WateringConfigurationDetailsDTO()
+
 data class WateringScheduleDTO(
-    override val type: WateringType = SCHEDULES,
-    val daysOfWeek: List<String>
+    val daysOfWeek: List<DayOfWeek>,
 ) : WateringConfigurationDetailsDTO()
 
 data class WateringDatesDTO(
-    override val type: WateringType = DATES_FREQUENCY,
     val datesInterval: Int
 ) : WateringConfigurationDetailsDTO()

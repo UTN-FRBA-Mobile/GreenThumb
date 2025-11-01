@@ -43,6 +43,6 @@ data class WateringDTO(
 ): Serializable
 
 data class PlantCatalogDTO(
-    val id: String,
+    @SerializedName("_id") val id: String,
     val name: String,
 )

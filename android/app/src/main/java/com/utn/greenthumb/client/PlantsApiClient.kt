@@ -1,8 +1,13 @@
 package com.utn.greenthumb.client
 
+import com.google.gson.GsonBuilder
 import com.utn.greenthumb.BuildConfig
 import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.repository.AuthRepository
+import com.utn.greenthumb.domain.model.watering.WateringConfigurationDetailsDTO
+import com.utn.greenthumb.domain.model.watering.WateringDatesDTO
+import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
+import com.utn.greenthumb.utils.RuntimeTypeAdapterFactory
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -37,10 +42,18 @@ object PlantsApiClient {
         .retryOnConnectionFailure(true)
         .build()
 
+    val typeFactory = RuntimeTypeAdapterFactory
+        .of(WateringConfigurationDetailsDTO::class.java, "type")
+        .registerSubtype(WateringScheduleDTO::class.java, "schedules")
+        .registerSubtype(WateringDatesDTO::class.java, "dates-frequency")
+
+    val gson = GsonBuilder()
+        .registerTypeAdapterFactory(typeFactory)
+        .create()
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BuildConfig.PLANT_BASE_URL)
         .client(client)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
 
     val api: PlantsApiService = retrofit.create(PlantsApiService::class.java)
