@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -45,11 +44,13 @@ import com.utn.greenthumb.ui.main.login.LoginScreen
 import com.utn.greenthumb.ui.main.my.plants.MyPlantsScreen
 import com.utn.greenthumb.ui.main.my.plants.PlantScreen
 import com.utn.greenthumb.ui.main.profile.ProfileScreen
+import com.utn.greenthumb.ui.main.remember.RememberScreen
 import com.utn.greenthumb.ui.main.result.IdentificationSuccessScreen
 import com.utn.greenthumb.ui.main.result.ResultScreen
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.NotificationViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
+import com.utn.greenthumb.viewmodel.WateringConfigViewModel
 
 
 @SuppressLint("RestrictedApi")
@@ -59,6 +60,7 @@ fun AppNavHost(
     plantViewModel: PlantViewModel,
     modifier: Modifier = Modifier,
     notificationViewModel: NotificationViewModel = viewModel(),
+    wateringConfigViewModel: WateringConfigViewModel,
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -337,6 +339,7 @@ fun AppNavHost(
             }
         }
 
+
         // ===== SUCCESS SCREEN =====
         composable(
             route = NavRoutes.Success.route,
@@ -364,8 +367,42 @@ fun AppNavHost(
                 }
             )
         }
+
+
+        // ===== REMEMBER SCREEN =====
+        composable(
+            route = NavRoutes.Remember.route,
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
+        ) {
+            ScreenWithBottomBar(
+                currentRoute = currentRoute ?: NavRoutes.Profile.route,
+                navController = navController
+            ) { navigation ->
+                RememberScreen(
+                    onHome = navigation::onHome,
+                    onMyPlants = navigation::onMyPlants,
+                    onCamera = navigation::onCamera,
+                    onRemembers = navigation::onRemembers,
+                    onProfile = navigation::onProfile,
+                    onNavigateBack = { navController.popBackStack() },
+                    wateringConfigViewModel = wateringConfigViewModel,
+                )
+            }
+        }
     }
 }
+
 
 // ===== COMPONENTES EXTRAS =====
 @Composable

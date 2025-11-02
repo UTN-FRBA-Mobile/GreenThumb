@@ -142,4 +142,22 @@
     <string name="error_generic">Error de autenticación: %s</string>
 
     <string name="identification_successful">Planta guardada con éxito!</string>
+
+    <string name="no_configuration">No hay configuraciones</string>
+    <string name="create_configuration">Crear nueva configuración</string>
+    <string name="new_remember">Nuevo Recordatorio</string>
+    <string name="remember_time">Hora del recordatorio</string>
+    <string name="enter_value">Ingresa un valor</string>
+    <string name="save">Guardar</string>
+
+    <string name="schedules">Seleccionar días</string>
+    <string name="dates_frequency">Cada X días</string>
+    <string name="every_x_days">Notificar cada %1$d días</string>
+    <string name="monday">L</string>
+    <string name="tuesday">M</string>
+    <string name="wednesday">X</string>
+    <string name="thursday">J</string>
+    <string name="friday">V</string>
+    <string name="saturday">S</string>
+    <string name="sunday">D</string>
 </resources>

@@ -1,21 +1,4 @@
 package com.utn.greenthumb.viewmodel
-import com.utn.greenthumb.domain.model.UserMessage
-import com.utn.greenthumb.domain.model.Severity
-import androidx.annotation.DrawableRes
-import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.utn.greenthumb.R
-import com.utn.greenthumb.data.repository.PlantRepository
-import com.utn.greenthumb.data.repository.WateringReminderRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.update
-import java.util.Date
-import javax.inject.Inject
 /*
 import java.time.Instant
 import java.time.LocalDate
@@ -23,10 +6,27 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 */
+import android.util.Log
+import androidx.annotation.DrawableRes
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.utn.greenthumb.R
+import com.utn.greenthumb.data.repository.PlantRepository
+import com.utn.greenthumb.data.repository.WateringReminderRepository
+import com.utn.greenthumb.domain.model.Severity
+import com.utn.greenthumb.domain.model.UserMessage
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.Calendar
+import javax.inject.Inject
 
 
 /*
@@ -51,7 +51,7 @@ fun getDaysBetween(startDate: Date, endDate: Date): Long {
 fun stringToLocalDate(strDate: String): Date { // Devuelve Date, no LocalDate
     // 1. Define el formato exacto del String ISO 8601 que esperas.
     //    'T' es un literal. 'Z' al final indica la zona horaria UTC.
-    val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+    val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
     isoFormat.timeZone = TimeZone.getTimeZone("UTC") // Fija la zona horaria a UTC
 
     try {

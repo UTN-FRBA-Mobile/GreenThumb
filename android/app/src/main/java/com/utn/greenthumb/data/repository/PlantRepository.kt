@@ -6,6 +6,7 @@ import com.utn.greenthumb.data.mapper.PlantMapper
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.data.model.plant.SetFavouriteRequest
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
+import com.utn.greenthumb.domain.model.PlantCatalogDTO
 import com.utn.greenthumb.domain.model.PlantDTO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -148,6 +149,15 @@ class PlantRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e("PlantRepository", "Error unsetting favourite plant with ID: $plantId")
             throw e
+        }
+    }
+
+    suspend fun getPlantCatalog(): List<PlantCatalogDTO> {
+        try {
+            return plantsApi.getPlantsCatalog()
+        } catch (e: Exception) {
+            Log.e("PlantRepository", "Error getting plants catalog", e)
+            return listOf()
         }
     }
 
