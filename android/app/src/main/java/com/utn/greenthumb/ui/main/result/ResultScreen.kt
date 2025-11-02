@@ -50,8 +50,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -80,14 +78,17 @@ import coil.request.ImageRequest
 import com.utn.greenthumb.state.UiState
 import com.utn.greenthumb.viewmodel.PlantViewModel
 import com.utn.greenthumb.R
+import com.utn.greenthumb.data.repository.PlantRepository
+import com.utn.greenthumb.data.services.PlantTranslationService
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.ImageDTO
 import com.utn.greenthumb.domain.model.TaxonomyDTO
 import com.utn.greenthumb.domain.model.TranslationException
 import com.utn.greenthumb.domain.model.WateringDTO
-import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -115,20 +116,10 @@ fun ResultScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
-                title = { Text(stringResource(R.string.identification_results)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onBackPressed,
-                        enabled = !isProcessing
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_navigation)
-                        )
-                    }
-                }
+            GreenThumbTopAppBar(
+                title = stringResource(R.string.identification_results),
+                onNavigateBack = onBackPressed,
+                enabled = !isProcessing
             )
         }
     ) { padding ->
@@ -210,7 +201,6 @@ fun ResultScreen(
                 is UiState.Error -> {
                     ErrorContent(
                         message = state.message,
-                        throwable = state.throwable,
                         onBackPressed = onBackPressed,
                         onRetry = {
                             // TODO: Implementar Retry
@@ -730,7 +720,6 @@ private fun EmptyResultsContent(
 @Composable
 private fun ErrorContent(
     message: String,
-    throwable: Throwable?,
     onBackPressed: () -> Unit,
     onRetry: () -> Unit
 ) {
@@ -820,92 +809,7 @@ private fun LoadingContentPreview() {
 @Composable
 private fun SuccessContentPreview(
 ) {
-    val plants = listOf<PlantDTO>(
-        PlantDTO(
-            id = "1",
-            externalId = "662e0f8d4202acfc",
-            name = "Rhaphiolepis bibas",
-            probability = 0.8843,
-            images = listOf(ImageDTO(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
-            commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
-            synonyms = listOf(                                    "Crataegus bibas",
-                "Eriobotrya fragrans",
-                "Eriobotrya fragrans var. furfuracea",
-                "Eriobotrya japonica",
-                "Eriobotrya japonica f. variegata",
-                "Mespilus japonica",
-                "Photinia japonica",
-                "Pyrus bibas",
-                "Pyrus williamtelliana",
-                "Rhaphiolepis loquata",
-                "Rhaphiolepis williamtelliana",
-                "Rhaphiolepis williamtelliana var. furfuracea"),
-            taxonomy = TaxonomyDTO(
-                taxonomyClass = "Magnoliopsida",
-                genus = "Rhaphiolepis",
-                order = "Rosales",
-                family = "Rosaceae",
-                phylum = "Tracheophyta",
-                kingdom = "Plantae"
-            ),
-            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
-            watering = WateringDTO(
-                min = 2,
-                max = 2
-            ),
-            bestWatering = "Watering this plant properly is crucial for its health. It prefers a moderate amount of water, so it's best to keep the soil consistently moist but not waterlogged. Overwatering can lead to root rot, while underwatering can cause the leaves to wilt and drop. During the growing season, water the plant more frequently, but reduce the amount in the winter when the plant's growth slows down. Always check the top inch of soil; if it feels dry, it's time to water.",
-            propagationMethods = listOf("cuttings", "seeds"),
-            culturalSignificance = "In various cultures, this plant is appreciated for its ornamental value. It is often used in landscaping for its attractive flowers and evergreen foliage. In some regions, it is also associated with good luck and prosperity. The plant's resilience and beauty make it a popular choice for public gardens and private yards alike.",
-            bestLightCondition = "This plant thrives in full sun to partial shade. It needs at least six hours of direct sunlight each day to grow well and produce flowers. In hotter climates, some afternoon shade can help protect it from the intense midday sun. If grown indoors, place it near a south or west-facing window where it can receive plenty of light. Insufficient light can lead to poor growth and fewer blooms.",
-            commonUses = "Common uses for this plant include ornamental landscaping and hedging. Its dense growth habit makes it an excellent choice for creating privacy screens or windbreaks. The plant's flowers attract pollinators like bees and butterflies, making it beneficial for the local ecosystem. Additionally, it can be grown in containers, making it versatile for use in patios and small garden spaces.",
-            toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset.",
-            favourite = false
-        ),
-        PlantDTO(
-            id = "2",
-            externalId = "662e0f8d4202aabc",
-            name = "Rhaphiolepis bibas",
-            probability = 0.8843,
-            images = listOf(ImageDTO(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
-            commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
-            synonyms = listOf(                                    "Crataegus bibas",
-                "Eriobotrya fragrans",
-                "Eriobotrya fragrans var. furfuracea",
-                "Eriobotrya japonica",
-                "Eriobotrya japonica f. variegata",
-                "Mespilus japonica",
-                "Photinia japonica",
-                "Pyrus bibas",
-                "Pyrus williamtelliana",
-                "Rhaphiolepis loquata",
-                "Rhaphiolepis williamtelliana",
-                "Rhaphiolepis williamtelliana var. furfuracea"),
-            taxonomy = TaxonomyDTO(
-                taxonomyClass = "Magnoliopsida",
-                genus = "Rhaphiolepis",
-                order = "Rosales",
-                family = "Rosaceae",
-                phylum = "Tracheophyta",
-                kingdom = "Plantae"
-            ),
-            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
-            watering = WateringDTO(
-                min = 2,
-                max = 2
-            ),
-            bestWatering = "Watering this plant properly is crucial for its health. It prefers a moderate amount of water, so it's best to keep the soil consistently moist but not waterlogged. Overwatering can lead to root rot, while underwatering can cause the leaves to wilt and drop. During the growing season, water the plant more frequently, but reduce the amount in the winter when the plant's growth slows down. Always check the top inch of soil; if it feels dry, it's time to water.",
-            propagationMethods = listOf("cuttings", "seeds"),
-            culturalSignificance = "In various cultures, this plant is appreciated for its ornamental value. It is often used in landscaping for its attractive flowers and evergreen foliage. In some regions, it is also associated with good luck and prosperity. The plant's resilience and beauty make it a popular choice for public gardens and private yards alike.",
-            bestLightCondition = "This plant thrives in full sun to partial shade. It needs at least six hours of direct sunlight each day to grow well and produce flowers. In hotter climates, some afternoon shade can help protect it from the intense midday sun. If grown indoors, place it near a south or west-facing window where it can receive plenty of light. Insufficient light can lead to poor growth and fewer blooms.",
-            commonUses = "Common uses for this plant include ornamental landscaping and hedging. Its dense growth habit makes it an excellent choice for creating privacy screens or windbreaks. The plant's flowers attract pollinators like bees and butterflies, making it beneficial for the local ecosystem. Additionally, it can be grown in containers, making it versatile for use in patios and small garden spaces.",
-            toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset.",
-            favourite = false
-        )
-    )
+    val plants = getMockPlants()
     SuccessContent(
         plants = plants,
         selectedPlantExternalId = null,
@@ -921,92 +825,7 @@ private fun SuccessContentPreview(
 @Composable
 private fun SuccessContentSelectedPreview(
 ) {
-    val plants = listOf<PlantDTO>(
-        PlantDTO(
-            id = "1",
-            externalId = "662e0f8d4202acfc",
-            name = "Rhaphiolepis bibas",
-            probability = 0.8843,
-            images = listOf(ImageDTO(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
-            commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
-            synonyms = listOf(                                    "Crataegus bibas",
-                "Eriobotrya fragrans",
-                "Eriobotrya fragrans var. furfuracea",
-                "Eriobotrya japonica",
-                "Eriobotrya japonica f. variegata",
-                "Mespilus japonica",
-                "Photinia japonica",
-                "Pyrus bibas",
-                "Pyrus williamtelliana",
-                "Rhaphiolepis loquata",
-                "Rhaphiolepis williamtelliana",
-                "Rhaphiolepis williamtelliana var. furfuracea"),
-            taxonomy = TaxonomyDTO(
-                taxonomyClass = "Magnoliopsida",
-                genus = "Rhaphiolepis",
-                order = "Rosales",
-                family = "Rosaceae",
-                phylum = "Tracheophyta",
-                kingdom = "Plantae"
-            ),
-            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
-            watering = WateringDTO(
-                min = 2,
-                max = 2
-            ),
-            bestWatering = "Watering this plant properly is crucial for its health. It prefers a moderate amount of water, so it's best to keep the soil consistently moist but not waterlogged. Overwatering can lead to root rot, while underwatering can cause the leaves to wilt and drop. During the growing season, water the plant more frequently, but reduce the amount in the winter when the plant's growth slows down. Always check the top inch of soil; if it feels dry, it's time to water.",
-            propagationMethods = listOf("cuttings", "seeds"),
-            culturalSignificance = "In various cultures, this plant is appreciated for its ornamental value. It is often used in landscaping for its attractive flowers and evergreen foliage. In some regions, it is also associated with good luck and prosperity. The plant's resilience and beauty make it a popular choice for public gardens and private yards alike.",
-            bestLightCondition = "This plant thrives in full sun to partial shade. It needs at least six hours of direct sunlight each day to grow well and produce flowers. In hotter climates, some afternoon shade can help protect it from the intense midday sun. If grown indoors, place it near a south or west-facing window where it can receive plenty of light. Insufficient light can lead to poor growth and fewer blooms.",
-            commonUses = "Common uses for this plant include ornamental landscaping and hedging. Its dense growth habit makes it an excellent choice for creating privacy screens or windbreaks. The plant's flowers attract pollinators like bees and butterflies, making it beneficial for the local ecosystem. Additionally, it can be grown in containers, making it versatile for use in patios and small garden spaces.",
-            toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset.",
-            favourite = false
-        ),
-        PlantDTO(
-            id = "2",
-            externalId = "662e0f8d4202aabc",
-            name = "Rhaphiolepis bibas",
-            probability = 0.8843,
-            images = listOf(ImageDTO(
-                url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")),
-            commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
-            synonyms = listOf(                                    "Crataegus bibas",
-                "Eriobotrya fragrans",
-                "Eriobotrya fragrans var. furfuracea",
-                "Eriobotrya japonica",
-                "Eriobotrya japonica f. variegata",
-                "Mespilus japonica",
-                "Photinia japonica",
-                "Pyrus bibas",
-                "Pyrus williamtelliana",
-                "Rhaphiolepis loquata",
-                "Rhaphiolepis williamtelliana",
-                "Rhaphiolepis williamtelliana var. furfuracea"),
-            taxonomy = TaxonomyDTO(
-                taxonomyClass = "Magnoliopsida",
-                genus = "Rhaphiolepis",
-                order = "Rosales",
-                family = "Rosaceae",
-                phylum = "Tracheophyta",
-                kingdom = "Plantae"
-            ),
-            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
-            description = "Eriobotrya japonica, comúnmente llamado níspero japonés,\u200B nisperero del Japón\u200B o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae,\u200B originario del sudeste de China,\u200B donde se conoce como pípá, 枇杷.\u200B Fue introducido en Japón, donde se naturalizó y donde lleva cultivándose más de mil años. También se naturalizó en la India, la cuenca mediterránea, Canarias, Pakistán, Chile, Argentina , Ecuador,Costa Rica y muchas otras áreas. Se cree que la inmigración china llevó el níspero a Hawái.\nSe menciona a menudo en la antigua literatura china, por ejemplo en los poemas de Li Bai, y en la literatura portuguesa se conoce desde la era de los descubrimientos.\nEn noviembre se celebra el Festival del Níspero en San Juan del Obispo, Guatemala.\nEl fruto de esta especie ha ido sustituyendo al del níspero europeo (Mespilus germanica), de forma que, en la actualidad, al hablar de «níspero» se sobreentiende que se está haciendo referencia al japonés.",
-            watering = WateringDTO(
-                min = 2,
-                max = 2
-            ),
-            bestWatering = "Watering this plant properly is crucial for its health. It prefers a moderate amount of water, so it's best to keep the soil consistently moist but not waterlogged. Overwatering can lead to root rot, while underwatering can cause the leaves to wilt and drop. During the growing season, water the plant more frequently, but reduce the amount in the winter when the plant's growth slows down. Always check the top inch of soil; if it feels dry, it's time to water.",
-            propagationMethods = listOf("cuttings", "seeds"),
-            culturalSignificance = "In various cultures, this plant is appreciated for its ornamental value. It is often used in landscaping for its attractive flowers and evergreen foliage. In some regions, it is also associated with good luck and prosperity. The plant's resilience and beauty make it a popular choice for public gardens and private yards alike.",
-            bestLightCondition = "This plant thrives in full sun to partial shade. It needs at least six hours of direct sunlight each day to grow well and produce flowers. In hotter climates, some afternoon shade can help protect it from the intense midday sun. If grown indoors, place it near a south or west-facing window where it can receive plenty of light. Insufficient light can lead to poor growth and fewer blooms.",
-            commonUses = "Common uses for this plant include ornamental landscaping and hedging. Its dense growth habit makes it an excellent choice for creating privacy screens or windbreaks. The plant's flowers attract pollinators like bees and butterflies, making it beneficial for the local ecosystem. Additionally, it can be grown in containers, making it versatile for use in patios and small garden spaces.",
-            toxicity = "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if ingested, making it a safe choice for gardens and homes with pets and children. However, it's always a good idea to discourage pets and kids from chewing on any plant material to avoid any potential digestive upset.",
-            favourite = true
-        )
-    )
+    val plants = getMockPlants()
     SuccessContent(
         plants = plants,
         selectedPlantExternalId = "662e0f8d4202acfc",
@@ -1039,10 +858,81 @@ private fun ErrorContentPreview() {
         Surface {
             ErrorContent(
                 message = "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
-                throwable = null,
                 onBackPressed = {},
                 onRetry = {}
             )
         }
     }
+}
+
+
+private fun getMockPlants(): List<PlantDTO> {
+    return listOf(
+        PlantDTO(
+            id = "1",
+            externalId = "662e0f8d4202acfc",
+            name = "Rhaphiolepis bibas",
+            probability = 0.8843,
+            images = listOf(
+                ImageDTO(url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")
+            ),
+            commonNames = listOf("níspero japonés", "nisperero del Japón", "níspero"),
+            synonyms = listOf(
+                "Crataegus bibas",
+                "Eriobotrya fragrans",
+                "Eriobotrya japonica",
+                "Mespilus japonica"
+            ),
+            taxonomy = TaxonomyDTO(
+                taxonomyClass = "Magnoliopsida",
+                genus = "Rhaphiolepis",
+                order = "Rosales",
+                family = "Rosaceae",
+                phylum = "Tracheophyta",
+                kingdom = "Plantae"
+            ),
+            moreInfoUrl = "https://es.wikipedia.org/wiki/Eriobotrya_japonica",
+            description = "Eriobotrya japonica, comúnmente llamado níspero japonés, nisperero del Japón o simplemente níspero, es un árbol frutal perenne de la familia Rosaceae.",
+            watering = WateringDTO(min = 2, max = 2),
+            bestWatering = "Watering this plant properly is crucial for its health. It prefers a moderate amount of water.",
+            propagationMethods = listOf("cuttings", "seeds"),
+            culturalSignificance = "In various cultures, this plant is appreciated for its ornamental value.",
+            bestLightCondition = "This plant thrives in full sun to partial shade.",
+            commonUses = "Common uses for this plant include ornamental landscaping and hedging.",
+            toxicity = "This plant is generally considered non-toxic to both humans and animals.",
+            favourite = false
+        ),
+        PlantDTO(
+            id = "2",
+            externalId = "662e0f8d4202aded",
+            name = "Crataegus monogyna",
+            probability = 0.7215,
+            images = listOf(
+                ImageDTO(url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Loquat-0.jpg/250px-Loquat-0.jpg")
+            ),
+            commonNames = listOf("espino albar", "espino blanco", "majuelo"),
+            synonyms = listOf(
+                "Crataegus oxyacantha",
+                "Mespilus monogyna"
+            ),
+            taxonomy = TaxonomyDTO(
+                taxonomyClass = "Magnoliopsida",
+                genus = "Crataegus",
+                order = "Rosales",
+                family = "Rosaceae",
+                phylum = "Tracheophyta",
+                kingdom = "Plantae"
+            ),
+            moreInfoUrl = "https://es.wikipedia.org/wiki/Crataegus_monogyna",
+            description = "El espino albar es un arbusto espinoso muy común en setos y bosques.",
+            watering = WateringDTO(min = 1, max = 3),
+            bestWatering = "Moderate watering requirements. Drought tolerant once established.",
+            propagationMethods = listOf("seeds", "cuttings"),
+            culturalSignificance = "Traditional hedgerow plant with folklore significance.",
+            bestLightCondition = "Full sun to partial shade.",
+            commonUses = "Hedging, wildlife habitat, ornamental purposes.",
+            toxicity = "Generally safe, but seeds may cause mild digestive upset if ingested in large quantities.",
+            favourite = false
+        )
+    )
 }

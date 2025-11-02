@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.PlantDTO
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import com.utn.greenthumb.ui.main.result.FullScreenImageGallery
 import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.viewmodel.PlantViewModel
@@ -46,19 +47,9 @@ fun PlantScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
-                title = { Text(plantSelected.name) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onBackPressed
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_navigation)
-                        )
-                    }
-                }
+            GreenThumbTopAppBar(
+                title = plantSelected.name,
+                onNavigateBack = onBackPressed
             )
         }
     ) { padding ->

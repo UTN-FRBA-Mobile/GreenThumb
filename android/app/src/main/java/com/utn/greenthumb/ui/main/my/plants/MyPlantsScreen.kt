@@ -89,6 +89,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.ui.main.BaseScreen
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import com.utn.greenthumb.ui.theme.GreenBackground
 
 import com.utn.greenthumb.viewmodel.MyPlantsViewModel
@@ -115,16 +116,22 @@ fun MyPlantsScreen(
     val deleteError by viewModel.deleteError.collectAsState()
     val deleteSuccess by viewModel.deleteSuccess.collectAsState()
 
-    LaunchedEffect(clientId) {
+    // Actualiza la pantalla con sus plantas cada vez que ingresa a la misma
+    LaunchedEffect(Unit) {
         clientId?.let {
+            Log.d("MyPlantsScreen", "Screen loaded/resumed - fetching plants for user: $it")
             viewModel.fetchMyPlants(it)
         }
     }
 
+    // Actualiza la pantalla luego de eliminar exitosamente una planta del repositorio
     LaunchedEffect(deleteSuccess, deleteError) {
         if (deleteSuccess) {
             delay(500)
-            clientId?.let { viewModel.fetchMyPlants(it) }
+            clientId?.let {
+                Log.d("MyPlantsScreen", "Plant deleted - refreshing list")
+                viewModel.fetchMyPlants(it)
+            }
             viewModel.resetDeleteState()
         }
     }
@@ -179,19 +186,10 @@ private fun MyPlantsScreenContent(
 ) {
     Scaffold(
         topBar = {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
-            title = {
-                Text(text = stringResource(R.string.my_plants)) },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back_navigation)
-                    )
-                }
-            }
-        )
+            GreenThumbTopAppBar(
+                title = stringResource(R.string.my_plants),
+                onNavigateBack = onNavigateBack
+            )
     }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -389,7 +387,6 @@ private fun PlantItem(
                 .fillMaxWidth()
                 .clickable { onDetailsClick() },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -442,10 +439,7 @@ private fun PlantImage(
             placeholder = painterResource(R.drawable.greenthumb),
             error = painterResource(id = R.drawable.greenthumb),
             contentDescription = plantName,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(8.dp))
+            contentScale = ContentScale.Crop
         )
     }
 }
@@ -723,8 +717,7 @@ private fun DeletingDialog() {
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            )
         ) {
             Column(
                 modifier = Modifier

@@ -1,4 +1,5 @@
 package com.utn.greenthumb.ui.main.home
+
 import com.utn.greenthumb.R
 import com.utn.greenthumb.viewmodel.HomeViewModel
 import com.utn.greenthumb.viewmodel.HomeViewModel.FavouritePlantsUIState
@@ -26,8 +27,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -36,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.ui.main.BaseScreen
-import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.utils.NotificationHelper
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.NotificationViewModel
@@ -91,9 +89,186 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.style.TextAlign
 import com.utn.greenthumb.domain.model.Severity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.ui.unit.sp
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 
+@Composable
+fun HomeScreen(
+    authViewModel: AuthViewModel,
+    notificationViewModel: NotificationViewModel,
+    viewModel: HomeViewModel = hiltViewModel(),
+    currentUser: User?,
+    onHome: () -> Unit,
+    onMyPlants: () -> Unit,
+    onCamera: () -> Unit,
+    onRemembers: () -> Unit,
+    onProfile: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("Home", "User Granted")
+            notificationViewModel.refreshToken()
+        } else {
+            Log.w("HomeScreen", "Notification permission denied")
+        }
+    }
+
+    val uiHomeState by viewModel.uiHomeState.collectAsState()
+
+    LaunchedEffect(currentUser) {
+        currentUser?.let { user ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (NotificationHelper.hasNotificationPermission(context)) {
+                    notificationViewModel.refreshToken()
+                } else {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            } else {
+                notificationViewModel.refreshToken()
+            }
+
+            if (currentUser.uid.isNotEmpty()) {
+                viewModel.fetchData(currentUser.uid)
+            }
+        }
+    }
+
+    BaseScreen(
+        onHome = onHome,
+        onMyPlants = onMyPlants,
+        onCamera = onCamera,
+        onRemembers = onRemembers,
+        onProfile = onProfile
+    ) {
+        if (uiHomeState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🌿 " + "Bienvenido, ${currentUser?.displayName ?: authViewModel.getUserName()}",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CircularProgressIndicator()
+                }
+            }
+        } else {
+            HomeScreenContent(
+                userName = currentUser?.displayName ?: authViewModel.getUserName(),
+                wateringScheduleUIState = uiHomeState.wateringScheduleUIState,
+                favouritePlantsUIState = uiHomeState.favouritePlantsUIState
+            )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeScreenContent(
+    userName: String?,
+    wateringScheduleUIState: WateringScheduleUIState,
+    favouritePlantsUIState: FavouritePlantsUIState
+) {
+    val scrollState = rememberScrollState()
+
+    Scaffold(topBar = {
+        GreenThumbTopAppBar(
+            title = "GreenThumb 🌿",
+            onNavigateBack = {  },
+            visible = false,
+            enabled = false
+        )
+    }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(top = 2.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(16.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (wateringScheduleUIState.isLoading || favouritePlantsUIState.isLoading) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🌿 " + "Bienvenido, ${userName ?: "Usuario no identificado"}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Estamos recolectando tus datos ...",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+            else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    //SearchBar(Modifier.padding(horizontal = 16.dp))
+
+                    // Sección de Plantas Favoritas
+                    HomeSection(
+                        title = stringResource(R.string.favourite_plants_section_title)
+                    ) {
+                        FavouritePlantSection(
+                            favouritePlantsUIState = favouritePlantsUIState,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Sección de Recordatorios de Riego
+                    HomeSection(
+                        title = stringResource(R.string.watering_schedule_section_title)
+                    ) {
+                        WateringScheduleSection(
+                            wateringScheduleUIState = wateringScheduleUIState,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
+
+    }
+}
+
+
+@Composable
+fun HomeSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(modifier) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .paddingFromBaseline(top = 40.dp, bottom = 16.dp)
+        )
+        content()
+    }
+}
 
 @Composable
 fun SearchBar(
@@ -163,7 +338,7 @@ fun FavouritePlantItem(
                 .border(4.dp, Color(0xFF2A542C), CircleShape)
                 .padding(all = 4.dp)
                 .clickable(onClick = {
-                    Log.d("HomeScreen", "Favourite plant clicked: ${favouritePlant.id} | ${favouritePlant.name}")
+                    Log.d("HomeScreen","Favourite plant clicked: ${favouritePlant.id} | ${favouritePlant.name}")
                     onSelectFavouritePlant(favouritePlant.id)
                 })
         )
@@ -198,11 +373,11 @@ fun FavouritePlantSection(
                 .border(
                     color = colorResource(id = R.color.home_error_data_border),
                     width = 1.dp,
-                    shape= RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .background(
                     color = colorResource(id = R.color.home_error_data_background),
-                    shape= RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -255,11 +430,12 @@ fun FavouritePlantSection(
                     .border(
                         color = colorResource(id = R.color.home_empty_data_border),
                         width = 1.dp,
-                        shape= RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
                     .background(
-                        color = colorResource(id = R.color.home_empty_data_background),
-                        shape= RoundedCornerShape(16.dp)
+                        //color = colorResource(id = R.color.home_empty_data_background),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(16.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -288,9 +464,11 @@ fun WateringReminderCard(
     var isExpanded by remember { mutableStateOf(false) }
 
     val cardColor = if (reminder.overdue)
-        colorResource(R.color.card_red_background)
+        //colorResource(R.color.card_red_background)
+        MaterialTheme.colorScheme.errorContainer
     else
-        colorResource(R.color.card_green_background)
+        //colorResource(R.color.card_green_background)
+        MaterialTheme.colorScheme.onSurface
 
     Surface(
         shape = MaterialTheme.shapes.medium,
@@ -440,13 +618,10 @@ fun WateringScheduleSection (
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .border(
-                    color = colorResource(id = R.color.home_error_data_border),
-                    width = 1.dp,
-                    shape = RoundedCornerShape(16.dp)
-                )
+                .heightIn(min = 150.dp)
                 .background(
-                    color = colorResource(id = R.color.home_error_data_background),
+                    //color = colorResource(id = R.color.home_error_data_background),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(16.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -454,14 +629,15 @@ fun WateringScheduleSection (
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
+            ) {
                 Icon(
                     imageVector = Icons.Default.Error,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(64.dp)
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 wateringScheduleUIState.userMessages.forEach { userMessage ->
                     Text(
@@ -476,7 +652,7 @@ fun WateringScheduleSection (
     } else {
         // Estado exitoso
         if (wateringScheduleUIState.schedule.isNotEmpty()) {
-            LazyColumn(
+            /*LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = modifier
             ) {
@@ -488,10 +664,21 @@ fun WateringScheduleSection (
                         reminder,
                         onCheckWateringReminder = wateringScheduleUIState.onCheckWateringReminder
                     )
+                }*/
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            ) {
+                wateringScheduleUIState.schedule.forEach { reminder ->
+                    WateringReminderCard(
+                        reminder = reminder,
+                        onCheckWateringReminder = wateringScheduleUIState.onCheckWateringReminder
+                    )
                 }
             }
-        }
-        else {
+        } else {
             // No hay datos para mostrar
             Box(
                 modifier = modifier
@@ -503,7 +690,7 @@ fun WateringScheduleSection (
                         shape= RoundedCornerShape(16.dp)
                     )
                     .background(
-                        color = colorResource(id = R.color.home_empty_data_background),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         shape= RoundedCornerShape(16.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -521,6 +708,7 @@ fun WateringScheduleSection (
                         text = "🌿 " + stringResource(R.string.empty_watering_schedule_message),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -528,178 +716,6 @@ fun WateringScheduleSection (
         }
     }
 }
-
-
-@Composable
-fun HomeSection(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Column(modifier) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .paddingFromBaseline(top = 40.dp, bottom = 16.dp)
-        )
-        content()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeScreenContent(
-    userName: String?,
-    wateringScheduleUIState: WateringScheduleUIState,
-    favouritePlantsUIState: FavouritePlantsUIState
-) {
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text("GreenThumb 🌿") },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground)
-        )
-    }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(top = 2.dp)
-                .border(
-                    width = 1.dp,
-                    color = colorResource(R.color.home_border),
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .background(
-                    //color = colorResource(R.color.home_background),
-                    color = GreenBackground,
-                    shape = RoundedCornerShape(16.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (wateringScheduleUIState.isLoading || favouritePlantsUIState.isLoading) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🌿 " + "Bienvenido, ${userName ?: "Usuario no identificado"}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Estamos recolectando tus datos ...",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
-            else {
-                Column(horizontalAlignment = Alignment.Start) {
-                    //SearchBar(Modifier.padding(horizontal = 16.dp))
-
-                    HomeSection(
-                        title = stringResource(R.string.favourite_plants_section_title)
-                    ) {
-                        FavouritePlantSection(
-                            favouritePlantsUIState = favouritePlantsUIState,
-                        )
-                    }
-
-                    HomeSection(
-                        title = stringResource(R.string.watering_schedule_section_title),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        WateringScheduleSection(
-                            wateringScheduleUIState = wateringScheduleUIState,
-                            modifier = Modifier.fillMaxHeight()
-                        )
-                    }
-                }
-            }
-        }
-
-    }
-}
-
-
-@Composable
-fun HomeScreen(
-    authViewModel: AuthViewModel,
-    notificationViewModel: NotificationViewModel,
-    viewModel: HomeViewModel = hiltViewModel(),
-    currentUser: User?,
-    onHome: () -> Unit,
-    onMyPlants: () -> Unit,
-    onCamera: () -> Unit,
-    onRemembers: () -> Unit,
-    onProfile: () -> Unit
-) {
-    val context = LocalContext.current
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            Log.d("Home", "User Granted")
-            notificationViewModel.refreshToken()
-        } else {
-            Log.w("HomeScreen", "Notification permission denied")
-        }
-    }
-
-    //val clientId = currentUser?.uid ?: ""
-    val uiHomeState by viewModel.uiHomeState.collectAsState()
-
-    LaunchedEffect(currentUser) {
-        currentUser?.let { user ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (NotificationHelper.hasNotificationPermission(context)) {
-                    notificationViewModel.refreshToken()
-                } else {
-                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            } else {
-                notificationViewModel.refreshToken()
-            }
-
-            if (currentUser.uid.isNotEmpty()) {
-                viewModel.fetchData(currentUser.uid)
-            }
-        }
-    }
-
-
-    BaseScreen(
-        onHome = onHome,
-        onMyPlants = onMyPlants,
-        onCamera = onCamera,
-        onRemembers = onRemembers,
-        onProfile = onProfile
-    ) {
-        if (uiHomeState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🌿 " + "Bienvenido, ${currentUser?.displayName ?: authViewModel.getUserName()}",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CircularProgressIndicator()
-                }
-            }
-        } else {
-            HomeScreenContent(
-                userName = currentUser?.displayName ?: authViewModel.getUserName(),
-                wateringScheduleUIState = uiHomeState.wateringScheduleUIState,
-                favouritePlantsUIState = uiHomeState.favouritePlantsUIState
-            )
-        }
-    }
-}
-
-
-
 
 
 private val favouritePlantsUIInvalidState = FavouritePlantsUIState(

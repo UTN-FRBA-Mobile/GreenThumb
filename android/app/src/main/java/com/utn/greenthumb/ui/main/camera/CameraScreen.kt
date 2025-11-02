@@ -62,6 +62,7 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.model.plantid.IdentificationRequest
 import com.utn.greenthumb.state.UiState
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import com.utn.greenthumb.utils.ImageUtils
@@ -353,22 +354,10 @@ private fun CameraScreenContent(
 ){
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
-                title = {
-                    Text(stringResource(R.string.camera_screen_title))
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        enabled = !isProcessingImage
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_navigation)
-                        )
-                    }
-                }
+            GreenThumbTopAppBar(
+                title = stringResource(R.string.camera_screen_title),
+                onNavigateBack = onNavigateBack,
+                enabled = !isProcessingImage
             )
         },
         modifier = modifier

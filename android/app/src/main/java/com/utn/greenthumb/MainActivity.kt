@@ -15,7 +15,6 @@ import com.utn.greenthumb.ui.navigation.AppNavHost
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
-import com.utn.greenthumb.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

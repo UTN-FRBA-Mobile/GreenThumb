@@ -3,7 +3,6 @@ package com.utn.greenthumb.ui.main
 import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -19,26 +18,25 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -80,6 +78,7 @@ fun BaseScreen(
     }
 }
 
+
 @Composable
 fun BottomBar(
     onHome: () -> Unit,
@@ -88,11 +87,14 @@ fun BottomBar(
     onRemembers: () -> Unit,
     onProfile: () -> Unit
 ) {
+    val insets = WindowInsets.navigationBars.asPaddingValues()
+    val bottomPadding = insets.calculateBottomPadding()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
-            .background(DarkGreen),
+            .height(80.dp + bottomPadding)
+            .background(DarkGreen)
+            .windowInsetsPadding(WindowInsets.navigationBars),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -120,51 +122,6 @@ fun BottomBar(
             text = stringResource(R.string.profile),
             onClick = onProfile,
         )
-    }
-}
-
-
-
-@Composable
-fun RowScope.BottomButtonRipple(
-    icon: Painter,
-    text: String? = "",
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Column(
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = ripple(
-                    bounded = true,
-                    radius = 40.dp,
-                    color = GreenBackground
-                ),
-                onClick = onClick
-            )
-            .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            painter = icon,
-            contentDescription = text,
-            tint = GreenBackground,
-            modifier = Modifier.size(36.dp)
-        )
-
-        if (!text.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-                color = GreenBackground
-            )
-        }
     }
 }
 
@@ -216,71 +173,6 @@ fun RowScope.BottomButtonScale(
             tint = GreenBackground,
             modifier = Modifier.size(36.dp)
         )
-
-        if (!text.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-                color = GreenBackground
-            )
-        }
-    }
-}
-
-
-
-@Composable
-fun RowScope.BottomButton(
-    icon: Painter,
-    modifier: Modifier = Modifier,
-    text: String? = "",
-    onClick: () -> Unit,
-) {
-    var isPressed by remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
-
-    LaunchedEffect(interactionSource) {
-        interactionSource.interactions.collect { interaction ->
-            when (interaction) {
-                is PressInteraction.Press -> isPressed = true
-                is PressInteraction.Release -> isPressed = false
-                is PressInteraction.Cancel -> isPressed = false
-            }
-        }
-    }
-
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed) DarkGreen.copy(alpha = 0.7f) else Color.Transparent,
-        animationSpec = tween(durationMillis = 100),
-        label = "background_color"
-    )
-
-    Column(
-        modifier = Modifier
-            .weight(1f)
-            .background(backgroundColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-            .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painter = icon,
-                contentDescription = text,
-                tint = GreenBackground,
-                modifier = Modifier.size(36.dp)
-            )
-        }
 
         if (!text.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))

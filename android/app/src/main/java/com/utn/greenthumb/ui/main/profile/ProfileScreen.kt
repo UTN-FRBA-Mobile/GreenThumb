@@ -1,6 +1,7 @@
 package com.utn.greenthumb.ui.main.profile
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
@@ -26,16 +28,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +55,7 @@ import coil.request.ImageRequest
 import com.utn.greenthumb.R
 import com.utn.greenthumb.domain.model.User
 import com.utn.greenthumb.ui.main.BaseScreen
-import com.utn.greenthumb.ui.theme.GreenBackground
+import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 
 
@@ -71,6 +71,9 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    BackHandler(onBack = onNavigateBack)
+
     BaseScreen(
         onHome = onHome,
         onMyPlants = onMyPlants,
@@ -85,16 +88,8 @@ fun ProfileScreen(
             modifier = modifier
         )
     }
-
 }
 
-/**
- * TODO:
- * Al lado de cada valor en Información de la Cuenta,
- * que tenga la posibilidad de Editar algún valor
- *
- * Por ahora estos son propios de la cuenta, ninguno es persistido o de preferencias
- */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,21 +99,13 @@ private fun ProfileScreenContent(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GreenBackground),
-                title = {
-                    Text(text = stringResource(R.string.profile)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_navigation)
-                        )
-                    }
-                }
+            GreenThumbTopAppBar(
+                title = stringResource(R.string.profile),
+                onNavigateBack = onNavigateBack
             )
         },
         modifier = modifier
@@ -127,6 +114,7 @@ private fun ProfileScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(scrollState)
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -142,7 +130,7 @@ private fun ProfileScreenContent(
                 user = user
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(25.dp))
 
             // Cerrar sesión
             LogoutButton(
@@ -336,10 +324,9 @@ private fun ProfileInfoSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Divider()
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             // Estado del Email
-            //TODO: ¿es necesario? REEMPLAZAR CON OTROS DATOS DEL PERFIL
             InfoRow(
                 icon = Icons.Default.Email,
                 label = stringResource(R.string.email_status),
@@ -350,18 +337,11 @@ private fun ProfileInfoSection(
             )
 
             // Tipo de Cuenta
-            // TODO: obvio que es Google
             InfoRow(
                 icon = Icons.Default.AccountCircle,
                 label = stringResource(R.string.account_type),
                 value = "Google"
             )
-
-            /**
-             * TODO:
-             * Ubicacion
-             * Preferencias de plantas?
-             */
         }
     }
 }
@@ -450,17 +430,22 @@ fun ProfileScreenLightPreview() {
         isEmailVerified = true
     )
     GreenThumbTheme {
-        ProfileScreenContent(
+        ProfileScreen(
             user = user,
             onNavigateBack = {},
-            onLogout = {}
+            onLogout = {},
+            onHome = { },
+            onMyPlants = { },
+            onCamera = { },
+            onRemembers = { },
+            onProfile = { }
         )
     }
 }
 
 
 @Preview(
-    name = "Pantalla de Perfil - Claro",
+    name = "Pantalla de Perfil - Oscuro",
     showSystemUi = true,
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES
@@ -475,10 +460,15 @@ fun ProfileScreenDarkPreview() {
         isEmailVerified = true
     )
     GreenThumbTheme {
-        ProfileScreenContent(
+        ProfileScreen(
             user = user,
             onNavigateBack = {},
-            onLogout = {}
+            onLogout = {},
+            onHome = { },
+            onMyPlants = { },
+            onCamera = { },
+            onRemembers = { },
+            onProfile = { }
         )
     }
 }
@@ -499,10 +489,15 @@ fun ProfileScreenNoVerifiedPreview() {
         isEmailVerified = false
     )
     GreenThumbTheme {
-        ProfileScreenContent(
+        ProfileScreen(
             user = user,
             onNavigateBack = {},
-            onLogout = {}
+            onLogout = {},
+            onHome = { },
+            onMyPlants = { },
+            onCamera = { },
+            onRemembers = { },
+            onProfile = { }
         )
     }
 }
