@@ -17,6 +17,7 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -92,4 +93,8 @@ interface PlantsApiService {
     @Headers("Content-Type: application/json")
     @DELETE("/watering/configurations/{id}")
     suspend fun deleteWateringConfiguration(@Path("id") id: String)
+
+    @Headers("Content-Type: application/json")
+    @PUT("/watering/configurations/{id}")
+    suspend fun editWateringConfiguration(@Path("id") id: String, @Body request: WateringConfigurationDTO)
 }

@@ -1,9 +1,9 @@
 package com.utn.greenthumb.ui.main.remember
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,8 +76,6 @@ import com.utn.greenthumb.domain.model.watering.WateringDatesDTO
 import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
 import com.utn.greenthumb.domain.model.watering.WateringType
 import com.utn.greenthumb.ui.main.BaseScreen
-import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
-import com.utn.greenthumb.ui.theme.GreenBackground
 import com.utn.greenthumb.ui.theme.Purple80
 import com.utn.greenthumb.ui.theme.PurpleCard
 import com.utn.greenthumb.viewmodel.RememberModalForm
@@ -159,10 +157,15 @@ fun RememberScreen(
                         plants = modalState.value.plantNames ?: listOf(),
                         onDismiss = { wateringConfigViewModel.closeModal() },
                         onConfirm = { form ->
-                            Log.d("TEST", "SENDING FORM $form")
+                            if (modalState.value.editFlow) {
+                                wateringConfigViewModel.update(form)
+                            } else {
+                                wateringConfigViewModel.create(form)
+                            }
+
                             wateringConfigViewModel.closeModal()
-                            wateringConfigViewModel.create(form)
                         },
+                        initialState = modalState.value.selectedConfig
                     )
 
                     if (configurations.value.rememberConfigurations.isEmpty()) {
@@ -232,11 +235,24 @@ fun ConfigurationCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = reminder.plantName ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                viewModel.openModalForEdit(reminder)
+                            }
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = reminder.plantName ?: "",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
 
                 FilledIconButton(
                     onClick = {
@@ -283,13 +299,13 @@ fun CreateWateringBottomSheet(
     plants: List<PlantCatalogDTO>,
     onDismiss: () -> Unit,
     onConfirm: (RememberModalForm) -> Unit,
-    initialState: RememberModalForm = RememberModalForm()
+    initialState: RememberModalForm
 ) {
     if (showSheet) {
         var form by remember { mutableStateOf(initialState) }
 
         val tabs = WateringType.entries.toTypedArray()
-        val selectedTabIndex = remember { mutableIntStateOf(0) }
+        val selectedTabIndex = remember { mutableIntStateOf(tabs.indexOf(initialState.type)) }
 
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true
@@ -325,6 +341,8 @@ fun CreateWateringBottomSheet(
                 )
                 GreenThumbTimePicker(
                     label = stringResource(R.string.remember_time),
+                    initialHour = form.time.split(":")[0].toInt(),
+                    initialMinute = form.time.split(":")[1].toInt(),
                     onChange = {
                         form = form.copy(time = it)
                     }

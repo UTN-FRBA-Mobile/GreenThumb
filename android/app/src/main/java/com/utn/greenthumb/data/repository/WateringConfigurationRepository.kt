@@ -21,4 +21,8 @@ class WateringConfigurationRepository @Inject constructor(
     suspend fun delete(reminder: WateringConfigurationDTO) {
         plantsApi.deleteWateringConfiguration(reminder.id ?: "")
     }
+
+    suspend fun update(request: WateringConfigurationDTO) {
+        plantsApi.editWateringConfiguration(request.id ?: "", request)
+    }
 }

@@ -28,9 +28,12 @@ data class ModalUIState(
     val visible: Boolean = false,
     val loadingPlants: Boolean? = false,
     val plantNames: List<PlantCatalogDTO>? = listOf(),
+    val selectedConfig: RememberModalForm = RememberModalForm(),
+    val editFlow: Boolean = false
 )
 
 data class RememberModalForm(
+    val id: String? = null,
     val selectedPlant: PlantCatalogDTO? = null,
     val type: WateringType = SCHEDULES,
     val time: String = "",
@@ -95,6 +98,7 @@ class WateringConfigViewModel @Inject constructor(
         _modalState.update {
             it.copy(
                 visible = true,
+                editFlow = false,
                 loadingPlants = true
             )
         }
@@ -114,7 +118,9 @@ class WateringConfigViewModel @Inject constructor(
     fun closeModal() {
         _modalState.update {
             it.copy(
-                visible = false
+                editFlow = false,
+                visible = false,
+                selectedConfig = RememberModalForm()
             )
         }
     }
@@ -171,6 +177,71 @@ class WateringConfigViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun update(form: RememberModalForm) {
+        _configsState.update {
+            it.copy(
+                isLoading = true,
+            )
+        }
+        val details = when (form.type) {
+            SCHEDULES -> WateringScheduleDTO(daysOfWeek = form.selectedDays)
+            DATES_FREQUENCY -> WateringDatesDTO(datesInterval = form.numberInput ?: 0)
+        }
+        viewModelScope.launch {
+            try {
+                repository.update(
+                    WateringConfigurationDTO(
+                        id = form.id,
+                        plantId = form.selectedPlant?.id ?: "",
+                        time = form.time,
+                        details = details,
+                    )
+                )
+
+                fetchConfigs()
+            } catch (e: Exception) {
+                Log.e("WateringConfigViewModel", "Error updating configuration", e)
+                _configsState.update {
+                    it.copy(
+                        isLoading = false,
+                    )
+                }
+            }
+        }
+    }
+
+    fun openModalForEdit(confifguration: WateringConfigurationDTO) {
+
+        val selectedConfig = if (confifguration.details is WateringScheduleDTO)  {
+            RememberModalForm(
+                id = confifguration.id,
+                time = confifguration.time,
+                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                type = SCHEDULES,
+                selectedDays = confifguration.details.daysOfWeek,
+            )
+        } else if (confifguration.details is WateringDatesDTO) {
+            RememberModalForm(
+                id = confifguration.id,
+                time = confifguration.time,
+                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                type = DATES_FREQUENCY,
+                numberInput = confifguration.details.datesInterval,
+            )
+        } else {
+            RememberModalForm()
+        }
+
+        _modalState.update {
+            it.copy(
+                visible = true,
+                loadingPlants = false,
+                editFlow = true,
+                selectedConfig = selectedConfig
+            )
         }
     }
 
