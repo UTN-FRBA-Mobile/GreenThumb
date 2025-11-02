@@ -81,6 +81,8 @@ import com.utn.greenthumb.ui.theme.PurpleCard
 import com.utn.greenthumb.viewmodel.RememberModalForm
 import com.utn.greenthumb.viewmodel.WateringConfigViewModel
 import java.util.Calendar
+import java.util.Calendar.HOUR_OF_DAY
+import java.util.Calendar.MINUTE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -339,10 +341,13 @@ fun CreateWateringBottomSheet(
                     },
                     plants = plants,
                 )
+
+                val initialHour = if (form.time.isEmpty()) Calendar.getInstance().get(HOUR_OF_DAY) else form.time.split(":")[0].toInt()
+                val initialMinute = if (form.time.isEmpty()) Calendar.getInstance().get(MINUTE) else  form.time.split(":")[1].toInt()
                 GreenThumbTimePicker(
                     label = stringResource(R.string.remember_time),
-                    initialHour = form.time.split(":")[0].toInt(),
-                    initialMinute = form.time.split(":")[1].toInt(),
+                    initialHour = initialHour,
+                    initialMinute = initialMinute,
                     onChange = {
                         form = form.copy(time = it)
                     }
@@ -452,8 +457,8 @@ fun WateringPlantDropdown(
 @Composable
 fun GreenThumbTimePicker(
     label: String,
-    initialHour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-    initialMinute: Int = Calendar.getInstance().get(Calendar.MINUTE),
+    initialHour: Int = Calendar.getInstance().get(HOUR_OF_DAY),
+    initialMinute: Int = Calendar.getInstance().get(MINUTE),
     is24Hour: Boolean = true,
     onChange: (String) -> Unit,
 ) {
