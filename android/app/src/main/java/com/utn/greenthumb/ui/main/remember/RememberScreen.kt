@@ -354,7 +354,7 @@ fun CreateWateringBottomSheet(
                 )
 
                 SecondaryTabRow(
-                    containerColor = PurpleCard,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     selectedTabIndex = selectedTabIndex.intValue
                 ) {
                     tabs.forEachIndexed { index, title ->
