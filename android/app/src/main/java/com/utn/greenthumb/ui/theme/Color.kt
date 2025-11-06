@@ -1,5 +1,6 @@
 package com.utn.greenthumb.ui.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -18,3 +19,8 @@ val Green = Color(0xFF2DC75C)
 val PurpleCard = Color(0xFFF7F2FF)
 val DarkPurpleCard = Color(0xFF8668B6)
 
+val HomeLightCard = Color(0xFFD0EED0)
+val HomeDarkCard = Color(0xFF1D7920)
+
+val HomeLightCardText = Color(0xFF1E1D1D)
+val HomeDarkCardText = Color(0xFFE0E0E0)

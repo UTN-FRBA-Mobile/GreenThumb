@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.ui.navigation.AppNavHost
+import com.utn.greenthumb.ui.navigation.NavRoutes
 import com.utn.greenthumb.ui.theme.GreenThumbTheme
 import com.utn.greenthumb.viewmodel.AuthViewModel
 import com.utn.greenthumb.viewmodel.PlantViewModel
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
 
         if (plant != null) {
             lifecycleScope.launch {
-                plantViewModel.selectPlant(plant)
+                plantViewModel.selectPlant(plant, NavRoutes.MyPlants.route)
             }
         }
     }

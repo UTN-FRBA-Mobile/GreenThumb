@@ -27,6 +27,10 @@ class PlantViewModel @Inject constructor(
     private val _selectedPlant = MutableStateFlow<PlantDTO?>(null)
     val selectedPlant: StateFlow<PlantDTO?> = _selectedPlant.asStateFlow()
 
+    private val _backRoute = MutableStateFlow<String?>(null)
+    val backRoute: StateFlow<String?> = _backRoute.asStateFlow()
+
+
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
@@ -94,16 +98,16 @@ class PlantViewModel @Inject constructor(
         }
     }
 
-
-    fun selectPlant(plant: PlantDTO) {
+    fun selectPlant(plant: PlantDTO, backRoute: String) {
         Log.d("PlantViewModel", "Plant selected: ${plant.name}")
         _selectedPlant.value = plant
+        _backRoute.value = backRoute
     }
 
-    fun selectPlant(plantId: String) {
+    fun selectPlant(plantId: String, backRoute: String) {
         viewModelScope.launch {
             val plantDTO: PlantDTO = repository.getPlant(plantId)
-            selectPlant(plantDTO)
+            selectPlant(plantDTO, backRoute)
         }
     }
 

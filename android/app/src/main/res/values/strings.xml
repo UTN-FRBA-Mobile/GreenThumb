@@ -29,8 +29,8 @@
     <string name="remaining_day">día</string>
     <string name="watering_schedule_section_title">Recordatorios de riego</string>
     <string name="favourite_plants_section_title">Mis Plantas Favoritas</string>
-    <string name="empty_watering_schedule_message" tools:ignore="Typos">Todavia no tienes ninguna planificación de riego agendada. Puedes hacerlo desde Mis Plantas, y de esa forma recibiras notificaciones cuando sea el momento de regarla</string>
-    <string name="empty_favourite_plants_message">Aún no has añadido ninguna planta a tus favoritos, pero puedes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
+    <string name="empty_watering_schedule_message" tools:ignore="Typos">No tenes ninguna planificación de riego agendada. Podes hacerlo desde la configuracion de Recordatorios, y de esa forma recibiras una notificacion cuando sea el momento de regarla</string>
+    <string name="empty_favourite_plants_message">No has añadido ninguna planta a tus favoritos, pero podes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
     <string name="watering_suggestion">Sugerencia: regar con un mínimo de 200 ml y un máximo de 400 ml de agua</string>
 
     <string name="back_navigation">Volver</string>

@@ -71,6 +71,8 @@ fun AppNavHost(
     val logoutState by authViewModel.logoutState.collectAsState()
 
     val selectedPlant by plantViewModel.selectedPlant.collectAsState()
+    val selectedPlantBackRoute by plantViewModel.backRoute.collectAsState()
+
 
     var hasNavigatedInitially by remember { mutableStateOf(false) }
 
@@ -164,7 +166,14 @@ fun AppNavHost(
                             onMyPlants = navigation::onMyPlants,
                             onCamera = navigation::onCamera,
                             onRemembers = navigation::onRemembers,
-                            onProfile = navigation::onProfile
+                            onProfile = navigation::onProfile,
+                            onPlantSelected = { plant ->
+                                Log.d("AppNavHost", "Plant selected: ${plant.name}")
+                                plantViewModel.selectPlant(plant, NavRoutes.Home.route)
+                                navController.navigate(NavRoutes.PlantDetail.route) {
+                                    launchSingleTop = true
+                                }
+                            }
                         )
                     }
                 }
@@ -226,7 +235,7 @@ fun AppNavHost(
                         onNavigateBack = { navController.popBackStack() },
                         onPlantSelected = { plant ->
                             Log.d("AppNavHost", "Plant selected: ${plant.name}")
-                            plantViewModel.selectPlant(plant)
+                            plantViewModel.selectPlant(plant, NavRoutes.MyPlants.route)
                             navController.navigate(NavRoutes.PlantDetail.route) {
                                 launchSingleTop = true
                             }
@@ -259,7 +268,7 @@ fun AppNavHost(
                         Log.d("AppNavHost", "Navigating back from plant detail")
                         plantViewModel.clearSelectedPlant()
                         navController.popBackStack(
-                            route = NavRoutes.MyPlants.route,
+                            route = selectedPlantBackRoute.toString(), //NavRoutes.MyPlants.route,
                             inclusive = false
                         )
                     },
@@ -269,7 +278,7 @@ fun AppNavHost(
                 LaunchedEffect(Unit) {
                     Log.w("AppNavHost", "No Plant selected, navigating back to My Plants")
                     navController.popBackStack(
-                        route = NavRoutes.MyPlants.route,
+                        route = selectedPlantBackRoute.toString(), //route = NavRoutes.MyPlants.route,
                         inclusive = false
                     )
                 }

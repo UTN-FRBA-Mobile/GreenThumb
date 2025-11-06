@@ -13,10 +13,12 @@ import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.repository.PlantRepository
 import com.utn.greenthumb.data.repository.WateringReminderRepository
+import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.Severity
 import com.utn.greenthumb.domain.model.UserMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -97,6 +99,7 @@ class HomeViewModel  @Inject constructor(
         val id: String,
         val name: String,
         val imageUrl: String,
+        val plant: PlantDTO,
         @DrawableRes val imagePlaceholder: Int,
     )
 
@@ -109,7 +112,7 @@ class HomeViewModel  @Inject constructor(
         val daysLeft: Int,
         val date: Date,
         val overdue: Boolean,
-        val checked: Boolean
+        val onCheck: Boolean
     )
 
     data class FavouritePlantsUIState(
@@ -117,7 +120,7 @@ class HomeViewModel  @Inject constructor(
         val isValid: Boolean = false,
         val userMessages: List<UserMessage> = listOf(),
         val favourites: List<FavouritePlant> = listOf(),
-        val onSelectFavouritePlant: (String) -> Unit = {}
+        //val onSelectFavouritePlant: (FavouritePlant) -> Unit = {}
     )
 
     data class WateringScheduleUIState(
@@ -125,7 +128,7 @@ class HomeViewModel  @Inject constructor(
         val isValid: Boolean = false,
         val userMessages: List<UserMessage> = listOf(),
         val schedule: List<WateringReminder> = listOf(),
-        val onCheckWateringReminder: (String) -> Unit = {}
+        val onCheckWateringReminder: (WateringReminder) -> Unit = {}
     )
 
     data class HomeUIState(
@@ -151,15 +154,21 @@ class HomeViewModel  @Inject constructor(
 
     fun fetchData(clientId: String) {
         try {
+            _uiHomeState.update {
+                it.copy(
+                    isLoading = true
+                )
+            }
+
             if (clientId.isBlank()) {
                 Log.e("HomeViewModel", "No client ID provided")
+                // mostrar error!
                 return // No hacer nada si no hay ID
             }
 
             Log.d("HomeViewModel", "Fetching data for client: $clientId")
 
             viewModelScope.launch {
-
                 val wateringScheduleUIState = fetchWateringSchedule(clientId)
                 val favouritePlantsUIState = fetchFavouritePlants(clientId)
 
@@ -179,13 +188,55 @@ class HomeViewModel  @Inject constructor(
         }
     }
 
-    fun onCheckWateringReminder(reminderId: String) {
+    private fun setOnCheckWateringReminder(reminder: WateringReminder) {
+        try {
+            _uiHomeState.update { currentState ->
+                val updatedSchedule = currentState.wateringScheduleUIState.schedule.map {
+                    if (it.id == reminder.id) {
+                        it.copy(onCheck = !it.onCheck)
+                    } else {
+                        it
+                    }
+                }
+
+                currentState.copy(
+                    wateringScheduleUIState = currentState.wateringScheduleUIState.copy(
+                        schedule = updatedSchedule
+                    )
+                )
+            }
+        }
+        catch (e: Exception) {
+            Log.e("HomeViewModel", "Error setting onCheckWateringReminder", e)
+        }
+    }
+
+    fun onCheckWateringReminder(reminder: WateringReminder) {
+        if (reminder.onCheck) {
+            return
+        }
+
+        setOnCheckWateringReminder(reminder)
+
         viewModelScope.launch {
             try {
-                Log.d("HomeViewModel", "Checking watering reminder: $reminderId")
-                //wateringReminderRepository.checkWateringReminder(reminderId)
+                Log.d("HomeViewModel", "Checking watering reminder: ${reminder.id}")
+                wateringReminderRepository.checkWateringReminder(reminder.id)
+
+                _uiHomeState.update { currentState ->
+                    val updatedSchedule = currentState.wateringScheduleUIState.schedule.filter {
+                        it -> it.id != reminder.id
+                    }
+
+                    currentState.copy(
+                        wateringScheduleUIState = currentState.wateringScheduleUIState.copy(
+                            schedule = updatedSchedule
+                        )
+                    )
+                }
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error checking watering reminder", e)
+                setOnCheckWateringReminder(reminder)
             }
         }
     }
@@ -195,6 +246,7 @@ class HomeViewModel  @Inject constructor(
             try {
                 Log.d("HomeViewModel", "Selecting favourite plant: $plantId")
                 //plantRepository.selectFavouritePlant(plantId)
+
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error selecting favourite plant", e)
             }
@@ -205,13 +257,14 @@ class HomeViewModel  @Inject constructor(
         try {
             Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
             val result = wateringReminderRepository.getWateringReminders()
-            Log.d("HomeViewModel", "Successfully fetched watering schedule. Data: ${result.toString()}")
+            Log.d("HomeViewModel", "Successfully fetched watering schedule. Data: $result")
             Log.d("HomeViewModel", "Successfully fetched ${result.total} watering reminders")
 
             return WateringScheduleUIState(
                 isLoading = false,
                 isValid = true,
                 userMessages = listOf(),
+                onCheckWateringReminder = this::onCheckWateringReminder,
                 schedule = result.content.map { reminderDto ->
                     val reminderDate = stringToLocalDate(reminderDto.date)
                     val daysLeft = getDaysBetween(Date(), reminderDate)
@@ -226,7 +279,7 @@ class HomeViewModel  @Inject constructor(
                         daysLeft = daysLeft,
                         date = reminderDate,
                         overdue = isOverdue,
-                        checked = reminderDto.checked
+                        onCheck = false
                     )
                 }
             )
@@ -260,18 +313,20 @@ class HomeViewModel  @Inject constructor(
         try {
             Log.d("HomeViewModel", "Fetching favourite plants for client: $clientId")
             val result = plantRepository.getFavouritePlants()
-            Log.d("HomeViewModel", "Successfully fetched favourite plants. Data: ${result.toString()}")
+            Log.d("HomeViewModel", "Successfully fetched favourite plants. Data: $result")
             Log.d("HomeViewModel", "Successfully fetched ${result.total} favourite plants")
 
             return FavouritePlantsUIState(
                 isLoading = false,
                 isValid = true,
                 userMessages = listOf(),
+                //onSelectFavouritePlant = this::onSelectFavouritePlant,
                 favourites = result.content.map { plant ->
                     FavouritePlant(
                         id = plant.id?: "",
                         name = plant.name,
                         imageUrl = plant.images?.firstOrNull()?.url ?: "",
+                        plant = plant,
                         imagePlaceholder = R.drawable.greenthumb,
                     )
                 }

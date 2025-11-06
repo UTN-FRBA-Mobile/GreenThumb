@@ -21,7 +21,9 @@ private val LightColorScheme = lightColorScheme(
     secondaryContainer = LightGreen,
     tertiary = PurpleCard,
     background = GreenBackground,
-    surface = GreenBackground
+    surface = GreenBackground,
+    primaryFixed = HomeLightCard,
+    onPrimaryFixed = HomeLightCardText
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -30,7 +32,9 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = PurpleGrey40,
     tertiary = DarkPurpleCard,
     background = DarkBackground,
-    surface = DarkBackground
+    surface = DarkBackground,
+    primaryFixed = HomeDarkCard,
+    onPrimaryFixed = HomeDarkCardText
 )
 
 val Shapes = Shapes(
