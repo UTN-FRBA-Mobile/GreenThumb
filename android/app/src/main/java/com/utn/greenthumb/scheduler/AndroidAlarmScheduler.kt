@@ -34,7 +34,8 @@ class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
             }
         }
 
-        alarmManager.setExactAndAllowWhileIdle(
+        // Use set() for an inexact alarm. The system may delay it to save battery.
+        alarmManager.set(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
             pendingIntent
