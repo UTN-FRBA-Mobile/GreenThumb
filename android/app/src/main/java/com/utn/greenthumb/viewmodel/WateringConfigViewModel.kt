@@ -142,19 +142,14 @@ class WateringConfigViewModel @Inject constructor(
                 val newWateringConfiguration = repository.create(
                     WateringConfigurationDTO(
                         plantId = form.selectedPlant?.id ?: "",
+                        plantName = form.selectedPlant?.name,
                         time = form.time,
                         details = details,
                         id = null
                     )
                 )
-                newWateringConfiguration.let {
-                    scheduler.schedule(        WateringConfigurationDTO(
-                        plantId = form.selectedPlant?.id ?: "",
-                        time = form.time,
-                        details = details,
-                        id = null
-                    ))
-                }
+                // Pass the object that the repository returned (with the ID) to the scheduler
+                scheduler.schedule(newWateringConfiguration)
 
                 fetchConfigs()
             } catch (e: Exception) {
