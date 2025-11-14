@@ -153,12 +153,17 @@ class PlantRepository @Inject constructor(
     }
 
     suspend fun getPlantCatalog(): List<PlantCatalogDTO> {
-        try {
-            return plantsApi.getPlantsCatalog()
-        } catch (e: Exception) {
-            Log.e("PlantRepository", "Error getting plants catalog", e)
-            return listOf()
-        }
+        // try {
+        //     return plantsApi.getPlantsCatalog()
+        // } catch (e: Exception) {
+        //     Log.e("PlantRepository", "Error getting plants catalog", e)
+        //     return listOf()
+        // }
+        return listOf(
+            PlantCatalogDTO("1", "Monstera Deliciosa (de prueba)"),
+            PlantCatalogDTO("2", "Ficus Lyrata (de prueba)"),
+            PlantCatalogDTO("3", "Pothos (de prueba)")
+        )
     }
 
 }
