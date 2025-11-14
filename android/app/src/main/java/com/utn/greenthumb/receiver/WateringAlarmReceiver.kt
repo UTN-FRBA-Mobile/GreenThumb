@@ -12,10 +12,12 @@ class WateringAlarmReceiver : BroadcastReceiver() {
         val plantName = intent.getStringExtra("PLANT_NAME") ?: "your plant"
         val message = "It's time to water $plantName"
         val channelId = "watering_channel"
+        // The ID for the notification must be unique for each reminder
         val reminderId = intent.getIntExtra("REMINDER_ID", 0)
 
         val notification = NotificationCompat.Builder(context, channelId)
-//            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            // Use the correct icon designed for notifications
+            .setSmallIcon(R.drawable.ic_notification_icon)
             .setContentTitle("Watering Reminder")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
