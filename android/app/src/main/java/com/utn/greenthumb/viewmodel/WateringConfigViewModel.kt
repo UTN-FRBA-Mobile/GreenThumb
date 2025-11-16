@@ -139,7 +139,7 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                val newWateringConfiguration = repository.create(
+                val newWateringConfiguration =
                     WateringConfigurationDTO(
                         plantId = form.selectedPlant?.id ?: "",
                         plantName = form.selectedPlant?.name,
@@ -147,7 +147,8 @@ class WateringConfigViewModel @Inject constructor(
                         details = details,
                         id = null
                     )
-                )
+                repository.create(newWateringConfiguration)
+
                 // Pass the object that the repository returned (with the ID) to the scheduler
                 scheduler.schedule(newWateringConfiguration)
 

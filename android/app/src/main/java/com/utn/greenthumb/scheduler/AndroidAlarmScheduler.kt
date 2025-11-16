@@ -14,12 +14,12 @@ class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
     override fun schedule(item: WateringConfigurationDTO) {
         val intent = Intent(context, WateringAlarmReceiver::class.java).apply {
             putExtra("PLANT_NAME", item.plantName)
-            putExtra("REMINDER_ID", item.id?.toInt() ?: 0)
+            putExtra("REMINDER_ID", item.id)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            item.id?.toInt() ?: 0,
+            item.id.hashCode(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -45,7 +45,7 @@ class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
     override fun cancel(item: WateringConfigurationDTO) {
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            item.id?.toInt() ?: 0,
+            item.id.hashCode(),
             Intent(context, WateringAlarmReceiver::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
