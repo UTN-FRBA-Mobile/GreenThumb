@@ -1,4 +1,4 @@
-package com.utn.greenthumb.viewmodel;
+package com.utn.greenthumb.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -13,6 +13,7 @@ import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
 import com.utn.greenthumb.domain.model.watering.WateringType
 import com.utn.greenthumb.domain.model.watering.WateringType.DATES_FREQUENCY
 import com.utn.greenthumb.domain.model.watering.WateringType.SCHEDULES
+import com.utn.greenthumb.scheduler.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -52,6 +53,7 @@ data class RememberModalForm(
 class WateringConfigViewModel @Inject constructor(
     private val repository: WateringConfigurationRepository,
     private val plantRepository: PlantRepository,
+    private val scheduler: AlarmScheduler
 ) : ViewModel() {
 
     private val _configsState = MutableStateFlow(
@@ -137,14 +139,18 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                repository.create(
+                val newWateringConfiguration =
                     WateringConfigurationDTO(
                         plantId = form.selectedPlant?.id ?: "",
+                        plantName = form.selectedPlant?.name,
                         time = form.time,
                         details = details,
                         id = null
                     )
-                )
+                repository.create(newWateringConfiguration)
+
+                // Pass the object that the repository returned (with the ID) to the scheduler
+                scheduler.schedule(newWateringConfiguration)
 
                 fetchConfigs()
             } catch (e: Exception) {
@@ -166,6 +172,7 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
+                scheduler.cancel(reminder)
                 repository.delete(reminder)
 
                 fetchConfigs()
@@ -192,14 +199,17 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                repository.update(
-                    WateringConfigurationDTO(
-                        id = form.id,
-                        plantId = form.selectedPlant?.id ?: "",
-                        time = form.time,
-                        details = details,
-                    )
+                val updatedWateringConfiguration = WateringConfigurationDTO(
+                    id = form.id,
+                    plantId = form.selectedPlant?.id ?: "",
+                    plantName = form.selectedPlant?.name,
+                    time = form.time,
+                    details = details,
                 )
+                repository.update(
+                    updatedWateringConfiguration
+                )
+                scheduler.schedule(updatedWateringConfiguration)
 
                 fetchConfigs()
             } catch (e: Exception) {
