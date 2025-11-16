@@ -90,8 +90,7 @@ class PlantViewModel @Inject constructor(
                 }
                 Log.d("PlantViewModel", "Plant saved: ${plant.name}")
             } catch (e: Exception) {
-                Log.d("PlantViewModel", "Error saving plant: ${e.message}", e)
-                throw e
+                Log.e("PlantViewModel", "Error saving plant: ${e.message}", e)
             } finally {
                 _isSaving.value = false
             }
@@ -118,10 +117,8 @@ class PlantViewModel @Inject constructor(
     }
 
 
-    fun savePlant(plant: PlantDTO) {
-        viewModelScope.launch {
-            repository.save(plant)
-        }
+    suspend fun savePlant(plant: PlantDTO) {
+        repository.save(plant)
     }
 
 

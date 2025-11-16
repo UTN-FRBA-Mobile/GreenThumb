@@ -17,6 +17,9 @@ class PlantTranslationService @Inject constructor(
 
             val textsToTranslate = buildList {
 
+                // Description
+                plant.description.takeIf { it.isNotBlank() }?.let { add(it) }
+
                 // Best watering
                 plant.bestWatering?.takeIf { it.isNotBlank() }?.let { add(it) }
 
@@ -50,6 +53,12 @@ class PlantTranslationService @Inject constructor(
             var translationIndex = 0
 
             val translatedPlant = plant.copy(
+                description = if (plant.description.isNotBlank()) {
+                    translatedTexts[translationIndex++]
+                } else {
+                    plant.description
+                },
+
                 bestWatering = if (plant.bestWatering?.isNotBlank() == true) {
                     translatedTexts[translationIndex++]
                 } else {
@@ -92,9 +101,8 @@ class PlantTranslationService @Inject constructor(
             Log.d("PlantTranslationService", "Translated plant: $translatedPlant")
             translatedPlant
         } catch (e: Exception) {
-            Log.d("PlantTranslationService", "Error translating plant: ${e.message}", e)
-            throw e
+            Log.e("PlantTranslationService", "Error translating plant, saving original version.", e)
+            return plant
         }
     }
 }
-
