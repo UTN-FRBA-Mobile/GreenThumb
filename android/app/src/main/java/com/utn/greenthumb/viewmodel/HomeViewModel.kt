@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.repository.PlantRepository
+import com.utn.greenthumb.data.repository.WateringConfigurationRepository
 import com.utn.greenthumb.data.repository.WateringReminderRepository
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.Severity
@@ -92,7 +93,8 @@ fun getDaysBetween(startDate: Date, endDate: Date): Int {
 @HiltViewModel
 class HomeViewModel  @Inject constructor(
     private val plantRepository: PlantRepository,
-    private val wateringReminderRepository: WateringReminderRepository
+    private val wateringReminderRepository: WateringReminderRepository,
+    private val wateringConfigurationRepository: WateringConfigurationRepository
 ) : ViewModel() {
 
     data class FavouritePlant(
@@ -256,7 +258,7 @@ class HomeViewModel  @Inject constructor(
     private suspend fun fetchWateringSchedule(clientId: String): WateringScheduleUIState {
         try {
             Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
-            val result = wateringReminderRepository.getWateringReminders()
+            val result = wateringConfigurationRepository.getConfigurations()
             Log.d("HomeViewModel", "Successfully fetched watering schedule. Data: $result")
             Log.d("HomeViewModel", "Successfully fetched ${result.total} watering reminders")
 
@@ -265,16 +267,16 @@ class HomeViewModel  @Inject constructor(
                 isValid = true,
                 userMessages = listOf(),
                 onCheckWateringReminder = this::onCheckWateringReminder,
-                schedule = result.content.map { reminderDto ->
-                    val reminderDate = stringToLocalDate(reminderDto.date)
+                schedule = result.content.take(3).map { reminderDto ->
+                    val reminderDate = stringToLocalDate(reminderDto.time)
                     val daysLeft = getDaysBetween(Date(), reminderDate)
                     val isOverdue = daysLeft < 0
 
                     WateringReminder(
-                        id = reminderDto.id,
+                        id = reminderDto.id ?: "",
                         plantId = reminderDto.plantId,
-                        plantName = reminderDto.plantName,
-                        plantImageUrl = reminderDto.plantImageUrl,
+                        plantName = reminderDto.plantName ?: "",
+                        plantImageUrl = "",
                         plantImagePlaceholder = R.drawable.greenthumb,
                         daysLeft = daysLeft,
                         date = reminderDate,

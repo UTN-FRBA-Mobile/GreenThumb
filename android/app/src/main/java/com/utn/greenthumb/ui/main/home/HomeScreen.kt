@@ -253,13 +253,13 @@ private fun HomeScreenContent(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // Sección de Recordatorios de Riego
-//                    HomeSection(
-//                        title = stringResource(R.string.watering_schedule_section_title)
-//                    ) {
-//                        WateringScheduleSection(
-//                            wateringScheduleUIState = wateringScheduleUIState,
-//                        )
-//                    }
+                    HomeSection(
+                        title = stringResource(R.string.watering_schedule_section_title)
+                    ) {
+                        WateringScheduleSection(
+                            wateringScheduleUIState = wateringScheduleUIState,
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
