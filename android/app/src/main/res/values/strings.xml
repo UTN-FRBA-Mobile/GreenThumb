@@ -160,4 +160,8 @@
     <string name="friday">V</string>
     <string name="saturday">S</string>
     <string name="sunday">D</string>
+
+    <string name="your_plant">tu planta</string>
+    <string name="watering_reminder_title">Recordatorio de riego 💦</string>
+    <string name="watering_reminder_message">Es hora de regar %1$s ! 🌿</string>
 </resources>
