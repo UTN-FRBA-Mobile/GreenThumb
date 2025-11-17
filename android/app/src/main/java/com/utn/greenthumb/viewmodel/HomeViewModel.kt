@@ -93,8 +93,7 @@ fun getDaysBetween(startDate: Date, endDate: Date): Int {
 @HiltViewModel
 class HomeViewModel  @Inject constructor(
     private val plantRepository: PlantRepository,
-    private val wateringReminderRepository: WateringReminderRepository,
-    private val wateringConfigurationRepository: WateringConfigurationRepository
+    private val wateringReminderRepository: WateringReminderRepository
 ) : ViewModel() {
 
     data class FavouritePlant(
@@ -258,7 +257,7 @@ class HomeViewModel  @Inject constructor(
     private suspend fun fetchWateringSchedule(clientId: String): WateringScheduleUIState {
         try {
             Log.d("HomeViewModel", "Fetching watering schedule for client: $clientId")
-            val result = wateringConfigurationRepository.getConfigurations()
+            val result = wateringReminderRepository.getWateringReminders()
             Log.d("HomeViewModel", "Successfully fetched watering schedule. Data: $result")
             Log.d("HomeViewModel", "Successfully fetched ${result.total} watering reminders")
 
@@ -267,16 +266,16 @@ class HomeViewModel  @Inject constructor(
                 isValid = true,
                 userMessages = listOf(),
                 onCheckWateringReminder = this::onCheckWateringReminder,
-                schedule = result.content.take(3).map { reminderDto ->
-                    val reminderDate = stringToLocalDate(reminderDto.time)
+                schedule = result.content.map { reminderDto ->
+                    val reminderDate = stringToLocalDate(reminderDto.date)
                     val daysLeft = getDaysBetween(Date(), reminderDate)
                     val isOverdue = daysLeft < 0
 
                     WateringReminder(
-                        id = reminderDto.id ?: "",
+                        id = reminderDto.id,
                         plantId = reminderDto.plantId,
-                        plantName = reminderDto.plantName ?: "",
-                        plantImageUrl = "",
+                        plantName = reminderDto.plantName,
+                        plantImageUrl = reminderDto.plantImageUrl,
                         plantImagePlaceholder = R.drawable.greenthumb,
                         daysLeft = daysLeft,
                         date = reminderDate,
