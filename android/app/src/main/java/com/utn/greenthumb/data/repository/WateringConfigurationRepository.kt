@@ -15,8 +15,8 @@ class WateringConfigurationRepository @Inject constructor(
         return plantsApi.getWateringConfigurations()
     }
 
-    suspend fun create(request: WateringConfigurationDTO) {
-        plantsApi.createWateringConfiguration(request)
+    suspend fun create(request: WateringConfigurationDTO): WateringConfigurationDTO {
+        return plantsApi.createWateringConfiguration(request)
     }
 
     suspend fun delete(reminder: WateringConfigurationDTO) {

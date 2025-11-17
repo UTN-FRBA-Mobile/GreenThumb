@@ -8,7 +8,7 @@ data class WateringConfigurationDTO(
     val time: String,
     val details: WateringConfigurationDetailsDTO
 ) {
-    @SerializedName("_id") var id: String? = null
+    @SerializedName("_id", alternate = ["id"]) var id: String? = null
 }
 
 enum class WateringType {

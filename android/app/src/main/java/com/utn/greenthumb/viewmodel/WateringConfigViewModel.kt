@@ -144,14 +144,14 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                val newWateringConfiguration =
+                var newWateringConfiguration =
                     WateringConfigurationDTO(
                         plantId = form.selectedPlant?.id ?: "",
                         plantName = form.selectedPlant?.name,
                         time = form.time,
                         details = details
                     )
-                repository.create(newWateringConfiguration)
+                newWateringConfiguration = repository.create(newWateringConfiguration)
 
                 if(newWateringConfiguration.details is WateringScheduleDTO){
                     for(day in newWateringConfiguration.details.daysOfWeek) {
