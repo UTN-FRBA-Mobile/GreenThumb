@@ -48,24 +48,24 @@ interface PlantsApiService {
     @DELETE("plants/{plantId}")
     suspend fun deletePlant(@Path("plantId") plantId: String)
 
-    @GET("plants/watering-reminders/list")
+    @GET("/watering-reminders/list")
     suspend fun getWateringReminders(): PagedResponse<WateringReminderResponse>
 
     @Headers("Content-Type: application/json")
-    @POST("/plants/watering-reminders")
+    @POST("/watering-reminders")
     suspend fun saveWateringReminder(
         @Body request: WateringReminderRequest
     )
 
-    @PATCH("/plants/watering-reminders/{reminderId}/check")
+    @PATCH("/watering-reminders/{reminderId}/check")
     suspend fun checkWateringReminder(
         @Path("reminderId") reminderId: String
     )
 
-    @GET("plants/watering-reminders/{reminderId}")
+    @GET("/watering-reminders/{reminderId}")
     suspend fun getWateringReminder(@Path("reminderId") reminderId: String): WateringReminderDTO
 
-    @DELETE("/plants/watering-reminders/{reminderId}")
+    @DELETE("/watering-reminders/{reminderId}")
     suspend fun deleteWateringReminder(
         @Path("reminderId") reminderId: String
     )

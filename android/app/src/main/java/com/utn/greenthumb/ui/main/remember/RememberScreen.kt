@@ -77,7 +77,6 @@ import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
 import com.utn.greenthumb.domain.model.watering.WateringType
 import com.utn.greenthumb.ui.main.BaseScreen
 import com.utn.greenthumb.ui.theme.Purple80
-import com.utn.greenthumb.ui.theme.PurpleCard
 import com.utn.greenthumb.viewmodel.RememberModalForm
 import com.utn.greenthumb.viewmodel.WateringConfigViewModel
 import java.util.Calendar
@@ -119,7 +118,7 @@ fun RememberScreen(
                         navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     title = {
-                        Text(text = stringResource(R.string.remembers))
+                        Text(text = stringResource(R.string.home_remembers_title))
                     },
                     navigationIcon = {
                         IconButton(onClick = onNavigateBack) {

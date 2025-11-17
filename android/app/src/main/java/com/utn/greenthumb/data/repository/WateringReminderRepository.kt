@@ -7,6 +7,7 @@ import com.utn.greenthumb.domain.model.WateringReminderDTO
 import com.utn.greenthumb.data.mapper.WateringReminderMapper
 import javax.inject.Inject
 import android.util.Log
+import java.io.IOException
 
 class WateringReminderRepository @Inject constructor(
     private val plantsApi: PlantsApiService
@@ -41,7 +42,8 @@ class WateringReminderRepository @Inject constructor(
                 plantName = reminder.plantName,
                 plantImageUrl = reminder.plantImageUrl,
                 date = reminder.date,
-                checked = false
+                checked = false,
+                watering = reminder.watering
             )
             plantsApi.saveWateringReminder(request)
         }

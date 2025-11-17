@@ -114,7 +114,7 @@ fun BottomBar(
         )
         BottomButtonScale(
             icon = painterResource(R.drawable.reminder),
-            text = stringResource(R.string.remembers),
+            text = stringResource(R.string.home_remembers_title),
             onClick = onRemembers
         )
         BottomButtonScale(

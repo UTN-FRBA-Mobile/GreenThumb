@@ -1,5 +1,5 @@
 package com.utn.greenthumb.domain.model
-import java.util.Date
+import com.utn.greenthumb.domain.model.WateringDTO
 
 data class WateringReminderDTO (
     val id: String,
@@ -8,5 +8,6 @@ data class WateringReminderDTO (
     val plantName: String,
     val plantImageUrl: String,
     val date: String,
-    val checked: Boolean
+    val checked: Boolean,
+    val watering: WateringDTO?
 )

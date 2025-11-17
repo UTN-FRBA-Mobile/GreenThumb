@@ -2,6 +2,7 @@ package com.utn.greenthumb.ui.main.home
 
 import com.utn.greenthumb.R
 import com.utn.greenthumb.viewmodel.HomeViewModel
+import com.utn.greenthumb.viewmodel.HomeViewModel.HomeUIState
 import com.utn.greenthumb.viewmodel.HomeViewModel.FavouritePlantsUIState
 import com.utn.greenthumb.viewmodel.HomeViewModel.WateringScheduleUIState
 import com.utn.greenthumb.viewmodel.HomeViewModel.FavouritePlant
@@ -92,7 +93,42 @@ import androidx.compose.ui.unit.sp
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.ui.main.GreenThumbTopAppBar
 import kotlin.String
+import android.widget.Toast
+import com.utn.greenthumb.domain.model.WateringDTO
 
+
+@Composable
+fun ToastUserMessage(
+    userMessage: UserMessage
+) {
+    val context = LocalContext.current
+
+    if (userMessage.showToast) {
+        Toast.makeText(
+            context,
+            stringResource(userMessage.message.toInt()),
+            Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+fun LoadingScreen(
+    currentUser: String
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(R.string.home_success_bullet) + " " +
+                    stringResource(R.string.home_loading, currentUser),
+            style = MaterialTheme.typography.titleLarge
+        )
+        Text(
+            text = stringResource(R.string.home_loading_data),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        CircularProgressIndicator()
+    }
+}
 
 
 @Composable
@@ -121,7 +157,7 @@ fun HomeScreen(
         }
     }
 
-    val uiHomeState by viewModel.uiHomeState.collectAsState()
+    val homeUIState by viewModel.uiHomeState.collectAsState()
 
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
@@ -148,30 +184,20 @@ fun HomeScreen(
         onRemembers = onRemembers,
         onProfile = onProfile
     ) {
-        if (uiHomeState.isLoading) {
+        if (homeUIState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🌿 " + "Bienvenido, ${currentUser?.displayName ?: authViewModel.getUserName()}",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        text = "Estamos cargando tus datos ...",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CircularProgressIndicator()
-                }
+                LoadingScreen(
+                    currentUser = (currentUser?.displayName ?: authViewModel.getUserName()).toString()
+                )
             }
         } else {
             HomeScreenContent(
                 userName = currentUser?.displayName ?: authViewModel.getUserName(),
+                homeUIState = homeUIState,
                 onPlantSelected = onPlantSelected,
-                wateringScheduleUIState = uiHomeState.wateringScheduleUIState,
-                favouritePlantsUIState = uiHomeState.favouritePlantsUIState
             )
         }
     }
@@ -180,13 +206,14 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeScreenContent(
+fun HomeScreenContent(
     userName: String?,
+    homeUIState: HomeUIState,
     onPlantSelected: (PlantDTO) -> Unit,
-    wateringScheduleUIState: WateringScheduleUIState,
-    favouritePlantsUIState: FavouritePlantsUIState
 ) {
     val scrollState = rememberScrollState()
+
+    // ToastUserMessage(homeUIState.userMessage)
 
     Scaffold(topBar = {
         GreenThumbTopAppBar(
@@ -208,17 +235,10 @@ private fun HomeScreenContent(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            if (wateringScheduleUIState.isLoading || favouritePlantsUIState.isLoading) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🌿 " + "Bienvenido, ${userName ?: "Usuario no identificado"}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Estamos recolectando tus datos ...",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
+            if (homeUIState.isLoading) {
+                LoadingScreen(
+                    currentUser = (userName ?: stringResource(R.string.home_unidentified_user))
+                )
             }
             else {
                 Column(
@@ -227,14 +247,12 @@ private fun HomeScreenContent(
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    //SearchBar(Modifier.padding(horizontal = 16.dp))
-
                     // Sección de Plantas Favoritas
                     HomeSection(
-                        title = stringResource(R.string.favourite_plants_section_title)
+                        title = stringResource(R.string.home_favourite_plants_section_title)
                     ) {
                         FavouritePlantSection(
-                            favouritePlantsUIState = favouritePlantsUIState,
+                            favouritePlantsUIState = homeUIState.favouritePlantsUIState,
                             onPlantSelected = onPlantSelected
                         )
                     }
@@ -243,10 +261,10 @@ private fun HomeScreenContent(
 
                     // Sección de Recordatorios de Riego
                     HomeSection(
-                        title = stringResource(R.string.watering_schedule_section_title)
+                        title = stringResource(R.string.home_watering_schedule_section_title)
                     ) {
                         WateringScheduleSection(
-                            wateringScheduleUIState = wateringScheduleUIState,
+                            wateringScheduleUIState = homeUIState.wateringScheduleUIState,
                         )
                     }
 
@@ -254,7 +272,6 @@ private fun HomeScreenContent(
                 }
             }
         }
-
     }
 }
 
@@ -310,7 +327,7 @@ fun SearchBar(
             focusedContainerColor = MaterialTheme.colorScheme.surface
         ),
         placeholder = {
-            Text(stringResource(R.string.placeholder_search_favourite))
+            Text(stringResource(R.string.home_placeholder_search_favourite))
         },
         // una sola línea para la barra de búsqueda.
         singleLine = true,
@@ -391,7 +408,7 @@ fun FavouritePlantSection(
             ) {
                 favouritePlantsUIState.userMessages.forEach { userMessage ->
                     Text(
-                        text = "🍁 " + userMessage.message,
+                        text = stringResource(R.string.home_error_bullet) + " " + userMessage.message,
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
                     )
@@ -425,7 +442,6 @@ fun FavouritePlantSection(
                     .height(130.dp)
                     .padding(horizontal = 16.dp)
                     .background(
-                        //color = colorResource(id = R.color.home_empty_data_background),
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(16.dp)
                     ),
@@ -436,7 +452,8 @@ fun FavouritePlantSection(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "🌿 " + stringResource(R.string.empty_favourite_plants_message),
+                        text = stringResource(R.string.home_success_bullet) + " " +
+                            stringResource(R.string.home_empty_favourite_plants_message),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
@@ -446,6 +463,7 @@ fun FavouritePlantSection(
         }
     }
 }
+
 
 @Composable
 fun WateringReminderCard(
@@ -538,7 +556,9 @@ fun WateringReminderCard(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { onCheckWateringReminder(reminder) }
+                    ) {
+                        onCheckWateringReminder(reminder)
+                    }
                     .constrainAs(checkIcon) {
                         top.linkTo(parent.top) // Alineado arriba
                         end.linkTo(parent.end) // Alineado a la derecha
@@ -566,17 +586,18 @@ fun WateringReminderCard(
                     val days =
                         abs(reminder.daysLeft).toString() + " " +
                             if (abs(reminder.daysLeft) > 1) {
-                                stringResource(R.string.remaining_days)
+                                stringResource(R.string.home_remaining_days)
                             } else {
-                                stringResource(R.string.remaining_day)
+                                stringResource(R.string.home_remaining_day)
                             }
 
                     val notice =
                         if (reminder.daysLeft == 0) {
-                            "Hoy es el dia de regar tu planta"
+                            stringResource(R.string.home_watering_today)
                         }
                         else if (reminder.daysLeft < 0) {
-                            "Tu riego esta retrasado por $days"
+                            stringResource(R.string.home_watering_delayed, days)
+                            //"Tu riego esta retrasado por $days"
                         }
                         else {
                             "$days para el próximo riego"
@@ -587,8 +608,15 @@ fun WateringReminderCard(
                         style = MaterialTheme.typography.titleSmall,
                         color = Color(0xEE1E1D1D),
                     )
+                    val w = if (reminder.watering == null) {
+                        stringResource(R.string.home_watering_no_suggestion)
+                    }
+                    else {
+                        stringResource(R.string.home_watering_suggestion, reminder.watering.min, reminder.watering.max)
+                    }
+
                     Text(
-                        text = stringResource(R.string.watering_suggestion),
+                        text = w,
                         style = MaterialTheme.typography.titleSmall,
                         color = Color(0xEE1E1D1D),
                         modifier = Modifier.padding(top = 4.dp)
@@ -625,7 +653,7 @@ fun WateringScheduleSection (
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "🍂",
+                    text = stringResource(R.string.home_error_message_emogi),
                     style = MaterialTheme.typography.displayLarge,
                     fontSize = 72.sp,
                     textAlign = TextAlign.Center,
@@ -633,7 +661,7 @@ fun WateringScheduleSection (
                 )
                 wateringScheduleUIState.userMessages.forEach { userMessage ->
                     Text(
-                        text = "🍁 " + userMessage.message,
+                        text = stringResource(R.string.home_error_bullet) + " " + userMessage.message,
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
@@ -644,19 +672,6 @@ fun WateringScheduleSection (
     } else {
         // Estado exitoso
         if (wateringScheduleUIState.schedule.isNotEmpty()) {
-            /*LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = modifier
-            ) {
-                itemsIndexed(
-                    items = wateringScheduleUIState.schedule,
-                    key = { _, reminder -> reminder.id }
-                ) { _, reminder ->
-                    WateringReminderCard(
-                        reminder,
-                        onCheckWateringReminder = wateringScheduleUIState.onCheckWateringReminder
-                    )
-                }*/
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = modifier
@@ -687,12 +702,13 @@ fun WateringScheduleSection (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "🪴",
+                        text = stringResource(R.string.home_empty_watering_schedule_emogi),
                         style = MaterialTheme.typography.displayLarge,
                         fontSize = 72.sp
                     )
                     Text(
-                        text = "🌿 " + stringResource(R.string.empty_watering_schedule_message),
+                        text = stringResource(R.string.home_success_bullet) + " " +
+                                stringResource(R.string.home_empty_watering_schedule_message),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -706,26 +722,26 @@ fun WateringScheduleSection (
 
 
 private val favouritePlantsUIInvalidState = FavouritePlantsUIState(
-    isLoading = false,
+    //isLoading = false,
     isValid = false,
     userMessages = listOf(
         UserMessage(
-            "No se han podido recuperar tus plantas favoritas. Por favor, refresca la pantalla",
-            Severity.ERROR
+            message =  "No pudimos cargar tus plantas favoritas. Por favor, vuelve a intentarlo",
+            severity = Severity.ERROR
         )
     ),
     favourites = listOf()
 )
 
 private val favouritePlantsUIEmptyState = FavouritePlantsUIState(
-    isLoading = false,
+    //isLoading = false,
     isValid = true,
     userMessages = listOf(),
     favourites = listOf()
 )
 
 private val favouritePlantsUILoadingState = FavouritePlantsUIState(
-    isLoading = true,
+    //isLoading = true,
     isValid = false,
     userMessages = listOf(),
     favourites = listOf()
@@ -753,8 +769,8 @@ private val plantDTO = PlantDTO(
     favourite = true
 )
 
-private val favouritePlantsUIState = FavouritePlantsUIState(
-    isLoading = false,
+private val favouritePlantsUIValidNotEmptyState = FavouritePlantsUIState(
+    //isLoading = false,
     isValid = true,
     userMessages = listOf(),
     favourites = listOf(
@@ -790,12 +806,12 @@ private val favouritePlantsUIState = FavouritePlantsUIState(
 )
 
 private val wateringScheduleUIInvalidState = WateringScheduleUIState(
-    isLoading = false,
+    //isLoading = false,
     isValid = false,
     userMessages = listOf(
         UserMessage(
-            "No se han podido recuperar tus horarios de riego. Por favor, refresca la pantalla",
-            Severity.ERROR
+            message = "No pudimos cargar tus recordatorios de riego. Por favor, vuelve a intentarlo",
+            severity = Severity.ERROR
         )
     ),
     schedule = listOf(),
@@ -803,7 +819,7 @@ private val wateringScheduleUIInvalidState = WateringScheduleUIState(
 )
 
 private val wateringScheduleUIEmptyState = WateringScheduleUIState(
-    isLoading = false,
+    //isLoading = false,
     isValid = true,
     userMessages = listOf(),
     schedule = listOf(),
@@ -811,7 +827,7 @@ private val wateringScheduleUIEmptyState = WateringScheduleUIState(
 )
 
 private val wateringScheduleUILoadingState = WateringScheduleUIState(
-    isLoading = true,
+    //isLoading = true,
     isValid = false,
     userMessages = listOf(),
     schedule = listOf(),
@@ -819,8 +835,8 @@ private val wateringScheduleUILoadingState = WateringScheduleUIState(
 )
 
 
-private val wateringScheduleUIState = WateringScheduleUIState(
-    isLoading = false,
+private val wateringScheduleUIValidNotEmptyState = WateringScheduleUIState(
+    //isLoading = false,
     isValid = true,
     userMessages = listOf(),
     onCheckWateringReminder = {},
@@ -828,24 +844,38 @@ private val wateringScheduleUIState = WateringScheduleUIState(
         WateringReminder(id = "2", plantId = "4", plantName = "Impatients",
             plantImageUrl = "https://www.massogarden.com/images/plantas/Impatiens.jpg",
             plantImagePlaceholder = R.drawable.kalanchoe,
-            date = getDate(-2), daysLeft = -2, overdue = true, onCheck = false
+            date = getDate(-2), daysLeft = -2, overdue = true, onCheck = false,
+            watering = WateringDTO(min = 150, max = 400)
         ),
         WateringReminder(id = "3", plantId = "2", plantName = "Anturio",
             plantImageUrl = "https://www.massogarden.com/images/anturio.jpg",
             plantImagePlaceholder = R.drawable.anturio,
-            date = getDate(0), daysLeft = 0, overdue = false, onCheck = false
+            date = getDate(0), daysLeft = 0, overdue = false, onCheck = false,
+            watering = null
         ),
         WateringReminder(id = "1", plantId = "6", plantName = "Cactus",
             plantImageUrl = "https://www.massogarden.com/images/plantas/Cactus.jpg",
             plantImagePlaceholder = R.drawable.cephalotus_follicularis,
-            date = getDate(4), daysLeft = 4, overdue = false, onCheck = false
+            date = getDate(4), daysLeft = 4, overdue = false, onCheck = false,
+            watering = WateringDTO(min = 250, max = 350)
         ),
         WateringReminder(id = "4", plantId = "7", plantName = "Cheflera",
             plantImageUrl = "https://www.massogarden.com/images/plantas/cheflera.jpg",
             plantImagePlaceholder = R.drawable.hoya_carnosa,
-            date = getDate(6), daysLeft = 6, overdue = false, onCheck = false
+            date = getDate(6), daysLeft = 6, overdue = false, onCheck = false,
+            watering = WateringDTO(min = 100, max = 200)
         ),
     ),
+)
+
+private val homeUIState = HomeUIState(
+    isLoading = false,
+    userMessage = UserMessage(
+        message = "",
+        severity = Severity.INFO
+    ),
+    favouritePlantsUIState = favouritePlantsUIValidNotEmptyState,
+    wateringScheduleUIState = wateringScheduleUIValidNotEmptyState
 )
 
 private fun getDate(days: Int): Date {
@@ -867,7 +897,7 @@ fun SearchBarPreview() {
 fun FavouritePlantItemPreview() {
     GreenThumbTheme {
         FavouritePlantItem(
-            favouritePlant = favouritePlantsUIState.favourites.first(),
+            favouritePlant = favouritePlantsUIValidNotEmptyState.favourites.first(),
             onSelectFavouritePlant = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -879,7 +909,7 @@ fun FavouritePlantItemPreview() {
 fun FavouritePlantItemDarkPreview() {
     GreenThumbTheme (darkTheme = true) {
         FavouritePlantItem(
-            favouritePlant = favouritePlantsUIState.favourites.first(),
+            favouritePlant = favouritePlantsUIValidNotEmptyState.favourites.first(),
             onSelectFavouritePlant = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -892,7 +922,7 @@ fun FavouritePlantItemDarkPreview() {
 fun FavouritePlantSectionPreview() {
     GreenThumbTheme {
         FavouritePlantSection(
-            favouritePlantsUIState = favouritePlantsUIState,
+            favouritePlantsUIState = favouritePlantsUIValidNotEmptyState,
             onPlantSelected = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -904,7 +934,7 @@ fun FavouritePlantSectionPreview() {
 fun FavouritePlantSectionDarkPreview() {
     GreenThumbTheme(darkTheme = true) {
         FavouritePlantSection(
-            favouritePlantsUIState = favouritePlantsUIState,
+            favouritePlantsUIState = favouritePlantsUIValidNotEmptyState,
             onPlantSelected = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -916,10 +946,10 @@ fun FavouritePlantSectionDarkPreview() {
 @Composable
 fun WateringReminderCardOverduePreview() {
     GreenThumbTheme {
-        val plant = wateringScheduleUIState.schedule.first { it.overdue }
+        val reminder = wateringScheduleUIValidNotEmptyState.schedule.first { it.overdue }
 
         WateringReminderCard(
-            reminder = plant,
+            reminder = reminder,
             onCheckWateringReminder = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -930,10 +960,10 @@ fun WateringReminderCardOverduePreview() {
 @Composable
 fun WateringReminderCardOverdueDarkPreview() {
     GreenThumbTheme(darkTheme = true) {
-        val plant = wateringScheduleUIState.schedule.first { it.overdue }
+        val reminder = wateringScheduleUIValidNotEmptyState.schedule.first { it.overdue }
 
         WateringReminderCard(
-            reminder = plant,
+            reminder = reminder,
             onCheckWateringReminder = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -944,10 +974,10 @@ fun WateringReminderCardOverdueDarkPreview() {
 @Composable
 fun WateringReminderCardPreview() {
     GreenThumbTheme {
-        val plant = wateringScheduleUIState.schedule.first { !it.overdue }
+        val reminder = wateringScheduleUIValidNotEmptyState.schedule.first { !it.overdue }
 
         WateringReminderCard(
-            reminder = plant,
+            reminder = reminder,
             onCheckWateringReminder = { },
             modifier = Modifier.padding(8.dp)
         )
@@ -958,22 +988,23 @@ fun WateringReminderCardPreview() {
 @Composable
 fun WateringReminderCardDarkPreview() {
     GreenThumbTheme(darkTheme = true) {
-        val plant = wateringScheduleUIState.schedule.first { !it.overdue }
+        val reminder = wateringScheduleUIValidNotEmptyState.schedule.first { !it.overdue }
 
         WateringReminderCard(
-            reminder = plant,
+            reminder = reminder,
             onCheckWateringReminder = { },
             modifier = Modifier.padding(8.dp)
         )
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun WateringScheduleSectionPreview() {
     GreenThumbTheme {
         WateringScheduleSection(
-            wateringScheduleUIState = wateringScheduleUIState,
+            wateringScheduleUIState = wateringScheduleUIValidNotEmptyState,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -984,7 +1015,7 @@ fun WateringScheduleSectionPreview() {
 fun WateringScheduleSectionDarkPreview() {
     GreenThumbTheme(darkTheme = true) {
         WateringScheduleSection(
-            wateringScheduleUIState = wateringScheduleUIState,
+            wateringScheduleUIState = wateringScheduleUIValidNotEmptyState,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -1005,8 +1036,7 @@ fun HomeScreenPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIState,
-                favouritePlantsUIState = favouritePlantsUIState
+                homeUIState = homeUIState,
             )
         }
     }
@@ -1026,8 +1056,7 @@ fun HomeScreenDarkPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIState,
-                favouritePlantsUIState = favouritePlantsUIState
+                homeUIState = homeUIState,
             )
         }
     }
@@ -1048,8 +1077,11 @@ fun HomeScreenInvalidPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIInvalidState,
-                favouritePlantsUIState = favouritePlantsUIInvalidState
+                homeUIState = homeUIState.copy(
+                    isLoading = false,
+                    wateringScheduleUIState = wateringScheduleUIInvalidState,
+                    favouritePlantsUIState = favouritePlantsUIInvalidState
+                )
             )
         }
     }
@@ -1069,8 +1101,11 @@ fun HomeScreenInvalidDarkPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIInvalidState,
-                favouritePlantsUIState = favouritePlantsUIInvalidState
+                homeUIState = homeUIState.copy(
+                    isLoading = false,
+                    wateringScheduleUIState = wateringScheduleUIInvalidState,
+                    favouritePlantsUIState = favouritePlantsUIInvalidState
+                )
             )
         }
     }
@@ -1091,8 +1126,11 @@ fun HomeScreenEmptyPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIEmptyState,
-                favouritePlantsUIState = favouritePlantsUIEmptyState
+                homeUIState = homeUIState.copy(
+                    isLoading = false,
+                    wateringScheduleUIState = wateringScheduleUIEmptyState,
+                    favouritePlantsUIState = favouritePlantsUIEmptyState
+                )
             )
         }
     }
@@ -1112,8 +1150,11 @@ fun HomeScreenEmptyDarkPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUIEmptyState,
-                favouritePlantsUIState = favouritePlantsUIEmptyState
+                homeUIState = homeUIState.copy(
+                    isLoading = false,
+                    wateringScheduleUIState = wateringScheduleUIEmptyState,
+                    favouritePlantsUIState = favouritePlantsUIEmptyState
+                )
             )
         }
     }
@@ -1134,8 +1175,11 @@ fun HomeScreenLoadingPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUILoadingState,
-                favouritePlantsUIState = favouritePlantsUILoadingState
+                homeUIState = homeUIState.copy(
+                    isLoading = true,
+                    wateringScheduleUIState = wateringScheduleUILoadingState,
+                    favouritePlantsUIState = favouritePlantsUILoadingState
+                ),
             )
         }
     }
@@ -1155,8 +1199,11 @@ fun HomeScreenLoadingDarkPreview() {
             HomeScreenContent(
                 userName = "Matias",
                 onPlantSelected = { },
-                wateringScheduleUIState = wateringScheduleUILoadingState,
-                favouritePlantsUIState = favouritePlantsUILoadingState
+                homeUIState = homeUIState.copy(
+                    isLoading = true,
+                    wateringScheduleUIState = wateringScheduleUILoadingState,
+                    favouritePlantsUIState = favouritePlantsUILoadingState
+                ),
             )
         }
     }

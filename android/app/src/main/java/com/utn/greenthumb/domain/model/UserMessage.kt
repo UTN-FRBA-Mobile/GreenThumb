@@ -7,6 +7,8 @@ enum class Severity {
 }
 
 data class UserMessage (
+    val id: String? = null,
     val message: String,
-    val severity: Severity
+    val severity: Severity,
+    val showToast: Boolean = false,
 )

@@ -16,22 +16,40 @@
     <string name="close">Cerrar</string>
     <string name="cancel">Cancelar</string>
 
+
     <!-- Home Screen -->
+    <string name="home_welcome">Bienvenido,  %1$s!</string>
+    <string name="home_loading">Hola, %1$s!</string>
+    <string name="home_loading_data">Estamos cargando tus datos ...</string>
+    <string name="home_unidentified_user">Usuario no identificado</string>
+    <string name="home_placeholder_search_favourite" tools:ignore="TypographyEllipsis">Busca tu favorita ...</string>
+    <string name="home_error_fetching_favourites">No pudimos cargar tus plantas favoritas. Por favor, vuelve a intentarlo</string>
+    <string name="home_error_fetching_watering">No pudimos cargar tus recordatorios de riego. Por favor, vuelve a intentarlo</string>
+    <string name="home_remaining_days">días</string>
+    <string name="home_remaining_day">día</string>
+    <string name="home_watering_schedule_section_title">Recordatorios de riego</string>
+    <string name="home_favourite_plants_section_title">Mis Plantas Favoritas</string>
+    <string name="home_empty_watering_schedule_message" tools:ignore="Typos">No tenes ninguna planificación de riego agendada. Podes hacerlo desde la configuracion de Recordatorios, y de esa forma recibiras una notificacion cuando sea el momento de regarla</string>
+    <string name="home_empty_favourite_plants_message">No has añadido ninguna planta a tus favoritos, pero podes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
+    <string name="home_watering_suggestion">Sugerencia: regar con un mínimo de %1$s ml y un máximo de %2$s ml de agua</string>
+    <string name="home_watering_no_suggestion">No hay sugerencias de riego</string>
+    <string name="home_watering_today">Hoy es el dia de regar tu planta</string>
+    <string name="home_watering_delayed">"Tu riego esta retrasado por %1$s"</string>
+    <string name="home_error_message_emogi">🍂</string>
+    <string name="home_empty_watering_schedule_emogi">🪴</string>
+    <string name="home_success_bullet">🌿</string>
+    <string name="home_error_bullet">🍁</string>
+    <string name="home_error_checking_watering_reminder">Vuelve a intentar la operacion para el eliminar el recordatorio</string>
+    <string name="home_error_no_client_id">Lo sentimos, no pudimos reconocer tu usuario. Vuelve a intentarlo mas tarde</string>
+    <string name="home_error_fetching_data">Lo sentimos, no pudimos obtener tus datos. Vuelve a intentarlo mas tarde</string>
+    <string name="home_error_no_internet">Lo sentimos, no pudimos obtener tus datos. Verifica tu conexion a Internet</string>
+
+
     <string name="home">Home</string>
     <string name="scan_now">Escanear ahora</string>
     <string name="my_plants">Mis Plantas</string>
-    <string name="remembers">Recordatorios</string>
+    <string name="home_remembers_title">Recordatorios</string>
     <string name="profile">Perfil</string>
-    <string name="placeholder_search_favourite" tools:ignore="TypographyEllipsis">Busca tu favorita ...</string>
-    <string name="error_fetching_favourites">Ocurrio un error al obtener tus favoritas. Vuelve a intentarlo</string>
-    <string name="error_fetching_watering">Ocurrio un error al tus recordatorios de riego. Vuelve a intentarlo</string>
-    <string name="remaining_days">días</string>
-    <string name="remaining_day">día</string>
-    <string name="watering_schedule_section_title">Recordatorios de riego</string>
-    <string name="favourite_plants_section_title">Mis Plantas Favoritas</string>
-    <string name="empty_watering_schedule_message" tools:ignore="Typos">No tenes ninguna planificación de riego agendada. Podes hacerlo desde la configuracion de Recordatorios, y de esa forma recibiras una notificacion cuando sea el momento de regarla</string>
-    <string name="empty_favourite_plants_message">No has añadido ninguna planta a tus favoritos, pero podes hacerlo desde Mis plantas, seleccionando la que mas te guste</string>
-    <string name="watering_suggestion">Sugerencia: regar con un mínimo de 200 ml y un máximo de 400 ml de agua</string>
 
     <string name="back_navigation">Volver</string>
     <string name="waiting_for_action" tools:ignore="TypographyEllipsis">Esperando acción del usuario...</string>
