@@ -12,7 +12,7 @@ import java.util.Calendar
 class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    override fun schedule(item: WateringConfigurationDTO,dayOfWeek: DayOfWeek) {
+    override fun schedule(item: WateringConfigurationDTO, dayOfWeek: DayOfWeek) {
         val intent = Intent(context, WateringAlarmReceiver::class.java).apply {
             putExtra("PLANT_NAME", item.plantName)
             putExtra("REMINDER_ID", item.id)
@@ -34,15 +34,16 @@ class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
                 add(Calendar.DATE, 1)
             }
         }
-        calendar.set(Calendar.DAY_OF_WEEK,dayOfWeek.ordinal)
+        calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek.calendarDay)
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
-            pendingIntent);
+            pendingIntent
+        );
 
     }
 
-    override fun scheduleInterval(item: WateringConfigurationDTO, interval:Int) {
+    override fun scheduleInterval(item: WateringConfigurationDTO, interval: Int) {
         val intent = Intent(context, WateringAlarmReceiver::class.java).apply {
             putExtra("PLANT_NAME", item.plantName)
             putExtra("REMINDER_ID", item.id)
@@ -69,7 +70,8 @@ class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
             AlarmManager.INTERVAL_DAY * interval,
-            pendingIntent);
+            pendingIntent
+        );
 
 
     }
