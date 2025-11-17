@@ -1,14 +1,16 @@
 package com.utn.greenthumb.domain.model.watering
 
 import com.google.gson.annotations.SerializedName
+import java.util.Calendar
 
 data class WateringConfigurationDTO(
-    @SerializedName("_id") val id: String?,
     val plantId: String,
     val plantName: String? = null,
     val time: String,
     val details: WateringConfigurationDetailsDTO
-)
+) {
+    @SerializedName("_id", alternate = ["id"]) var id: String? = null
+}
 
 enum class WateringType {
     @SerializedName("schedules")
@@ -18,8 +20,14 @@ enum class WateringType {
     DATES_FREQUENCY
 }
 
-enum class DayOfWeek {
-    monday, tuesday, wednesday, thursday, friday, saturday, sunday
+enum class DayOfWeek(val calendarDay: Int) {
+    monday(Calendar.MONDAY),
+    tuesday(Calendar.TUESDAY),
+    wednesday(Calendar.WEDNESDAY),
+    thursday(Calendar.THURSDAY),
+    friday(Calendar.FRIDAY),
+    saturday(Calendar.SATURDAY),
+    sunday(Calendar.SUNDAY)
 }
 
 sealed class WateringConfigurationDetailsDTO()

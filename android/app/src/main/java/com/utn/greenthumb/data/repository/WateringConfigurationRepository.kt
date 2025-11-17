@@ -4,8 +4,9 @@ import com.utn.greenthumb.client.services.PlantsApiService
 import com.utn.greenthumb.data.model.plant.PagedResponse
 import com.utn.greenthumb.domain.model.watering.WateringConfigurationDTO
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class WateringConfigurationRepository @Inject constructor(
     private val plantsApi: PlantsApiService
 ) {
@@ -14,8 +15,8 @@ class WateringConfigurationRepository @Inject constructor(
         return plantsApi.getWateringConfigurations()
     }
 
-    suspend fun create(request: WateringConfigurationDTO) {
-        plantsApi.createWateringConfiguration(request)
+    suspend fun create(request: WateringConfigurationDTO): WateringConfigurationDTO {
+        return plantsApi.createWateringConfiguration(request)
     }
 
     suspend fun delete(reminder: WateringConfigurationDTO) {

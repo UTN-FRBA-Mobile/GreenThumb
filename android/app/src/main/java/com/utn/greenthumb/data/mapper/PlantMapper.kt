@@ -20,10 +20,10 @@ object PlantMapper {
                         url = it.url
                     )
                 } ?: listOf(),
-                commonNames = suggestion.commonNames,
+                commonNames = suggestion.commonNames ?: listOf(),
                 synonyms = suggestion.synonyms,
                 commonUses = suggestion.commonUses,
-                description = suggestion.description,
+                description = suggestion.description ?: "",
                 culturalSignificance = suggestion.culturalSignificance,
                 taxonomy = TaxonomyDTO(
                     taxonomyClass = suggestion.taxonomy?.taxonomyClass ?: "N/A",

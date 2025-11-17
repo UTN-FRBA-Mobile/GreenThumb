@@ -1,4 +1,4 @@
-package com.utn.greenthumb.viewmodel;
+package com.utn.greenthumb.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -13,6 +13,7 @@ import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
 import com.utn.greenthumb.domain.model.watering.WateringType
 import com.utn.greenthumb.domain.model.watering.WateringType.DATES_FREQUENCY
 import com.utn.greenthumb.domain.model.watering.WateringType.SCHEDULES
+import com.utn.greenthumb.scheduler.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -52,6 +53,7 @@ data class RememberModalForm(
 class WateringConfigViewModel @Inject constructor(
     private val repository: WateringConfigurationRepository,
     private val plantRepository: PlantRepository,
+    private val scheduler: AlarmScheduler
 ) : ViewModel() {
 
     private val _configsState = MutableStateFlow(
@@ -105,10 +107,15 @@ class WateringConfigViewModel @Inject constructor(
 
         viewModelScope.launch {
             val catalog = plantRepository.getPlantCatalog()
+            val filteredCatalog = catalog.filter { plantCatalogDTO ->
+                configurations.value.rememberConfigurations.none { c ->
+                    c.plantId == plantCatalogDTO.id
+                }
+            }
 
             _modalState.update {
                 it.copy(
-                    plantNames = catalog,
+                    plantNames = filteredCatalog,
                     loadingPlants = false
                 )
             }
@@ -137,14 +144,23 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                repository.create(
+                var newWateringConfiguration =
                     WateringConfigurationDTO(
                         plantId = form.selectedPlant?.id ?: "",
+                        plantName = form.selectedPlant?.name,
                         time = form.time,
-                        details = details,
-                        id = null
+                        details = details
                     )
-                )
+                newWateringConfiguration = repository.create(newWateringConfiguration)
+
+                if(newWateringConfiguration.details is WateringScheduleDTO){
+                    for(day in newWateringConfiguration.details.daysOfWeek) {
+                        scheduler.schedule(newWateringConfiguration,day)
+                    }
+                }else{
+                    scheduler.scheduleInterval(newWateringConfiguration,(newWateringConfiguration.details as WateringDatesDTO).datesInterval)
+                }
+
 
                 fetchConfigs()
             } catch (e: Exception) {
@@ -166,6 +182,7 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
+                scheduler.cancel(reminder)
                 repository.delete(reminder)
 
                 fetchConfigs()
@@ -192,15 +209,24 @@ class WateringConfigViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
+                val updatedWateringConfiguration = WateringConfigurationDTO(
+                    plantId = form.selectedPlant?.id ?: "",
+                    plantName = form.selectedPlant?.name,
+                    time = form.time,
+                    details = details,
+                )
+                updatedWateringConfiguration.id = form.id
                 repository.update(
-                    WateringConfigurationDTO(
-                        id = form.id,
-                        plantId = form.selectedPlant?.id ?: "",
-                        time = form.time,
-                        details = details,
-                    )
+                    updatedWateringConfiguration
                 )
 
+                if(updatedWateringConfiguration.details is WateringScheduleDTO){
+                    for(day in updatedWateringConfiguration.details.daysOfWeek) {
+                        scheduler.schedule(updatedWateringConfiguration,day)
+                    }
+                }else{
+                    scheduler.scheduleInterval(updatedWateringConfiguration,(updatedWateringConfiguration.details as WateringDatesDTO).datesInterval)
+                }
                 fetchConfigs()
             } catch (e: Exception) {
                 Log.e("WateringConfigViewModel", "Error updating configuration", e)
@@ -215,11 +241,14 @@ class WateringConfigViewModel @Inject constructor(
 
     fun openModalForEdit(confifguration: WateringConfigurationDTO) {
 
-        val selectedConfig = if (confifguration.details is WateringScheduleDTO)  {
+        val selectedConfig = if (confifguration.details is WateringScheduleDTO) {
             RememberModalForm(
                 id = confifguration.id,
                 time = confifguration.time,
-                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                selectedPlant = PlantCatalogDTO(
+                    confifguration.plantId,
+                    confifguration.plantName ?: ""
+                ),
                 type = SCHEDULES,
                 selectedDays = confifguration.details.daysOfWeek,
             )
@@ -227,7 +256,10 @@ class WateringConfigViewModel @Inject constructor(
             RememberModalForm(
                 id = confifguration.id,
                 time = confifguration.time,
-                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                selectedPlant = PlantCatalogDTO(
+                    confifguration.plantId,
+                    confifguration.plantName ?: ""
+                ),
                 type = DATES_FREQUENCY,
                 numberInput = confifguration.details.datesInterval,
             )

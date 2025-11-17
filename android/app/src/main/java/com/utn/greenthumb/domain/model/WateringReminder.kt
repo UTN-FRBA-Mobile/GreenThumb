@@ -1,5 +1,4 @@
 package com.utn.greenthumb.domain.model
-import com.utn.greenthumb.domain.model.WateringDTO
 
 data class WateringReminderDTO (
     val id: String,

@@ -183,10 +183,13 @@ fun HomeScreen(
         onCamera = onCamera,
         onRemembers = onRemembers,
         onProfile = onProfile
-    ) {
+    ) { paddingValues ->
         if (homeUIState.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
                 LoadingScreen(

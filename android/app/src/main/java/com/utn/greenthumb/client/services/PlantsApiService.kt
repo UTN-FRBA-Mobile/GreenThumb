@@ -88,7 +88,7 @@ interface PlantsApiService {
 
     @Headers("Content-Type: application/json")
     @POST("/watering/configurations")
-    suspend fun createWateringConfiguration(@Body request: WateringConfigurationDTO)
+    suspend fun createWateringConfiguration(@Body request: WateringConfigurationDTO): WateringConfigurationDTO
 
     @Headers("Content-Type: application/json")
     @DELETE("/watering/configurations/{id}")

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utn.greenthumb.R
 import com.utn.greenthumb.data.repository.PlantRepository
+import com.utn.greenthumb.data.repository.WateringConfigurationRepository
 import com.utn.greenthumb.data.repository.WateringReminderRepository
 import com.utn.greenthumb.domain.model.PlantDTO
 import com.utn.greenthumb.domain.model.Severity
