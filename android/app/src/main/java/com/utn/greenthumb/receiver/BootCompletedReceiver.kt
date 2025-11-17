@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.utn.greenthumb.data.repository.WateringConfigurationRepository
+import com.utn.greenthumb.domain.model.watering.WateringDatesDTO
+import com.utn.greenthumb.domain.model.watering.WateringScheduleDTO
 import com.utn.greenthumb.scheduler.AlarmScheduler
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -39,7 +41,13 @@ class BootCompletedReceiver : BroadcastReceiver() {
                     // This call is now safe because the repository uses an in-memory list
                     val configurations = repository.getConfigurations().content
                     configurations.forEach { config ->
-                        scheduler.schedule(config)
+                        if(config.details is WateringScheduleDTO){
+                            for(day in config.details.daysOfWeek) {
+                                scheduler.schedule(config,day)
+                            }
+                        }else{
+                            scheduler.scheduleInterval(config,(config.details as WateringDatesDTO).datesInterval)
+                        }
                     }
                 } finally {
                     pendingResult.finish()
