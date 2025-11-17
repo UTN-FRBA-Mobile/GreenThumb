@@ -107,10 +107,15 @@ class WateringConfigViewModel @Inject constructor(
 
         viewModelScope.launch {
             val catalog = plantRepository.getPlantCatalog()
+            val filteredCatalog = catalog.filter { plantCatalogDTO ->
+                configurations.value.rememberConfigurations.none { c ->
+                    c.plantId == plantCatalogDTO.id
+                }
+            }
 
             _modalState.update {
                 it.copy(
-                    plantNames = catalog,
+                    plantNames = filteredCatalog,
                     loadingPlants = false
                 )
             }
@@ -144,8 +149,7 @@ class WateringConfigViewModel @Inject constructor(
                         plantId = form.selectedPlant?.id ?: "",
                         plantName = form.selectedPlant?.name,
                         time = form.time,
-                        details = details,
-                        id = null
+                        details = details
                     )
                 repository.create(newWateringConfiguration)
 
@@ -200,12 +204,12 @@ class WateringConfigViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val updatedWateringConfiguration = WateringConfigurationDTO(
-                    id = form.id,
                     plantId = form.selectedPlant?.id ?: "",
                     plantName = form.selectedPlant?.name,
                     time = form.time,
                     details = details,
                 )
+                updatedWateringConfiguration.id = form.id
                 repository.update(
                     updatedWateringConfiguration
                 )
@@ -225,11 +229,14 @@ class WateringConfigViewModel @Inject constructor(
 
     fun openModalForEdit(confifguration: WateringConfigurationDTO) {
 
-        val selectedConfig = if (confifguration.details is WateringScheduleDTO)  {
+        val selectedConfig = if (confifguration.details is WateringScheduleDTO) {
             RememberModalForm(
                 id = confifguration.id,
                 time = confifguration.time,
-                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                selectedPlant = PlantCatalogDTO(
+                    confifguration.plantId,
+                    confifguration.plantName ?: ""
+                ),
                 type = SCHEDULES,
                 selectedDays = confifguration.details.daysOfWeek,
             )
@@ -237,7 +244,10 @@ class WateringConfigViewModel @Inject constructor(
             RememberModalForm(
                 id = confifguration.id,
                 time = confifguration.time,
-                selectedPlant = PlantCatalogDTO(confifguration.plantId, confifguration.plantName ?: ""),
+                selectedPlant = PlantCatalogDTO(
+                    confifguration.plantId,
+                    confifguration.plantName ?: ""
+                ),
                 type = DATES_FREQUENCY,
                 numberInput = confifguration.details.datesInterval,
             )

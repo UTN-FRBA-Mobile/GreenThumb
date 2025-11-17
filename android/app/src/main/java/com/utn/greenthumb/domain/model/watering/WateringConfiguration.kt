@@ -3,12 +3,13 @@ package com.utn.greenthumb.domain.model.watering
 import com.google.gson.annotations.SerializedName
 
 data class WateringConfigurationDTO(
-    @SerializedName("_id") val id: String?,
     val plantId: String,
     val plantName: String? = null,
     val time: String,
     val details: WateringConfigurationDetailsDTO
-)
+) {
+    @SerializedName("_id") var id: String? = null
+}
 
 enum class WateringType {
     @SerializedName("schedules")
