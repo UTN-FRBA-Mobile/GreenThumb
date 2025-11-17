@@ -149,8 +149,14 @@ class WateringConfigViewModel @Inject constructor(
                     )
                 repository.create(newWateringConfiguration)
 
-                // Pass the object that the repository returned (with the ID) to the scheduler
-                scheduler.schedule(newWateringConfiguration)
+                if(newWateringConfiguration.details is WateringScheduleDTO){
+                    for(day in newWateringConfiguration.details.daysOfWeek) {
+                        scheduler.schedule(newWateringConfiguration,day)
+                    }
+                }else{
+                    scheduler.scheduleInterval(newWateringConfiguration,(newWateringConfiguration.details as WateringDatesDTO).datesInterval)
+                }
+
 
                 fetchConfigs()
             } catch (e: Exception) {
@@ -209,8 +215,14 @@ class WateringConfigViewModel @Inject constructor(
                 repository.update(
                     updatedWateringConfiguration
                 )
-                scheduler.schedule(updatedWateringConfiguration)
 
+                if(updatedWateringConfiguration.details is WateringScheduleDTO){
+                    for(day in updatedWateringConfiguration.details.daysOfWeek) {
+                        scheduler.schedule(updatedWateringConfiguration,day)
+                    }
+                }else{
+                    scheduler.scheduleInterval(updatedWateringConfiguration,(updatedWateringConfiguration.details as WateringDatesDTO).datesInterval)
+                }
                 fetchConfigs()
             } catch (e: Exception) {
                 Log.e("WateringConfigViewModel", "Error updating configuration", e)
